@@ -48,7 +48,8 @@ jobs:
       - name: Fresh common-pin native source build
         run: |
           set -euo pipefail
-          ulimit -n 262144
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
           python supplier/opica-step4/native_bootstrap/bootstrap_native.py \
             --work-dir "$OPICA_WORK/native" \
             --trusted-packages "$OPICA_WORK/trusted-packages" \
@@ -75,7 +76,8 @@ jobs:
       - name: Bind shared trusted dependencies and verification tools
         run: |
           set -euo pipefail
-          ulimit -n 262144
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
           rt="$OPICA_WORK/native/lean-4.33.1-linux/bin"
           mkdir -p supplier/.lake/build/lib
           test ! -e supplier/.lake/packages
@@ -91,7 +93,8 @@ jobs:
       - name: Execute exact modular proof and claim gates
         run: |
           set -euo pipefail
-          ulimit -n 262144
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
           python supplier/opica-step4/modular/verify_modular.py \
             --external "$GITHUB_WORKSPACE/supplier" \
             --external-head "${{ github.sha }}" \

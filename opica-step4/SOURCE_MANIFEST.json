@@ -3,7 +3,7 @@
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
   "gate": "OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1",
-  "workflow_sha256": "094e7d0860b8a9a204d7119c15048057a87ce230505f4fd2c0f285cf626f5c9b",
+  "workflow_sha256": "84dd330b8b163300de4513200f99b5190b049aed4019eb3cee32a7c7445cbfba",
   "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
   "files": [
     {
