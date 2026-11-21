@@ -1,0 +1,325 @@
+{
+  "version": "OPICA20_SOURCE_BUNDLE_V1",
+  "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
+  "gate": "OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1",
+  "workflow_sha256": "094e7d0860b8a9a204d7119c15048057a87ce230505f4fd2c0f285cf626f5c9b",
+  "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4813,
+      "sha256": "9728cb05f2d11ae9cb8c6737eab84f154d45cdcf33167c2166ef7f7e4011dc0d"
+    },
+    {
+      "path": "collect_evidence.py",
+      "bytes": 1657,
+      "sha256": "09882a78ae7f203abe3af348db7522f82a2047c2c959e0be1dd8282f8c058880"
+    },
+    {
+      "path": "modular/InspectClosedObject.lean",
+      "bytes": 3263,
+      "sha256": "b04cfebf65ba35b940741f2480331f7b37667381eb851f3e5cbadd9ec7cdf8c6"
+    },
+    {
+      "path": "modular/SPEC.md",
+      "bytes": 16195,
+      "sha256": "b22d9dbcdd0a85dde3746080c0f5afeef1327497c99998363ec8d100dd13e7fc"
+    },
+    {
+      "path": "modular/external-evidence/FETCH_RECEIPT.json",
+      "bytes": 1179,
+      "sha256": "1c4528956c5841f2be9ba77924b2c836d85a5c0c50a9bca7a7cd06de8d39682d"
+    },
+    {
+      "path": "modular/external-evidence/SHA256SUMS",
+      "bytes": 2112,
+      "sha256": "a26d92ed4c11c8503e9f09a52fa874fa9175c13b2c7bb29213af21ac12c1ede3"
+    },
+    {
+      "path": "modular/external-evidence/audit.log",
+      "bytes": 2062,
+      "sha256": "0a1473fce6eed840011f4a76b1c51558fc6f03edd1e6bd1ee542e6c738d87a62"
+    },
+    {
+      "path": "modular/external-evidence/con-leche-compare.log",
+      "bytes": 5875,
+      "sha256": "5a068bf55f24904eea9f05eda947c63d43bdee3c6ab0490e43943a3bd9af1f6e"
+    },
+    {
+      "path": "modular/external-evidence/con-leche-master.log",
+      "bytes": 3918,
+      "sha256": "23e27eacb9e8378569474cc185c0e98f6b995b4db0f8df88fd48a921084fed02"
+    },
+    {
+      "path": "modular/external-evidence/index.html",
+      "bytes": 20460,
+      "sha256": "e46488825acc7e4fbf3c0c744edcfaa5219f773571a9267b06df26b11f18a1a3"
+    },
+    {
+      "path": "modular/external-evidence/nanoda.log",
+      "bytes": 852,
+      "sha256": "d4c5360b02d8dd885150c1cc28b616cb6fb5bf5b20d142558d79a7b15ae9d9df"
+    },
+    {
+      "path": "modular/test_verify_modular.py",
+      "bytes": 12379,
+      "sha256": "2c03b34a8e900b6ce6d23a718c8edc72eb65610e7079e0458d613bfe30bb855f"
+    },
+    {
+      "path": "modular/verify_modular.py",
+      "bytes": 44129,
+      "sha256": "e73facc3098f023ca1a0c89a4320b7974f0afc6e842d0e82784d2426da0ac726"
+    },
+    {
+      "path": "native_bootstrap/BUNDLE_MANIFEST.json",
+      "bytes": 1845,
+      "sha256": "fac4557add7f7b7331e1d0fa535ced4b2fc67049ce176a1c993f1ae929ec4b72"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/BoundaryFlatCharacterization.lean",
+      "bytes": 4218,
+      "sha256": "e19bfb13fcb523930617aae99c9d1190cccb1ec3915feae610f7195c68bbef61"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/ClaimFingerprint.lean",
+      "bytes": 1822,
+      "sha256": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/ReceiverAudit.lean",
+      "bytes": 1597,
+      "sha256": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b"
+    },
+    {
+      "path": "native_bootstrap/README.md",
+      "bytes": 6750,
+      "sha256": "dd82f0f37b8119a289b631ac01cf3433e5689803d935803eba5ef3bc01e3c18f"
+    },
+    {
+      "path": "native_bootstrap/bootstrap_native.py",
+      "bytes": 30869,
+      "sha256": "1a9e8c7643bf122c7b855433f47460462501ac1ecefaefe54c6b459ea7443b66"
+    },
+    {
+      "path": "native_bootstrap/lake-manifest.json",
+      "bytes": 3553,
+      "sha256": "391f2a0f7147306be70a47338cb31829e652981b9db028af02e475b73368c5f4"
+    },
+    {
+      "path": "native_bootstrap/native_sources.json",
+      "bytes": 65479,
+      "sha256": "3b6faeca7c42978a5e183f8d33bd921af2dc99f058ba4e4724d2397c271d3ae6"
+    },
+    {
+      "path": "native_bootstrap/runtime_files.json",
+      "bytes": 4212,
+      "sha256": "550bbf7a1fc8e2549ecf2d122ff5bfa2007f71d78e3ce1dba42d02fb1ae72793"
+    },
+    {
+      "path": "native_bootstrap/trusted_objects.json.gz",
+      "bytes": 1025646,
+      "sha256": "a60772ae619d879d58690a3318f9b791e91826d10be5bb09ae4a07923797ab60"
+    },
+    {
+      "path": "native_bootstrap/validate_bootstrap.py",
+      "bytes": 5473,
+      "sha256": "af551a5acd627da2e78fefc35b3f98486fb2d48522816773f9d5b545409a2ec7"
+    },
+    {
+      "path": "portable_gate/GATE_SPEC.json",
+      "bytes": 4656,
+      "sha256": "771b194e8330a6844705178a5bc4cfc09ece629c9a2c88031e1bb74615640862"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/BoundaryFlatCharacterization.lean",
+      "bytes": 4218,
+      "sha256": "e19bfb13fcb523930617aae99c9d1190cccb1ec3915feae610f7195c68bbef61"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClaimComparison.lean",
+      "bytes": 677,
+      "sha256": "66e061a4183e7c74ba949c9de46a6aca48a733ab17bcf00e7e0519b3009ce0b2"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClaimFingerprint.lean",
+      "bytes": 1822,
+      "sha256": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClosedBridge.lean",
+      "bytes": 1903,
+      "sha256": "70c8e2b0dabb449bf29928babc0ca5c1973555d155d8bd0be51ae2864f2b5b08"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ImportGuard.lean",
+      "bytes": 427,
+      "sha256": "549a0c43ced7253fc6c1672e3ab548e6576a88f1d5e42f770592dc570f6c6c27"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/IndependentConsumer.lean",
+      "bytes": 2156,
+      "sha256": "db521331e48f2a5cc87a9c4ffb69d2cb4495c0ca97bf9bd1162e1ca10361efa6"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/MainClosedBridge.lean",
+      "bytes": 1799,
+      "sha256": "a4243a995e778677094035e9f212f504c208b9f7d35dc4e0ee92de80512ec86e"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/NativeValidated.lean",
+      "bytes": 210,
+      "sha256": "490d4dedfbf28088dbb85f3567c9acc93401b15a19d23e5399eea79bd32e03cf"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ReceiverAudit.lean",
+      "bytes": 1597,
+      "sha256": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b"
+    },
+    {
+      "path": "portable_gate/README.md",
+      "bytes": 15299,
+      "sha256": "ae21493d35d965f7569fc9aa2c259c1412429bff1b8eac3d714fec4c8ee76355"
+    },
+    {
+      "path": "portable_gate/comparator.json",
+      "bytes": 556,
+      "sha256": "6831efa2eb4a043a2d1984fa46b465e0ea5fe9e10221f0c1262d12df4fdc75f3"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Axioms.lean",
+      "bytes": 2389,
+      "sha256": "863c5e1329811be0427880e08c171de733343491c5a3619b5dbf2e12b34c6125"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Compare.lean",
+      "bytes": 4089,
+      "sha256": "9bc34cb7de5a069a6fef7f3b13b20fea22f1d52603f74320a93d519b735ad3dd"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Util.lean",
+      "bytes": 788,
+      "sha256": "693d845330dd7122565aeb19314a3e3de4b49f9a8a7ac6e1fadbc9ab374b9f88"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator.lean",
+      "bytes": 26,
+      "sha256": "86a19f1cfd9d013974deb24310d5d619c344c5f81fd6cd65913f7a1980864857"
+    },
+    {
+      "path": "portable_gate/comparison_control/CompareExports.lean",
+      "bytes": 3276,
+      "sha256": "8dfb14910edfc92b86e9e188c36e028003e36a566c7ed1f6bf6b6bd335c56635"
+    },
+    {
+      "path": "portable_gate/comparison_control/Export/Parse.lean",
+      "bytes": 20491,
+      "sha256": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
+    },
+    {
+      "path": "portable_gate/comparison_control/Export.lean",
+      "bytes": 20,
+      "sha256": "4073b8a98a3a0671d867d93ba1cadaaf890fb011f4000e6e2e54ce338cc1b7a5"
+    },
+    {
+      "path": "portable_gate/comparison_control/LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "portable_gate/comparison_control/SOURCE_FREEZE.json",
+      "bytes": 1197,
+      "sha256": "49a7f8e52bd578b9e09dac20edd1034fb817383ec7630e411094989474e0ddce"
+    },
+    {
+      "path": "portable_gate/comparison_control/UPSTREAM_IDENTITY.json",
+      "bytes": 888,
+      "sha256": "a6d5f234af2a487b23e1f471072fc08e2b7c7b21ce8dedfbd3c693c51cb53188"
+    },
+    {
+      "path": "portable_gate/comparison_control/lake-manifest.json",
+      "bytes": 166,
+      "sha256": "a9ebd699791955d5a9959cd94b627017e12e035494101a1ea4cb5a35b6bb431e"
+    },
+    {
+      "path": "portable_gate/comparison_control/lakefile.toml",
+      "bytes": 234,
+      "sha256": "fe6ffed53639468f3af755b629986b048103cf80b7b9dcfaac32af3fc1a3a590"
+    },
+    {
+      "path": "portable_gate/comparison_control/lean-toolchain",
+      "bytes": 25,
+      "sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71"
+    },
+    {
+      "path": "portable_gate/comparison_control/test_statement_definitions.py",
+      "bytes": 5926,
+      "sha256": "32b8930848039ce501384b8d4e8bd1a53c3bd947c1bf5b4325f7705585ce64dd"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/CLI/Check.lean",
+      "bytes": 30904,
+      "sha256": "55daf430e5adea38453b21798cbdf4cd099f66ec969494022a566a8ae098c00b"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Axioms.lean",
+      "bytes": 3359,
+      "sha256": "261fa54494a6a17c23b8588d788ab1080e5c39af2143948f8e140cfa295560d1"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Compare.lean",
+      "bytes": 4028,
+      "sha256": "0281630a33b8f08a9f3f40f229cd843c02441a0cd4d8a6d8548dc2bb8ded4c68"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Util.lean",
+      "bytes": 853,
+      "sha256": "f1e1b1ed49778fdad130a436340d55db72a5d6017cf5bc5d6a5dccdf7f55cb3d"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/comparator-from-export-test.sh",
+      "bytes": 1666,
+      "sha256": "b7e7cfab9ac2ddb06c5840c3b8f9b2ed63a9fe3a84be08cd0e1aac26c2095b8d"
+    },
+    {
+      "path": "portable_gate/test_verify_combined.py",
+      "bytes": 10437,
+      "sha256": "4b44435f1e8c4562090bd33d0f557003b0c55993f1e12fca64ee2ef531d6bd9a"
+    },
+    {
+      "path": "portable_gate/verify_combined.py",
+      "bytes": 66747,
+      "sha256": "a01ac482dd59444b2313dc525b63d22036de892a3076a23a06c80514d7df78ca"
+    },
+    {
+      "path": "prepare_runner.py",
+      "bytes": 2036,
+      "sha256": "de83a50072eaeefbcba99b2486c31e103f4587f4a8d1cf5b428002fb22c0962f"
+    },
+    {
+      "path": "transport/export_stream_store.py",
+      "bytes": 8913,
+      "sha256": "461caaa8bfc52ef12ca1e39dd22ca0dce219a10ef49efda2d9cc7537ca24b012"
+    },
+    {
+      "path": "transport/requirements.txt",
+      "bytes": 18,
+      "sha256": "da56c02977e00d88d897af40d227d773822aa7134d30e1d40c68e1518d666026"
+    },
+    {
+      "path": "transport/test_export_stream_store.py",
+      "bytes": 2082,
+      "sha256": "60dba6b22ee381dfb844b2251762bfcaa980facf8ba2c37b7fb357bcde03e0ea"
+    },
+    {
+      "path": "transport/test_verified_squashfs_store.py",
+      "bytes": 5665,
+      "sha256": "dff5878b26ff9eefdf21152731131da84bf08c975db31a589a4068501d4e4f30"
+    },
+    {
+      "path": "transport/verified_squashfs_store.py",
+      "bytes": 17259,
+      "sha256": "72d9a31a1c9eed464b186370fd0d6f1de89bc2572a512b5efa053133021a1f3e"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+name: OPICA exact Step 4 modular verification
+run-name: OPICA exact Step 4 at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-step4-combined-gate-20261121]
+    paths:
+      - .github/workflows/opica-combined-modular.yml
+      - opica-step4/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: opica-exact-step4-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      LEAN_ABORT_ON_PANIC: '1'
+      LEAN_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: supplier
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Prepare bounded standard runner
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/opica-step4-round20"
+          mkdir -p "$work"
+          printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y squashfs-tools zstd python3-venv
+          python3 -m venv "$work/venv"
+          "$work/venv/bin/python" -m pip install --disable-pip-version-check -r supplier/opica-step4/transport/requirements.txt
+          printf '%s\n' "$work/venv/bin" >> "$GITHUB_PATH"
+          python3 supplier/opica-step4/prepare_runner.py --work "$work"
+      - name: Check transport and verification controls
+        run: |
+          set -euo pipefail
+          cd supplier/opica-step4/transport
+          python -m unittest -v test_verified_squashfs_store test_export_stream_store
+          cd ../modular
+          python -m unittest -v test_verify_modular
+      - name: Fresh common-pin native source build
+        run: |
+          set -euo pipefail
+          ulimit -n 262144
+          python supplier/opica-step4/native_bootstrap/bootstrap_native.py \
+            --work-dir "$OPICA_WORK/native" \
+            --trusted-packages "$OPICA_WORK/trusted-packages" \
+            --external-project "$GITHUB_WORKSPACE/supplier" \
+            --jobs 2 --aggregate-rss-mb 10000 --min-free-gb 46 \
+            --cache-parallel 8 --timeout 9000
+          printf '%s\n' "$OPICA_WORK/native/lean-4.33.1-linux/bin" >> "$GITHUB_PATH"
+      - name: Preserve and verify complete original supplier objects
+        run: |
+          set -euo pipefail
+          python supplier/opica-step4/transport/verified_squashfs_store.py \
+            --output "$OPICA_WORK/proof-store.sqfs" \
+            --max-image-gib 40 --min-free-gib 45 --processors 2 --memory-mb 512
+          mkdir "$OPICA_WORK/proof-store"
+          sudo mount -t squashfs -o loop,ro "$OPICA_WORK/proof-store.sqfs" "$OPICA_WORK/proof-store"
+          cd "$OPICA_WORK/proof-store"
+          sha256sum --quiet --check "$OPICA_WORK/proof-store.sqfs.files.sha256"
+          python - <<'PY'
+          import os,pathlib,json,hashlib
+          w=pathlib.Path(os.environ['OPICA_WORK'])
+          p=w/'proof-store.sqfs.files.sha256'
+          (w/'mounted-store-verified.json').write_text(json.dumps({'status':'PASS','scope':'Every mounted original file matched published SHA256; no theorem acceptance by this check','files':350374,'manifest_sha256':hashlib.sha256(p.read_bytes()).hexdigest()},indent=2)+'\n')
+          PY
+      - name: Bind shared trusted dependencies and verification tools
+        run: |
+          set -euo pipefail
+          ulimit -n 262144
+          rt="$OPICA_WORK/native/lean-4.33.1-linux/bin"
+          mkdir -p supplier/.lake/build/lib
+          test ! -e supplier/.lake/packages
+          test ! -e supplier/.lake/build/lib/lean
+          ln -s "$OPICA_WORK/trusted-packages" supplier/.lake/packages
+          ln -s "$OPICA_WORK/proof-store" supplier/.lake/build/lib/lean
+          git init "$OPICA_WORK/exporter"
+          git -C "$OPICA_WORK/exporter" remote add origin https://github.com/leanprover/lean4export.git
+          git -C "$OPICA_WORK/exporter" fetch --depth=1 origin 15f6055e299ad5b89345e533cc2192f4cc00f659
+          git -C "$OPICA_WORK/exporter" checkout --detach 15f6055e299ad5b89345e533cc2192f4cc00f659
+          (cd "$OPICA_WORK/exporter" && "$rt/lake" build lean4export)
+          (cd supplier/opica-step4/portable_gate/comparison_control && "$rt/lake" build compare_exports)
+      - name: Execute exact modular proof and claim gates
+        run: |
+          set -euo pipefail
+          ulimit -n 262144
+          python supplier/opica-step4/modular/verify_modular.py \
+            --external "$GITHUB_WORKSPACE/supplier" \
+            --external-head "${{ github.sha }}" \
+            --external-lib "$OPICA_WORK/proof-store" \
+            --native "$OPICA_WORK/native/native-source" \
+            --integration "$OPICA_WORK/native/integration" \
+            --lake "$OPICA_WORK/native/lean-4.33.1-linux/bin/lake" \
+            --exporter "$OPICA_WORK/exporter/.lake/build/bin/lean4export" \
+            --comparison-helper "$GITHUB_WORKSPACE/supplier/opica-step4/portable_gate/comparison_control/.lake/build/bin/compare_exports" \
+            --external-evidence "$GITHUB_WORKSPACE/supplier/opica-step4/modular/external-evidence" \
+            --output "$OPICA_WORK/verification" \
+            --jobs 2 --compile-timeout 3600 --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
+      - name: Collect exact results and limitations
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 supplier/opica-step4/collect_evidence.py --work "$OPICA_WORK" --head "${{ github.sha }}"
+      - name: Preserve proof receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-step4-evidence-${{ github.sha }}
+          path: ${{ env.OPICA_WORK }}/evidence.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14

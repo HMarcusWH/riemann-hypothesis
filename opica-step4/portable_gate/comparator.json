@@ -1,0 +1,15 @@
+{
+  "challenge_module": "OPICAStep4.ClaimFingerprint",
+  "solution_module": "OPICAStep4.ClaimComparison",
+  "theorem_names": [
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_reflexive",
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_is_native",
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredRH_reflexive"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "external_kernels": {
+    "Lean paranoid": ["leanchecker-paranoid", "--silent", "--from-export"],
+    "nanoda": ["nanoda_bin"]
+  }
+}
