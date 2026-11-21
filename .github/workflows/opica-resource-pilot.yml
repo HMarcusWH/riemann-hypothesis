@@ -1,0 +1,81 @@
+name: OPICA compressed proof resource pilot
+run-name: OPICA resource pilot at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-step4-combined-gate-20261121]
+    paths:
+      - .github/workflows/opica-resource-pilot.yml
+      - opica-step4/pilot/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: opica-resource-pilot-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  resources:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Record exact head and machine resources
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          python3 - <<'PY'
+          import json, os, pathlib, shutil, subprocess
+          def command(args):
+              r = subprocess.run(args, capture_output=True, text=True)
+              return {'argv': args, 'exit_code': r.returncode,
+                      'stdout': r.stdout, 'stderr': r.stderr}
+          report = {
+              'scope': 'Resource and compressed-filesystem feasibility only. No RH or Step 4 proof.',
+              'sha': os.environ['SOURCE_SHA'], 'repository': os.environ['SOURCE_REPOSITORY'],
+              'memory': pathlib.Path('/proc/meminfo').read_text(),
+              'disk': command(['df', '-B1']),
+              'mounts': command(['findmnt']),
+              'sudo_available': command(['sudo', '-n', 'true']),
+              'vm_max_map_count': pathlib.Path('/proc/sys/vm/max_map_count').read_text().strip(),
+              'large_preinstalled_tools': command(['du', '-sk', '/usr/local/lib/android', '/usr/share/dotnet', '/opt/ghc', '/opt/hostedtoolcache', '/usr/local/share/boost']),
+          }
+          pathlib.Path('evidence/resources.json').write_text(json.dumps(report, indent=2)+'\n')
+          print(json.dumps(report, indent=2))
+          PY
+      - name: Verify stock read-only SquashFS round trip and mmap
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y squashfs-tools
+          mkdir -p sample-source sample-mount
+          python3 - <<'PY'
+          import pathlib
+          pathlib.Path('sample-source/sample.bin').write_bytes(bytes(range(256))*65536)
+          PY
+          tar -C sample-source -cf - sample.bin | mksquashfs - evidence/sample.squashfs -tar -noappend -comp zstd -processors 2 -no-progress
+          sudo mount -t squashfs -o loop,ro evidence/sample.squashfs sample-mount
+          python3 - <<'PY'
+          import hashlib, json, mmap, pathlib, subprocess
+          original=pathlib.Path('sample-source/sample.bin').read_bytes()
+          with open('sample-mount/sample.bin','rb') as f:
+              with mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ) as mm:
+                  actual=mm[:]
+          if original != actual:
+              raise SystemExit('FAIL: mounted mmap bytes differ')
+          report={'status':'PASS','scope':'Exact-byte compressed-filesystem+mmap pilot only',
+                  'logical_bytes':len(original),'image_bytes':pathlib.Path('evidence/sample.squashfs').stat().st_size,
+                  'sha256':hashlib.sha256(actual).hexdigest(),
+                  'mount':subprocess.run(['findmnt','-J','sample-mount'],capture_output=True,text=True).stdout}
+          pathlib.Path('evidence/squashfs-pilot.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report,indent=2))
+          PY
+          sudo umount sample-mount
+      - name: Preserve exact pilot evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-resource-pilot-${{ github.sha }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 14
