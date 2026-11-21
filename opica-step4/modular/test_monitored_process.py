@@ -12,7 +12,8 @@ from unittest import mock
 
 import monitored_process as monitor
 
-ROOT = Path(tempfile.mkdtemp(prefix='controls_', dir=Path(__file__).resolve().parent))
+ROOT = Path(tempfile.mkdtemp(prefix='controls_', dir=Path(os.environ.get(
+    'OPICA_MONITOR_CONTROL_PARENT', str(Path(__file__).resolve().parent)))))
 
 
 class ProcessControls(unittest.TestCase):
@@ -199,18 +200,220 @@ while time.monotonic()<deadline: x=(x*1664525+1013904223)&0xffffffff
         self.assertEqual(summary['minor_faults_observed'], 3)
         self.assertEqual(summary['optional_io_telemetry']['unavailable_member_samples'], 1)
 
+    def test_persistent_missing_live_counter_preserves_failure_evidence(self):
+        original = Path.read_text
+
+        def read(path, *args, **kwargs):
+            text = original(path, *args, **kwargs)
+            if path.parent.parent == Path('/proc') and path.name == 'status':
+                return '\n'.join(line for line in text.splitlines() if not line.startswith('VmSwap:'))
+            return text
+
+        with mock.patch.object(Path, 'read_text', read):
+            row, _, _ = self.execute('import time; time.sleep(20)')
+        self.assertEqual((row['status'], row['failure_kind']), ('FAIL', 'RESOURCE_OBSERVATION'))
+        failed = row['resource_observation_failure']
+        self.assertEqual(failed['initial_missing_counters'], ['VmSwap'])
+        self.assertEqual(failed['last_missing_counters'], ['VmSwap'])
+        self.assertEqual(failed['identity'], failed['last_identity'])
+        self.assertGreater(failed['retries'], 1)
+        self.assertEqual(failed['outcome'], 'RECONCILIATION_BUDGET_EXHAUSTED')
+        samples = [json.loads(line) for line in Path(row['telemetry']).read_text().splitlines()]
+        self.assertTrue(any(s.get('resource_observation') == failed for s in samples))
+
+    def test_missing_counter_cannot_extend_execution_deadline(self):
+        original = monitor._memory_status
+
+        def missing(pid):
+            return {k: v for k, v in original(pid).items() if k != 'VmSwap'}
+
+        with mock.patch.object(monitor, '_memory_status', missing):
+            row, _, _ = self.execute('import time; time.sleep(20)', timeout=.08)
+        self.assertEqual((row['status'], row['failure_kind']), ('INCOMPLETE', 'TIMEOUT'))
+        self.assertEqual(row['resource_observation_failure']['outcome'], 'EXECUTION_DEADLINE')
+
+    def test_over_limit_recovered_counters_still_terminate_process(self):
+        original = Path.read_text
+        injected = set()
+
+        def read(path, *args, **kwargs):
+            text = original(path, *args, **kwargs)
+            if path.parent.parent == Path('/proc') and path.name == 'status':
+                rss = next((int(line.split()[1]) * 1024 for line in text.splitlines()
+                            if line.startswith('VmRSS:')), 0)
+                if rss > 32 * 1024**2 and path.parent.name not in injected:
+                    injected.add(path.parent.name)
+                    return '\n'.join(line for line in text.splitlines() if not line.startswith('VmSwap:'))
+            return text
+
+        with mock.patch.object(Path, 'read_text', read):
+            row, _, _ = self.execute('import time; a=bytearray(64*1024*1024); time.sleep(20)', memory_mib=32)
+        self.assertTrue(injected)
+        self.assertEqual((row['status'], row['failure_kind']), ('INCOMPLETE', 'MEMORY_LIMIT'))
+        self.assertGreater(row['max_sampled_rss_plus_swap_bytes'], 32 * 1024**2)
+        history = row['observed_totals']['mandatory_memory_observations']
+        self.assertGreater(history['reconciliation_count'], 0)
+        self.assertIn('RECOVERED_LIVE_COUNTERS', [r['outcome'] for r in history['reconciliations_first_at_most_16']])
+
+
+class ResourceLifecycleControls(unittest.TestCase):
+    """Deterministic proc snapshots: no dependence on reproducing an exit race."""
+    PID = 424242
+    LIVE = {'pid': PID, 'comm': 'fixture', 'state': 'R', 'ppid': 123,
+            'pgrp': PID, 'minor_faults': 7, 'major_faults': 0,
+            'user_ticks': 2, 'system_ticks': 1, 'threads': 1, 'start_ticks': 123456}
+    MISSING = 'Name:\tfixture\nState:\tR (running)\n'
+    VALID = 'VmRSS:\t10 kB\nVmSwap:\t2 kB\n'
+
+    def simulate(self, statuses, *, states=None, members=None, deadline=None):
+        members = members or [dict(self.LIVE)]
+        if not isinstance(statuses, dict):
+            statuses = {self.PID: statuses}
+        state_map = states if isinstance(states, dict) else {self.PID: states or [dict(self.LIVE)]}
+        status_queues = {pid: list(values) for pid, values in statuses.items()}
+        state_queues = {pid: list(values) for pid, values in state_map.items()}
+        clock = [1000.0]
+
+        def take(queue):
+            result = queue.pop(0) if len(queue) > 1 else queue[0]
+            if isinstance(result, BaseException):
+                raise result
+            return dict(result) if isinstance(result, dict) else result
+
+        def read(path, *_args, **_kwargs):
+            pid = int(path.parent.name)
+            if path.name == 'status':
+                return take(status_queues[pid])
+            if path.name == 'io':
+                return '\n'.join(f'{key}: 0' for key in monitor.IO_COUNTERS)
+            raise AssertionError('Unplanned fixture read: ' + str(path))
+
+        record = {'fixture': self.id(), 'original_members': members,
+                  'execution_deadline_offset': deadline, 'result': None}
+        try:
+            with mock.patch.object(monitor, '_proc_members', return_value=[dict(r) for r in members]), \
+                 mock.patch.object(monitor, '_stat', side_effect=lambda pid: take(state_queues[pid])), \
+                 mock.patch.object(Path, 'read_text', read), \
+                 mock.patch.object(monitor.time, 'monotonic', side_effect=lambda: clock[0]), \
+                 mock.patch.object(monitor.time, 'sleep', side_effect=lambda delay: clock.__setitem__(0, clock[0] + delay)):
+                result = monitor.sample_process_group(self.PID, deadline=None if deadline is None else 1000 + deadline)
+                record['result'] = result
+                return result
+        except BaseException as exc:
+            record.update(exception_type=type(exc).__name__, failure=str(exc),
+                          observation=getattr(exc, 'resource_observation', None))
+            raise
+        finally:
+            record['simulated_elapsed_seconds'] = round(clock[0] - 1000, 6)
+            (ROOT / (self.id().rsplit('.', 1)[-1] + '.reconciliation.json')).write_text(json.dumps(record, indent=2) + '\n')
+
+    def test_missing_live_counters_then_confirmed_zombie(self):
+        result = self.simulate([self.MISSING], states=[dict(self.LIVE), dict(self.LIVE, state='Z')])
+        member = result['members'][0]
+        self.assertEqual(result['live_pids'], [])
+        self.assertIsNone(member['rss_bytes'])
+        self.assertIsNone(member['swap_bytes'])
+        self.assertEqual(member['memory_coverage'], 'NOT_LIVE_NO_MEASUREMENT')
+        self.assertEqual(result['memory_coverage']['reconciliations'][0]['outcome'], 'CONFIRMED_RETIRED_STATE')
+
+    def test_missing_live_counters_then_confirmed_dead(self):
+        result = self.simulate([self.MISSING], states=[dict(self.LIVE, state='X')])
+        self.assertEqual(result['live_pids'], [])
+        self.assertIsNone(result['members'][0]['rss_bytes'])
+
+    def test_missing_live_counters_then_confirmed_disappearance(self):
+        result = self.simulate([self.MISSING], states=[FileNotFoundError('original stat disappeared')])
+        self.assertEqual(result['live_pids'], [])
+        self.assertIsNone(result['members'][0]['swap_bytes'])
+        self.assertEqual(result['memory_coverage']['reconciliations'][0]['outcome'], 'CONFIRMED_DISAPPEARED')
+
+    def test_complete_counters_recover_for_same_live_identity(self):
+        result = self.simulate([self.MISSING, self.VALID])
+        self.assertEqual(result['live_pids'], [self.PID])
+        self.assertEqual(result['totals']['rss_plus_swap_bytes'], 12 * 1024)
+        event = result['memory_coverage']['reconciliations'][0]
+        self.assertEqual(event['outcome'], 'RECOVERED_LIVE_COUNTERS')
+        self.assertEqual(event['identity'], event['last_identity'])
+
+    def test_persistent_missing_live_counters_fail_with_bounded_evidence(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate(['VmRSS:\t10 kB\n'])
+        event = caught.exception.resource_observation
+        self.assertEqual(event['last_missing_counters'], ['VmSwap'])
+        self.assertEqual(event['last_state'], 'R')
+        self.assertEqual(event['outcome'], 'RECONCILIATION_BUDGET_EXHAUSTED')
+        self.assertLessEqual(event['elapsed_seconds'], monitor.RECONCILE_SECONDS + .000001)
+
+    def test_missing_status_file_is_not_disappearance_of_live_identity(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate([FileNotFoundError('status unavailable while stat remains live')])
+        self.assertEqual(caught.exception.resource_observation['outcome'], 'RECONCILIATION_BUDGET_EXHAUSTED')
+
+    def test_pid_reuse_is_not_silently_retired(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate([self.MISSING], states=[dict(self.LIVE, start_ticks=654321)])
+        self.assertEqual(caught.exception.resource_observation['outcome'], 'IDENTITY_OR_GROUP_CHANGED')
+
+    def test_changed_group_is_not_silently_retired(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate([self.MISSING], states=[dict(self.LIVE, pgrp=self.PID + 1)])
+        self.assertEqual(caught.exception.resource_observation['outcome'], 'IDENTITY_OR_GROUP_CHANGED')
+
+    def test_recovered_values_require_identity_check_after_read(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate([self.MISSING, self.VALID], states=[dict(self.LIVE), dict(self.LIVE, start_ticks=654321)])
+        self.assertEqual(caught.exception.resource_observation['outcome'], 'IDENTITY_OR_GROUP_CHANGED')
+
+    def test_malformed_live_counters_are_fatal(self):
+        with self.assertRaises(ValueError):
+            self.simulate(['VmRSS:\t-1 kB\nVmSwap:\t2 kB\n'])
+
+    def test_denied_identity_during_reconciliation_is_fatal(self):
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate([self.MISSING], states=[PermissionError('cannot confirm original identity')])
+        self.assertEqual(caught.exception.resource_observation['outcome'], 'IDENTITY_UNREADABLE')
+
+    def test_valid_partial_high_counter_is_retained_after_exit(self):
+        result = self.simulate(['VmRSS:\t65536 kB\n'], states=[dict(self.LIVE, state='Z')])
+        self.assertEqual(result['totals']['rss_bytes'], 64 * 1024**2)
+        self.assertIsNone(result['members'][0]['swap_bytes'])
+        self.assertEqual(result['members'][0]['memory_coverage'], 'NOT_LIVE_PARTIAL_MEASUREMENT')
+
+    def test_recovered_high_observation_is_not_erased_by_lower_later_value(self):
+        result = self.simulate(['VmRSS:\t65536 kB\n', self.VALID])
+        self.assertEqual(result['totals']['rss_bytes'], 64 * 1024**2)
+
+    def test_retired_leader_does_not_retire_live_descendant(self):
+        child = dict(self.LIVE, pid=self.PID + 1, start_ticks=123457)
+        result = self.simulate({self.PID: [self.MISSING], child['pid']: [self.VALID]},
+            states={self.PID: [dict(self.LIVE, state='Z')], child['pid']: [child]},
+            members=[dict(self.LIVE), child])
+        self.assertEqual(result['live_pids'], [child['pid']])
+        self.assertEqual(result['totals']['rss_plus_swap_bytes'], 12 * 1024)
+
+    def test_reconciliation_budget_is_shared_by_group(self):
+        child = dict(self.LIVE, pid=self.PID + 1, start_ticks=123457)
+        with self.assertRaises(monitor.ResourceObservationError) as caught:
+            self.simulate({self.PID: [self.MISSING] * 20 + [self.VALID], child['pid']: [self.MISSING]},
+                states={self.PID: [dict(self.LIVE)], child['pid']: [child]}, members=[dict(self.LIVE), child])
+        event = caught.exception.resource_observation
+        self.assertEqual(event['identity']['pid'], child['pid'])
+        self.assertLess(event['shared_budget_remaining_at_entry_seconds'], .1)
+        self.assertLessEqual(event['elapsed_seconds'], .1)
+
 
 if __name__ == '__main__':
     started = time.monotonic()
-    result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(ProcessControls))
+    result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__]))
     receipt = {
-        'schema': 'MONITORED_PROCESS_CONTROLS_OPTIONAL_IO_V2', 'status': 'PASS' if result.wasSuccessful() else 'FAIL',
+        'schema': 'MONITORED_PROCESS_CONTROLS_RESOURCE_LIFECYCLE_V3', 'status': 'PASS' if result.wasSuccessful() else 'FAIL',
         'tests_run': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
         'elapsed_seconds': round(time.monotonic() - started, 3), 'controls_root': str(ROOT),
         'helper_sha256': monitor.sha256(Path(monitor.__file__)),
         'test_source_sha256': monitor.sha256(Path(__file__)),
         'no_lean_or_supplier_imports': True,
         'process_receipts': [str(path) for path in sorted(ROOT.glob('*/control.process.json'))],
+        'lifecycle_records': [str(path) for path in sorted(ROOT.glob('*.reconciliation.json'))],
     }
     (ROOT / 'CONTROLS_RECEIPT.json').write_text(json.dumps(receipt, indent=2) + '\n')
     print(json.dumps(receipt, indent=2))

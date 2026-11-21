@@ -12,7 +12,7 @@ The actual proposed closed declaration is
 RH-to-C1 theorem to the global `riemannHypothesis` declaration exported by
 `Main`. A separate named theorem checks the fully expanded original C1
 statement, including both parity domains, the physical norms, and the original
-cutoff. Another named theorem derives positivity on the full boundary-flat
+cutoff. Another named theorem derives nonnegativity on the full boundary-flat
 space. No mathematical source or original project pin is changed.
 
 ## Acceptance and exact scope
@@ -23,7 +23,7 @@ with PASS. The existence of this branch, a successful resource pilot, a cache
 download, or a successful native bootstrap does not establish the closed
 theorem. Every required stage must complete.
 
-`OPICA22_KERNEL_OBJECT_COMPOSITION_V1` is a separately specified modular
+`OPICA23_KERNEL_OBJECT_COMPOSITION_V1` is a separately specified modular
 verification method. It combines:
 
 1. A fresh native source build and complete fresh kernel replay of the native
@@ -73,11 +73,15 @@ requires the complete actual combined proof check here. Neither establishes an
 original-pin production rebuild or erases the old procedure's outstanding
 status. See `modular/SPEC.md` for the modular acceptance argument.
 
-## Preserved earlier results and the optional-I/O repair
+## Preserved earlier results and bounded counter reconciliation
 
-Round21 head `56b129cc2212eb28d0c32867d49078dbae6a34be`, run `44935463985`, passed nine modular stages and failed in `canonical_modules_compile` while reading `/proc/23617/io`. The first conditional receiver compile exited zero and retained its object, but the monitor recorded `MONITOR_OR_LAUNCH_ERROR` / `PermissionError`; that stage remains FAIL. The twenty later stages were NOT_RUN, and independent combined proof checking was SKIPPED. No Main import or closed C1 construction was reached. The Round22 successor repairs only optional I/O telemetry and records this prior failure without reclassifying it. The exact kernel producer, logical sources, thirty-stage order and all proof/identity/axiom requirements remain unchanged.
+Round21 head `56b129cc2212eb28d0c32867d49078dbae6a34be`, run `44935463985`, passed nine modular stages and failed in `canonical_modules_compile` while reading `/proc/23617/io`. The first conditional receiver compile exited zero and retained its object, but the monitor recorded `MONITOR_OR_LAUNCH_ERROR` / `PermissionError`; that stage remains FAIL. The twenty later stages were NOT_RUN, and independent combined proof checking was SKIPPED. No Main import or closed C1 construction was reached. Round22 repaired only optional I/O telemetry and recorded this prior failure without reclassifying it. The exact kernel producer, logical sources, thirty-stage order and all proof/identity/axiom requirements remain unchanged.
 
-The monitor schema is `MONITORED_PROCESS_GROUP_OPTIONAL_IO_V2`. Per-process `/proc/<pid>/io` counters are optional telemetry: a read or format failure records sticky INCOMPLETE I/O coverage and preserves the last available counters. The same member's RSS and VmSwap stay in the mandatory memory total; missing or invalid mandatory memory counters still fail. Exit zero, complete stdout/stderr EOF, compiler/proof diagnostics, finite wall time, sampled memory limits, output/telemetry limits, complete process-group cleanup and final evidence hashes remain mandatory. Incomplete optional I/O does not establish proof validity. The watchdog remains sampled, not a kernel/cgroup hard memory cap.
+Round22 head `70bfbd662f42aff97194c34ef3b6ee996f3cc1a1`, run `44941237531`, retained 9 PASS / 1 FAIL / 20 NOT_RUN. Its first two canonical monitored compilations passed. The third, `BoundaryFlatCharacterization`, exited zero, printed the expected standard-three-axiom reports and produced its original objects, but its monitor failed with incomplete mandatory memory counters for PID 18535. All ten recorded optional-I/O samples were available. The particular missing counter and the failing process-state recheck were not retained, so an exit-transition explanation remains a hypothesis. The actual Main import, closed construction and complete independent proof check did not run. That failure is preserved unchanged.
+
+Round23 monitor schema `MONITORED_PROCESS_GROUP_RESOURCE_LIFECYCLE_V3` adds bounded re-observation of incomplete mandatory memory counters. One shared 0.25-second allowance per process-group sample, also bounded by the execution deadline, permits complete counters to be recovered or the original process identity to be confirmed no longer live. PID reuse, changed group, persistent live missing counters, malformed values and denied live status remain fatal. Confirmed retirement is recorded without invented measured-zero counters. Reconciliation details are retained. The original sampled memory cap, exit-zero, diagnostic, EOF, deadline, descendant-cleanup and final-evidence requirements remain in force. This changes no theorem, proof object, axiom policy, selected root or proof-stage obligation.
+
+Round22 used monitor schema `MONITORED_PROCESS_GROUP_OPTIONAL_IO_V2`. Per-process `/proc/<pid>/io` counters are optional telemetry: a read or format failure records sticky INCOMPLETE I/O coverage and preserves the last available counters. The same member's RSS and VmSwap stay in the mandatory memory total; missing or invalid mandatory memory counters still fail. Exit zero, complete stdout/stderr EOF, compiler/proof diagnostics, finite wall time, sampled memory limits, output/telemetry limits, complete process-group cleanup and final evidence hashes remain mandatory. Incomplete optional I/O does not establish proof validity. The watchdog remains sampled, not a kernel/cgroup hard memory cap.
 
 Round20 head `56869094eafb17b534ca6a30cf2296959e4d4d20` passed its first nineteen modular stages, then its full-Main elaborator import timed out after one hour. The remaining ten stages and complete independent proof check did not run. That attempt remains INCOMPLETE.
 
@@ -101,7 +105,7 @@ objects. The native dependencies are fetched and checked separately by
 
 The workflow records source, toolchain, runtime-library, object, and theorem
 identities; raw process exits and diagnostics; and the result of each gate.
-It preserves small evidence artifacts even on failure. Missing, interrupted,
+It collects evidence after controlled failures when the runner reaches the final steps. A whole-job deadline can prevent collection or upload, so actual artifact availability must be harvested. Missing, interrupted,
 warning-masked, mismatched, or skipped checks cannot produce a terminal PASS.
 An updated execution head supersedes a running older head; cancelled work keeps
 its incomplete disposition and cannot contribute a missing PASS.

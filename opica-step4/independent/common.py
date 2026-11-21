@@ -17,7 +17,7 @@ RUNTIME_NAME = "lean-4.36.0-linux"
 RUNTIME_URL = "https://github.com/leanprover/lean4/releases/download/v4.36.0/lean-4.36.0-linux.tar.zst"
 RUNTIME_SHA = "2b7ab1ed8b92d2e6abfaf41344823b510064dbc9c0260cac73eb496ab2dea6eb"
 RUNTIME_BYTES = 607649028
-MODULAR_RUNNER_SHA = "cf300d15b9aa01d1a18094e669b89d7b375117df4cc03643990058d38d397639"
+MODULAR_RUNNER_SHA = "7953a9d18c63c6567595533b9028a6f176599fe1fbca65c0f84773e1211267b9"
 
 class Failure(RuntimeError):
     pass

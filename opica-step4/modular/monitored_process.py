@@ -24,6 +24,9 @@ from datetime import datetime, timezone
 
 MAX_MEMORY_MIB = 50_000
 POLL_SECONDS = 0.25
+RECONCILE_SECONDS = 0.25
+RECONCILE_RETRY_SECONDS = 0.01
+RETIRED_STATES = frozenset(('Z', 'X', 'x'))
 PROGRESS_SECONDS = 30.0
 CLEANUP_GRACE_SECONDS = 1.0
 TELEMETRY_LIMIT = 64 << 20
@@ -86,26 +89,163 @@ def _proc_members(pgid: int) -> list[dict]:
     return sorted(members, key=lambda row: row['pid'])
 
 
-def sample_process_group(pgid: int) -> dict:
-    """Read current same-group members; exited/reaped processes may be absent."""
-    members = []
-    for row in _proc_members(pgid):
-        if row['state'] == 'Z':
-            row.update(rss_bytes=0, swap_bytes=0, io={}, io_coverage='NOT_LIVE')
-            members.append(row)
-            continue
+def _identity(row: dict) -> dict:
+    return {key: row[key] for key in ('pid', 'start_ticks', 'pgrp')}
+
+
+def _memory_status(pid: int) -> dict:
+    status = {}
+    for line in Path(f'/proc/{pid}/status').read_text().splitlines():
+        key, _, value = line.partition(':')
+        if key in ('VmRSS', 'VmSwap'):
+            parts = value.split()
+            if (key in status or len(parts) != 2 or parts[1] != 'kB'
+                    or not parts[0].isdecimal()):
+                raise ValueError(f'malformed mandatory resource counter {key} for PID {pid}')
+            status[key] = int(parts[0]) * 1024
+    return status
+
+
+class ResourceObservationError(RuntimeError):
+    def __init__(self, message: str, observation: dict):
+        self.resource_observation = observation
+        super().__init__(message)
+
+
+def _member_memory(original: dict, reconcile_deadline: float,
+                   execution_deadline: float | None) -> tuple[dict, dict | None, dict | None]:
+    """Reconcile incomplete counters only; never invent a live memory value."""
+    started = time.monotonic()
+    identity = _identity(original)
+    current = original
+    attempts = 0
+    missing = []
+    initial_error = None
+    last_error = None
+    try:
+        status = _memory_status(original['pid'])
+    except (FileNotFoundError, ProcessLookupError) as exc:
+        status = {}
+        initial_error = type(exc).__name__
+    if set(status) == {'VmRSS', 'VmSwap'}:
+        return original, status, None
+    observed = dict(status)
+    missing = sorted({'VmRSS', 'VmSwap'} - set(status))
+    initial_missing = list(missing)
+
+    def evidence(outcome):
+        return {'identity': identity, 'initial_state': original['state'],
+                'initial_missing_counters': initial_missing, 'initial_error_type': initial_error,
+                'last_identity': _identity(current), 'last_state': current['state'],
+                'last_missing_counters': list(missing), 'last_error_type': last_error,
+                'observed_counter_maxima_bytes': dict(observed),
+                'counter_maxima_need_not_be_simultaneous': True,
+                'retries': attempts, 'elapsed_seconds': round(time.monotonic() - started, 6),
+                'reconciliation_limit_seconds': RECONCILE_SECONDS, 'outcome': outcome,
+                'shared_budget_remaining_at_entry_seconds': round(max(0, reconcile_deadline - started), 6),
+                'missing_values_are_not_measured_zero': True}
+
+    def budget_check():
+        now = time.monotonic()
+        if execution_deadline is not None and now >= execution_deadline:
+            error = _Stop('INCOMPLETE', 'TIMEOUT', 'execution deadline reached during resource reconciliation')
+            error.resource_observation = evidence('EXECUTION_DEADLINE')
+            raise error
+        if now >= reconcile_deadline:
+            raise ResourceObservationError(
+                f'incomplete resource counters remain unresolved for PID {original["pid"]}',
+                evidence('RECONCILIATION_BUDGET_EXHAUSTED'))
+
+    def finish(outcome, values=None):
+        budget_check()
+        return current, values, evidence(outcome)
+
+    def checked_stat():
+        nonlocal current
+        current = _stat(original['pid'])
+        if _identity(current) != identity:
+            raise ResourceObservationError(
+                f'process identity or group changed during resource reconciliation for PID {original["pid"]}',
+                evidence('IDENTITY_OR_GROUP_CHANGED'))
+        return current
+
+    while True:
+        budget_check()
+        attempts += 1
         try:
-            status = {}
-            for line in Path(f"/proc/{row['pid']}/status").read_text().splitlines():
-                key, _, value = line.partition(':')
-                if key in ('VmRSS', 'VmSwap'):
-                    status[key] = int(value.split()[0]) * 1024
-            if set(status) != {'VmRSS', 'VmSwap'}:
-                current = _stat(row['pid'])
-                if current['state'] == 'Z':
-                    continue
-                raise RuntimeError(f"incomplete resource counters for PID {row['pid']}")
+            checked_stat()
         except (FileNotFoundError, ProcessLookupError):
+            return finish('CONFIRMED_DISAPPEARED')
+        except ResourceObservationError:
+            raise
+        except (OSError, ValueError, RuntimeError, IndexError) as exc:
+            last_error = type(exc).__name__
+            raise ResourceObservationError(str(exc), evidence('IDENTITY_UNREADABLE')) from exc
+        if current['state'] in RETIRED_STATES:
+            return finish('CONFIRMED_RETIRED_STATE')
+        try:
+            status = _memory_status(original['pid'])
+            last_error = None
+        except (FileNotFoundError, ProcessLookupError) as exc:
+            status = {}
+            last_error = type(exc).__name__
+        except (OSError, ValueError) as exc:
+            last_error = type(exc).__name__
+            raise ResourceObservationError(str(exc), evidence('LIVE_COUNTERS_UNREADABLE_OR_MALFORMED')) from exc
+        for key, value in status.items():
+            observed[key] = max(observed.get(key, value), value)
+        missing = sorted({'VmRSS', 'VmSwap'} - set(status))
+        if not missing:
+            # A recovered row must not silently belong to a reused/escaped PID.
+            # Retain valid bytes for the cap even if this final read finds exit.
+            try:
+                checked_stat()
+            except (FileNotFoundError, ProcessLookupError):
+                return finish('RECOVERED_COUNTERS_THEN_DISAPPEARED', status)
+            except ResourceObservationError:
+                raise
+            except (OSError, ValueError, RuntimeError, IndexError) as exc:
+                last_error = type(exc).__name__
+                raise ResourceObservationError(str(exc), evidence('RECOVERED_IDENTITY_UNREADABLE')) from exc
+            outcome = ('RECOVERED_COUNTERS_THEN_RETIRED' if current['state'] in RETIRED_STATES
+                       else 'RECOVERED_LIVE_COUNTERS')
+            return finish(outcome, status)
+        budget_check()
+        wait = min(RECONCILE_RETRY_SECONDS, reconcile_deadline - time.monotonic())
+        if execution_deadline is not None:
+            wait = min(wait, execution_deadline - time.monotonic())
+        if wait > 0:
+            time.sleep(wait)
+
+
+def sample_process_group(pgid: int, *, deadline: float | None = None) -> dict:
+    """Observe the group with one shared, deadline-bounded reconciliation budget."""
+    reconcile_deadline = time.monotonic() + RECONCILE_SECONDS
+    members, reconciliations = [], []
+    for row in _proc_members(pgid):
+        observation = None
+        if row['state'] in RETIRED_STATES:
+            status = None
+            retired = True
+        else:
+            row, status, observation = _member_memory(row, reconcile_deadline, deadline)
+            retired = status is None or row['state'] in RETIRED_STATES or (
+                observation is not None and observation['outcome'] == 'RECOVERED_COUNTERS_THEN_DISAPPEARED')
+        if observation is not None:
+            reconciliations.append(observation)
+        # Valid partial/high observations remain in the cap even after exit or
+        # recovery. Absent components stay null; none are fabricated as zero.
+        measured = dict(status or {})
+        for key, value in (observation or {}).get('observed_counter_maxima_bytes', {}).items():
+            measured[key] = max(measured.get(key, value), value)
+        coverage = ('MEASURED' if status is not None else
+                    'NOT_LIVE_PARTIAL_MEASUREMENT' if measured else 'NOT_LIVE_NO_MEASUREMENT')
+        row.update(memory_coverage=coverage,
+                   confirmed_not_live=retired,
+                   rss_bytes=measured.get('VmRSS'), swap_bytes=measured.get('VmSwap'))
+        if retired:
+            row.update(io={}, io_coverage='NOT_LIVE')
+            members.append(row)
             continue
         # RSS and swap above remain mandatory. I/O is optional diagnostic data:
         # an unavailable I/O counter must not erase a measured member or weaken
@@ -122,11 +262,11 @@ def sample_process_group(pgid: int) -> dict:
         except (OSError, ValueError) as exc:
             io = {}
             row.update(io_coverage='UNAVAILABLE', io_error_type=type(exc).__name__)
-        row.update(rss_bytes=status['VmRSS'], swap_bytes=status['VmSwap'], io=io)
+        row.update(io=io)
         members.append(row)
     totals = {
-        'rss_bytes': sum(row['rss_bytes'] for row in members),
-        'swap_bytes': sum(row['swap_bytes'] for row in members),
+        'rss_bytes': sum(row['rss_bytes'] for row in members if row['rss_bytes'] is not None),
+        'swap_bytes': sum(row['swap_bytes'] for row in members if row['swap_bytes'] is not None),
         'user_ticks': sum(row['user_ticks'] for row in members),
         'system_ticks': sum(row['system_ticks'] for row in members),
         'minor_faults': sum(row['minor_faults'] for row in members),
@@ -135,8 +275,16 @@ def sample_process_group(pgid: int) -> dict:
     }
     totals['rss_plus_swap_bytes'] = totals['rss_bytes'] + totals['swap_bytes']
     return {'pgid': pgid, 'members': members,
-            'live_pids': [row['pid'] for row in members if row['state'] != 'Z'],
+            'live_pids': [row['pid'] for row in members if not row['confirmed_not_live']],
             'totals': totals,
+            'memory_coverage': {
+                'status': 'COMPLETE_FOR_OBSERVED_LIVE_IDENTITIES',
+                'measured_member_samples': sum(row['memory_coverage'] == 'MEASURED' for row in members),
+                'not_live_without_measurement': sum(row['memory_coverage'] == 'NOT_LIVE_NO_MEASUREMENT' for row in members),
+                'not_live_partial_measurement': sum(row['memory_coverage'] == 'NOT_LIVE_PARTIAL_MEASUREMENT' for row in members),
+                'reconciliations': reconciliations,
+                'totals_include_all_valid_observed_counters': True,
+            },
             'io_coverage': {
                 'status': 'INCOMPLETE' if any(row['io_coverage'] == 'UNAVAILABLE' for row in members)
                           else 'AVAILABLE_FOR_OBSERVED_LIVE_MEMBERS',
@@ -187,8 +335,20 @@ class CounterHistory:
         self.io_available_samples = 0
         self.io_unavailable_samples = 0
         self.io_errors_first = []
+        self.memory_measured_samples = 0
+        self.memory_retired_samples = 0
+        self.memory_retired_partial_samples = 0
+        self.memory_reconciliation_count = 0
+        self.memory_reconciliations_first = []
 
     def observe(self, snapshot: dict) -> None:
+        memory = snapshot.get('memory_coverage', {})
+        self.memory_measured_samples += memory.get('measured_member_samples', 0)
+        self.memory_retired_samples += memory.get('not_live_without_measurement', 0)
+        self.memory_retired_partial_samples += memory.get('not_live_partial_measurement', 0)
+        reconciliations = memory.get('reconciliations', [])
+        self.memory_reconciliation_count += len(reconciliations)
+        self.memory_reconciliations_first.extend(reconciliations[:max(0, 16 - len(self.memory_reconciliations_first))])
         coverage = snapshot['io_coverage']
         self.io_available_samples += coverage['available_member_samples']
         self.io_unavailable_samples += coverage['unavailable_member_samples']
@@ -221,6 +381,14 @@ class CounterHistory:
             'cpu_and_fault_observations_are_lower_bounds': True,
             'io_observed_is_sampled_aggregate_not_exact_total': True,
             'io_aggregation_caveat': 'Linux process I/O can include waited-for children; parent+child aggregation may double-count transferred counters',
+            'mandatory_memory_observations': {
+                'measured_member_samples': self.memory_measured_samples,
+                'confirmed_not_live_without_measurement': self.memory_retired_samples,
+                'confirmed_not_live_with_partial_measurement': self.memory_retired_partial_samples,
+                'reconciliation_count': self.memory_reconciliation_count,
+                'reconciliations_first_at_most_16': self.memory_reconciliations_first,
+                'missing_live_counters_never_count_as_measured_zero': True,
+            },
             'optional_io_telemetry': {
                 'coverage_status': 'INCOMPLETE' if self.io_unavailable_samples
                                    else 'AVAILABLE_FOR_OBSERVED_LIVE_MEMBERS',
@@ -236,7 +404,7 @@ def cleanup_group(process: subprocess.Popen, grace: float = CLEANUP_GRACE_SECOND
     """Kill the group even after its original leader has exited."""
     result = {'pgid': process.pid, 'signals_sent': [], 'live_pids_after': []}
     for sig, wait_seconds in ((signal.SIGTERM, grace), (signal.SIGKILL, 3.0)):
-        live = [row['pid'] for row in _proc_members(process.pid) if row['state'] != 'Z']
+        live = [row['pid'] for row in _proc_members(process.pid) if row['state'] not in RETIRED_STATES]
         if not live:
             break
         try:
@@ -247,7 +415,7 @@ def cleanup_group(process: subprocess.Popen, grace: float = CLEANUP_GRACE_SECOND
         deadline = time.monotonic() + wait_seconds
         while time.monotonic() < deadline:
             process.poll()  # Reap our own leader promptly; orphan zombies cannot write.
-            live = [row['pid'] for row in _proc_members(process.pid) if row['state'] != 'Z']
+            live = [row['pid'] for row in _proc_members(process.pid) if row['state'] not in RETIRED_STATES]
             if not live:
                 break
             time.sleep(0.05)
@@ -256,7 +424,7 @@ def cleanup_group(process: subprocess.Popen, grace: float = CLEANUP_GRACE_SECOND
     except subprocess.TimeoutExpired:
         pass
     result['live_pids_after'] = [row['pid'] for row in _proc_members(process.pid)
-                                if row['state'] != 'Z']
+                                if row['state'] not in RETIRED_STATES]
     result['status'] = 'PASS' if not result['live_pids_after'] else 'FAIL'
     return result
 
@@ -317,7 +485,7 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
     argv = [os.fspath(arg) for arg in argv]
     env = dict(os.environ) if env is None else dict(env)
     row = {
-        'schema': 'MONITORED_PROCESS_GROUP_OPTIONAL_IO_V2', 'name': str(name), 'status': 'RUNNING',
+        'schema': 'MONITORED_PROCESS_GROUP_RESOURCE_LIFECYCLE_V3', 'name': str(name), 'status': 'RUNNING',
         'command': argv, 'cwd': str(cwd), 'started_utc': utc_now(),
         'log': str(log), 'telemetry': str(telemetry), 'exit_code': None,
         'timeout_seconds': timeout, 'rss_plus_swap_limit_bytes': memory_mib * 1024**2,
@@ -326,6 +494,9 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
         'memory_enforcement': 'Sampled process-group RSS+swap; terminate on first observed excess; no kernel/cgroup hard cap claimed',
         'measurement_limits': 'VmRSS is asynchronously maintained; shared RSS may be counted per process; VmSwap excludes swapped shared memory; short-lived children and peaks between polls may be missed; trusted commands must not escape the process group',
         'optional_io_policy': 'Unavailable process I/O counters are explicitly recorded as incomplete diagnostic coverage; mandatory RSS/swap, exit, EOF, log, cleanup and evidence checks are unchanged',
+        'memory_reconciliation_policy': 'Incomplete RSS/swap requires identity-stable complete counters or confirmed original-identity retirement; persistent live missing/unreadable/malformed counters and identity/group changes fail; no measured zero is invented',
+        'memory_reconciliation_shared_seconds': RECONCILE_SECONDS,
+        'memory_reconciliation_retry_seconds': RECONCILE_RETRY_SECONDS,
         'environment_resources': {key: env[key] for key in
                                   ('LEAN_NUM_THREADS', 'LEAN_ABORT_ON_PANIC') if key in env},
         'helper_sha256': sha256(Path(__file__).resolve()),
@@ -353,13 +524,15 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
     last_progress = -PROGRESS_SECONDS
     last_snapshot = None
 
-    def telemetry_record(event: str, snapshot=None) -> None:
+    def telemetry_record(event: str, snapshot=None, observation=None) -> None:
         nonlocal telemetry_bytes, last_progress
         sample = {'event': event, 'utc': utc_now(),
                   'elapsed_seconds': round(time.monotonic() - started, 6),
                   'process_group': snapshot, 'observed_totals': history.summary(),
                   'host': sample_host(), 'log_bytes': log_bytes,
                   'stdout_artifact_bytes': stdout_bytes if artifact else None}
+        if observation is not None:
+            sample['resource_observation'] = observation
         encoded = json.dumps(sample, separators=(',', ':')).encode() + b'\n'
         if telemetry_bytes + len(encoded) > TELEMETRY_LIMIT:
             raise _Stop('INCOMPLETE', 'TELEMETRY_LIMIT', 'telemetry exceeded its fixed size limit')
@@ -367,6 +540,15 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
         telemetry_stream.flush()
         telemetry_bytes += len(encoded)
         last_progress = time.monotonic() - started
+
+    def retain_resource_observation(observation):
+        row['resource_observation_failure'] = observation
+        try:
+            telemetry_record('resource_observation_failure', observation=observation)
+        except Exception as exc:
+            # A secondary evidence error must not skip cleanup/final receipts.
+            row.setdefault('secondary_failures', []).append(
+                'RESOURCE_OBSERVATION_TELEMETRY_' + type(exc).__name__)
 
     def accept_log(block: bytes) -> None:
         nonlocal log_bytes, diagnostic_tail
@@ -407,13 +589,17 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
             if elapsed > timeout:
                 raise _Stop('INCOMPLETE', 'TIMEOUT', 'process exceeded its wall-time budget')
             first_snapshot = last_snapshot is None
-            last_snapshot = sample_process_group(process.pid)
+            last_snapshot = sample_process_group(process.pid, deadline=started + timeout)
             history.observe(last_snapshot)
             for key in ('rss_bytes', 'swap_bytes', 'rss_plus_swap_bytes'):
                 row['max_sampled_' + key] = max(row['max_sampled_' + key], last_snapshot['totals'][key])
             if last_snapshot['totals']['rss_plus_swap_bytes'] > row['rss_plus_swap_limit_bytes']:
                 telemetry_record('memory_limit', last_snapshot)
                 raise _Stop('INCOMPLETE', 'MEMORY_LIMIT', 'observed process-group RSS+swap exceeded its limit')
+            if time.monotonic() - started > timeout:
+                raise _Stop('INCOMPLETE', 'TIMEOUT', 'execution deadline reached during resource observation')
+            if last_snapshot['memory_coverage']['reconciliations']:
+                telemetry_record('memory_reconciliation', last_snapshot)
             if first_snapshot or elapsed - last_progress >= PROGRESS_SECONDS:
                 telemetry_record('after_launch' if first_snapshot else 'progress', last_snapshot)
                 print(f"{name}: {elapsed:.1f}s RSS={last_snapshot['totals']['rss_bytes'] / 1024**3:.2f} GiB "
@@ -448,6 +634,8 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
         row['status'] = 'PASS'
     except _Stop as exc:
         row.update(status=exc.status, failure_kind=exc.kind, failure=exc.message)
+        if hasattr(exc, 'resource_observation'):
+            retain_resource_observation(exc.resource_observation)
     except _SignalStop as exc:
         row.update(status='INCOMPLETE', failure_kind='INTERRUPTED',
                    failure=f'received signal {exc.signum}', interrupted_signal=exc.signum)
@@ -456,6 +644,9 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
     except Exception as exc:
         row.update(status='FAIL', failure_kind='MONITOR_OR_LAUNCH_ERROR',
                    failure=str(exc), exception_type=type(exc).__name__)
+        if isinstance(exc, ResourceObservationError):
+            row.update(failure_kind='RESOURCE_OBSERVATION')
+            retain_resource_observation(exc.resource_observation)
     finally:
         # Ignore a second graceful interrupt only during bounded group cleanup.
         for sig in old_handlers:

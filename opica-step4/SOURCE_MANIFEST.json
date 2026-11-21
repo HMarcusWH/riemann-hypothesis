@@ -1,18 +1,18 @@
 {
-  "version": "OPICA22_SOURCE_BUNDLE_V1",
+  "version": "OPICA23_SOURCE_BUNDLE_V1",
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
-  "gate": "OPICA22_KERNEL_OBJECT_COMPOSITION_V1",
+  "gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
   "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
   "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
-  "workflow_sha256": "4ca2e6c80c9277ebd198cf5d5d9db9a63d89dfbf071875bce80619de79162eb0",
-  "prior_execution_head": "56b129cc2212eb28d0c32867d49078dbae6a34be",
-  "prior_execution_disposition": "FAIL_OPTIONAL_PROC_IO; 9PASS_1FAIL_20NOT_RUN; INDEPENDENT_SKIPPED",
+  "workflow_sha256": "ca3191b5f8759aff68b02a537a66f98f692134db15473847ee6656ba5cca4f0c",
+  "prior_execution_head": "70bfbd662f42aff97194c34ef3b6ee996f3cc1a1",
+  "prior_execution_disposition": "FAIL_MANDATORY_PROC_COUNTERS; 9PASS_1FAIL_20NOT_RUN; COMPILER_EXIT_ZERO; INDEPENDENT_SKIPPED",
   "files": [
     {
       "path": "README.md",
-      "bytes": 9021,
-      "sha256": "fe03bb5aa07eed6f3c57022602cef827982f908f4b38c242330bfb2a72dc1833"
+      "bytes": 10690,
+      "sha256": "e5df21c0a35b8ae6313fc8264f3a806c516b005a962d88be39cab1e506426950"
     },
     {
       "path": "collect_evidence.py",
@@ -21,8 +21,8 @@
     },
     {
       "path": "independent/SPEC.md",
-      "bytes": 8489,
-      "sha256": "500b058d64a975d6d9576727430f05aa5f8bf3d70ba258b3312c5c29af80c84d"
+      "bytes": 10093,
+      "sha256": "72442269a76e66aba2f09133afbadc2934a6248ff1ca3b56b17a411fee4108c5"
     },
     {
       "path": "independent/bootstrap_checker.py",
@@ -32,7 +32,7 @@
     {
       "path": "independent/common.py",
       "bytes": 7485,
-      "sha256": "e0e66243b29f6e8c8bfd375a2baa9be5994eb056210f4281ede39dbaab5a6f20"
+      "sha256": "83e55931c45af88771bac806ddfc354e995cb2c7089aa81aeed83a39412a92fb"
     },
     {
       "path": "independent/test_independent.py",
@@ -51,8 +51,8 @@
     },
     {
       "path": "modular/SPEC.md",
-      "bytes": 21312,
-      "sha256": "5c9ca5e700a806c7adf901f4bc3edaa89179e6c0646f31fa1d62a11d5563c2a9"
+      "bytes": 22840,
+      "sha256": "ae6de9cb2fab204f2a8fd0ebaa7d88b01875b0f0f48f1f42f3ca174d2e67e487"
     },
     {
       "path": "modular/external-evidence/FETCH_RECEIPT.json",
@@ -116,13 +116,13 @@
     },
     {
       "path": "modular/monitored_process.py",
-      "bytes": 29881,
-      "sha256": "b006d8a465d6a07a4d04e839a36b4fdc0552c397b71bef2fe06a4650a5799368"
+      "bytes": 40037,
+      "sha256": "37cc7e705d660745bc0a6b2dc556a38761c1460c6e7e30fd9597ccae40ca0709"
     },
     {
       "path": "modular/test_monitored_process.py",
-      "bytes": 12606,
-      "sha256": "193434232fe56816bb2948237ce5e67f90e5215bd55fd670f058e9babd22270c"
+      "bytes": 24608,
+      "sha256": "0a7fab8291f05aa834fb01a7a6f36fb1695ef289a5a3fed401e876feb363afae"
     },
     {
       "path": "modular/test_verify_modular.py",
@@ -131,8 +131,8 @@
     },
     {
       "path": "modular/verify_modular.py",
-      "bytes": 53981,
-      "sha256": "cf300d15b9aa01d1a18094e669b89d7b375117df4cc03643990058d38d397639"
+      "bytes": 54282,
+      "sha256": "7953a9d18c63c6567595533b9028a6f176599fe1fbca65c0f84773e1211267b9"
     },
     {
       "path": "native_bootstrap/BUNDLE_MANIFEST.json",
