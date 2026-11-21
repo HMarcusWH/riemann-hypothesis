@@ -8,7 +8,7 @@ a.work.mkdir(parents=True,exist_ok=True)
 def run(args):
  r=subprocess.run(args,check=True,capture_output=True,text=True)
  return {'argv':args,'stdout':r.stdout,'stderr':r.stderr,'exit_code':r.returncode}
-report={'status':'RUNNING','scope':'Resource preparation only; no mathematical claim','before':{'disk':shutil.disk_usage(a.work)._asdict(),'memory':pathlib.Path('/proc/meminfo').read_text()}}
+report={'status':'RUNNING','scope':'Resource preparation only; no mathematical claim','available_cpu_count':len(os.sched_getaffinity(0)),'before':{'disk':shutil.disk_usage(a.work)._asdict(),'memory':pathlib.Path('/proc/meminfo').read_text()}}
 try:
  # Only unrelated preinstalled SDKs in this explicitly disposable job image.
  report['reclaimed_preinstalled_sdks']=run(['sudo','rm','-rf','--','/usr/local/lib/android','/usr/share/dotnet'])

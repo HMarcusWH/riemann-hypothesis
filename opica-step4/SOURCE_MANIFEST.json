@@ -3,18 +3,44 @@
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
   "gate": "OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1",
-  "workflow_sha256": "84dd330b8b163300de4513200f99b5190b049aed4019eb3cee32a7c7445cbfba",
   "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
+  "independent_gate": "INDEPENDENT_COMBINED_PROOF_V1",
+  "workflow_sha256": "3e4a83693f5c9617d6a97bd489fb879421ba34622e55233673375b4b8742920f",
   "files": [
     {
       "path": "README.md",
-      "bytes": 4813,
-      "sha256": "9728cb05f2d11ae9cb8c6737eab84f154d45cdcf33167c2166ef7f7e4011dc0d"
+      "bytes": 6427,
+      "sha256": "f20b7fb152ff4c456607d0741e05cebfc0f06479b085738f07e3f3de17eab947"
     },
     {
       "path": "collect_evidence.py",
-      "bytes": 1657,
-      "sha256": "09882a78ae7f203abe3af348db7522f82a2047c2c959e0be1dd8282f8c058880"
+      "bytes": 2475,
+      "sha256": "2b899919f2325393098b781e36ad90617a8a3967579d5d04c3696de4d0ed583b"
+    },
+    {
+      "path": "independent/SPEC.md",
+      "bytes": 7026,
+      "sha256": "a6f02c14683d65c3b55cd11f4a35f0543414534a8813d2ca51557c26e5a37ac4"
+    },
+    {
+      "path": "independent/bootstrap_checker.py",
+      "bytes": 6868,
+      "sha256": "deac882fe3f77da464fc9e0bf282238ef22d353f6a48008c911fc49f7bbdf88a"
+    },
+    {
+      "path": "independent/common.py",
+      "bytes": 7471,
+      "sha256": "530eb00d4e2aebdf5ceb4862845ec02b4bcad4290eca0439e5198349ac173874"
+    },
+    {
+      "path": "independent/test_independent.py",
+      "bytes": 7578,
+      "sha256": "560b322c7913e26df5ded1bcb0c9c940d3a94796e8ef5a7cc8012ad3f226af92"
+    },
+    {
+      "path": "independent/verify_independent.py",
+      "bytes": 35342,
+      "sha256": "70be444ab8be5d16b8c6b54d1eb80824c69bf95e425bbe80d1d0cca23e1c8646"
     },
     {
       "path": "modular/InspectClosedObject.lean",
@@ -293,8 +319,8 @@
     },
     {
       "path": "prepare_runner.py",
-      "bytes": 2036,
-      "sha256": "de83a50072eaeefbcba99b2486c31e103f4587f4a8d1cf5b428002fb22c0962f"
+      "bytes": 2087,
+      "sha256": "341c081e9f19318d23fc71e758d1e283130b1eed4dfca748a30f7b3c938d0562"
     },
     {
       "path": "transport/export_stream_store.py",

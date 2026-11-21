@@ -17,10 +17,11 @@ space. No mathematical source or original project pin is changed.
 
 ## Acceptance and exact scope
 
-The authoritative result of this job is `MODULAR_GATE_RECEIPT.json` in its
-uploaded evidence artifact. The existence of this branch, a successful resource
-pilot, a cache download, or a successful native bootstrap does not establish
-the closed theorem. Every required stage must finish with PASS.
+The authoritative results of this job are `MODULAR_GATE_RECEIPT.json` and
+`INDEPENDENT_RECEIPT.json` in its uploaded evidence artifact. Both must finish
+with PASS. The existence of this branch, a successful resource pilot, a cache
+download, or a successful native bootstrap does not establish the closed
+theorem. Every required stage must complete.
 
 `OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1` is a separately specified modular
 verification method. It combines:
@@ -37,19 +38,40 @@ verification method. It combines:
    combined environment, byte-for-byte bound by SHA256 to the published
    certificate `5ea74b912147c5c93cc2b6d70cc727cf908df2f62ac6a20480a3fa02f6be244e`.
 
-The final item relies on the explicitly recorded external con-leche/nanoda
+That modular stage relies on the explicitly recorded external con-leche/nanoda
 verification receipts published at <https://math.mit.edu/~drew/grh/>. This job
 does not claim those external kernel computations were executed locally.
 The certificate hash identifies the exact externally attested object; the
 publisher's execution report is an explicit trust premise.
 
+After the modular gate passes, `INDEPENDENT_COMBINED_PROOF_V1` checks the complete
+combined proof dependency closure directly from the original compiled files.
+It rebuilds unchanged con-leche commit
+`cd2eceab2e9b10404c663b468639c8aa99d0d1f2` with its separately pinned official
+Lean 4.36.0 runtime. The proof objects remain the original Lean 4.33.1 objects.
+The checker recursively follows both statement and proof dependencies for all
+50 selected roots: the 38 original supplier roots, nine native roots, and three
+new closed theorem roots. It checks every emitted declaration and requires
+actual acceptance with exit zero. It uses read-only views and verifies the
+bound original bytes before and after the lazy proof reader runs.
+
+The independent run retains the existing closed safe-theorem, exact-type,
+canonical-definition, and three-axiom requirements. It also repeats the real
+native proof-closure replay, a field-by-field comparison of the original object
+reader with the stock exporter, and controls for missing roots and transitive
+custom axioms. A complete independent PASS supplies local verification evidence
+for the actual combined proof. Its executable-build receipt does not claim a
+fresh build of every checker correctness metatheorem.
+
 The original Round 19 mandatory 25-stage gate is preserved unchanged in
 `portable_gate/`. This new workflow does not execute or retrospectively pass
-that procedure, and does not rerun a kernel over the full augmented export.
-The receipt records both limitations. A PASS supports the exact common-pin
-C1 theorem under the specified modular external-certificate model; it does
-not establish an original-pin production rebuild or erase the old gate's
-outstanding status. See `modular/SPEC.md` for the full acceptance argument.
+that procedure, and does not rerun a kernel over a full augmented NDJSON export.
+The independent checker operates directly on the complete selected object
+closure. The two receipts record these distinct methods and scopes. A modular
+PASS supports its external-certificate model; the independent PASS additionally
+requires the complete actual combined proof check here. Neither establishes an
+original-pin production rebuild or erases the old procedure's outstanding
+status. See `modular/SPEC.md` for the modular acceptance argument.
 
 ## Reproducible execution
 
@@ -71,6 +93,8 @@ The workflow records source, toolchain, runtime-library, object, and theorem
 identities; raw process exits and diagnostics; and the result of each gate.
 It preserves small evidence artifacts even on failure. Missing, interrupted,
 warning-masked, mismatched, or skipped checks cannot produce a terminal PASS.
+An updated execution head supersedes a running older head; cancelled work keeps
+its incomplete disposition and cannot contribute a missing PASS.
 
 ## Post-green mathematical result
 
