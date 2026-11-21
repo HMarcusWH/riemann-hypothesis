@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""OPICA21 kernel-object composition, separate from both earlier gate attempts.
+"""OPICA22 kernel-object composition with explicit optional-I/O telemetry coverage.
 
 The supplier certificate is authenticated against an external published kernel
 receipt.  Native imports are replayed locally with --fresh; the actual newly
@@ -31,7 +31,7 @@ HERE = Path(__file__).resolve().parent
 FROZEN = HERE.parent / "portable_gate"
 FROZEN_RUNNER_SHA = "a01ac482dd59444b2313dc525b63d22036de892a3076a23a06c80514d7df78ca"
 FROZEN_SPEC_SHA = "771b194e8330a6844705178a5bc4cfc09ece629c9a2c88031e1bb74615640862"
-GATE_VERSION = "OPICA21_KERNEL_OBJECT_COMPOSITION_V1"
+GATE_VERSION = "OPICA22_KERNEL_OBJECT_COMPOSITION_V1"
 KERNEL_PRODUCER_FILES = {
     "KernelBridge.lean": "bce55684b2e0ca99a46fc79e259573ae801523799d2c01cc5922c6233e49b977",
     "lakefile.toml": "689bac7c7427b93750318c305b40cdf8c67264e1752c987e11989b93f0cc6fcc",
@@ -39,7 +39,8 @@ KERNEL_PRODUCER_FILES = {
     "SELECTED_ROOT_INVENTORY.json": "5170df5090528ad6bb7edf8a2537dd2aa039284f8a358b4ee7dbeb84a52b48ff",
     "PRODUCER_SPEC.md": "8f9a590976a3e994eb11bfb4e47c5ef7ecfb6bf8a3155eda7b514e51b7b6fad1"
 }
-MONITOR_SHA = "ecf83cee68c775842d692fe708f90c383ea0cc0add7dbded64d9f43dd96cc866"
+MONITOR_SHA = "b006d8a465d6a07a4d04e839a36b4fdc0552c397b71bef2fe06a4650a5799368"
+PRIOR_ROUND21_MODULAR_RUNNER_SHA = "32d19e6c9e89aefe74cdbfde6aace6a4eb28e1c80ebe88fcd8ca02def0ed8299"
 PRIOR_MODULAR_RUNNER_SHA = "e73facc3098f023ca1a0c89a4320b7974f0afc6e842d0e82784d2426da0ac726"
 EXTERNAL_HEAD = "bdb1810a06c78f246da285c9bcbe7db2cd992888"
 EXTERNAL_SRC_TREE = "24df20b62d9976ccd20da819bc20b16f808f0fdd"
@@ -142,7 +143,7 @@ require, require_file, sha256, json_write = old.require, old.require_file, old.s
 
 def modular_spec(frozen: dict) -> dict:
     spec = copy.deepcopy(frozen)
-    spec.update(schema=GATE_VERSION, name="OPICA21 stock-kernel object composition",
+    spec.update(schema=GATE_VERSION, name="OPICA22 stock-kernel object composition with optional I/O",
                 external_endpoint="Main", external_theorem="riemannHypothesis",
                 recognized_external_heads={EXTERNAL_HEAD: "Frozen supplier fork checkpoint"},
                 closed_comparison_module=CLOSED_MODULE,
@@ -320,6 +321,8 @@ class ModularGate(old.Gate):
             prior_round19_25_stage_gate="NOT_RUN_OR_BLOCKED_UNCHANGED",
             prior_round20_modular_v1_gate="INCOMPLETE_IMPORT_GUARD_TIMEOUT_AT_56869094",
             prior_round20_modular_runner_sha256=PRIOR_MODULAR_RUNNER_SHA,
+            prior_round21_kernel_object_gate="FAIL_OPTIONAL_PROC_IO_AT_56b129cc",
+            prior_round21_modular_runner_sha256=PRIOR_ROUND21_MODULAR_RUNNER_SHA,
             closed_source_elaborator_compilation="NOT_RUN_BY_THIS_GATE",
             fresh_closed_object_production="NOT_RUN",
             source_to_object_provenance={"native": "PENDING_FRESH_BUILD_RECEIPT_VALIDATION",

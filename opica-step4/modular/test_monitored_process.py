@@ -8,6 +8,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 import monitored_process as monitor
 
@@ -15,6 +16,18 @@ ROOT = Path(tempfile.mkdtemp(prefix='controls_', dir=Path(__file__).resolve().pa
 
 
 class ProcessControls(unittest.TestCase):
+    @staticmethod
+    def deny_proc_file(basename):
+        original = Path.read_text
+
+        def read(path, *args, **kwargs):
+            if path.parent.parent == Path('/proc') and path.parent.name.isdecimal() and path.name == basename:
+                raise PermissionError('fixture denied optional I/O' if basename == 'io'
+                                      else 'fixture denied mandatory RSS/swap')
+            return original(path, *args, **kwargs)
+
+        return mock.patch.object(Path, 'read_text', read)
+
     def execute(self, code, *, timeout=5, memory_mib=50000, log_limit=65536, artifact=False):
         output = ROOT / self.id().rsplit('.', 1)[-1]
         output.mkdir()
@@ -141,12 +154,57 @@ while time.monotonic()<deadline: x=(x*1664525+1013904223)&0xffffffff
         self.assertEqual(row['cleanup']['live_pids_after'], [])
         self.assertEqual(json.loads((output / 'control.process.json').read_text()), row)
 
+    def test_denied_optional_io_records_incomplete_coverage_and_passes(self):
+        with self.deny_proc_file('io'):
+            row, text, _ = self.execute("import time; a=bytearray(4*1024*1024); print('complete',flush=True); time.sleep(.35)")
+        self.assertEqual((row['status'], row['exit_code']), ('PASS', 0))
+        self.assertEqual(text, 'complete\n')
+        self.assertGreater(row['max_sampled_rss_plus_swap_bytes'], 0)
+        coverage = row['observed_totals']['optional_io_telemetry']
+        self.assertEqual(coverage['coverage_status'], 'INCOMPLETE')
+        self.assertGreater(coverage['unavailable_member_samples'], 0)
+        self.assertTrue(any(item['error_type'] == 'PermissionError'
+                            for item in coverage['errors_first_at_most_16']))
+        samples = [json.loads(line) for line in Path(row['telemetry']).read_text().splitlines()]
+        self.assertTrue(any(sample['observed_totals']['optional_io_telemetry']['coverage_status'] == 'INCOMPLETE'
+                            for sample in samples))
+
+    def test_denied_optional_io_does_not_disable_memory_limit(self):
+        with self.deny_proc_file('io'):
+            row, _, _ = self.execute('import time; a=bytearray(64*1024*1024); time.sleep(20)', memory_mib=32)
+        self.assertEqual((row['status'], row['failure_kind']), ('INCOMPLETE', 'MEMORY_LIMIT'))
+        self.assertGreater(row['max_sampled_rss_plus_swap_bytes'], 32 * 1024**2)
+        self.assertEqual(row['observed_totals']['optional_io_telemetry']['coverage_status'], 'INCOMPLETE')
+
+    def test_denied_mandatory_rss_swap_still_fails(self):
+        with self.deny_proc_file('status'):
+            row, _, _ = self.execute('import time; time.sleep(20)')
+        self.assertEqual((row['status'], row['failure_kind']), ('FAIL', 'MONITOR_OR_LAUNCH_ERROR'))
+        self.assertEqual(row['exception_type'], 'PermissionError')
+        self.assertIn('mandatory RSS/swap', row['failure'])
+
+    def test_io_counter_history_does_not_reset_across_unavailable_sample(self):
+        history = monitor.CounterHistory()
+        for index, io_value in enumerate([10, None, 15], start=1):
+            member = {'pid': 12345, 'start_ticks': 67890, 'user_ticks': index,
+                      'system_ticks': index, 'minor_faults': index, 'major_faults': index,
+                      'io': {} if io_value is None else {key: io_value for key in monitor.IO_COUNTERS}}
+            unavailable = io_value is None
+            history.observe({'members': [member], 'io_coverage': {
+                'available_member_samples': int(not unavailable),
+                'unavailable_member_samples': int(unavailable),
+                'unavailable_members': [{'pid': 12345, 'error_type': 'PermissionError'}] if unavailable else []}})
+        summary = history.summary()
+        self.assertEqual(set(summary['io_observed'].values()), {15})
+        self.assertEqual(summary['minor_faults_observed'], 3)
+        self.assertEqual(summary['optional_io_telemetry']['unavailable_member_samples'], 1)
+
 
 if __name__ == '__main__':
     started = time.monotonic()
     result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(ProcessControls))
     receipt = {
-        'schema': 'MONITORED_PROCESS_CONTROLS_V1', 'status': 'PASS' if result.wasSuccessful() else 'FAIL',
+        'schema': 'MONITORED_PROCESS_CONTROLS_OPTIONAL_IO_V2', 'status': 'PASS' if result.wasSuccessful() else 'FAIL',
         'tests_run': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
         'elapsed_seconds': round(time.monotonic() - started, 3), 'controls_root': str(ROOT),
         'helper_sha256': monitor.sha256(Path(monitor.__file__)),

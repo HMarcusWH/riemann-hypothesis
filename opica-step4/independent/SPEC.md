@@ -1,7 +1,7 @@
 # INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1
 
 This is an additional independent checker execution after
-`OPICA21_KERNEL_OBJECT_COMPOSITION_V1` passes all 30 stages. It neither
+`OPICA22_KERNEL_OBJECT_COMPOSITION_V1` passes all 30 stages. It neither
 modifies nor reports PASS for the original Round19 25-stage gate. It does not
 claim a full combined NDJSON kernel run or a fresh compilation of con-leche's
 separate soundness metatheory. Final exact common-pin claim review requires
@@ -9,6 +9,10 @@ both the modular 30-stage PASS and this complete independent-closure PASS, plus
 the actual theorem/type/axiom/source evidence. This checker receipt alone does
 not register a project RH claim or original-pin production acceptance. The
 original 25-stage gate retains its unexecuted status and cannot be reported PASS. The Round20 modular attempt remains INCOMPLETE at its import-guard timeout; the current stock-kernel construction method does not claim full-source elaboration.
+
+Round21 head `56b129cc2212eb28d0c32867d49078dbae6a34be`, run `44935463985`, passed nine modular stages and failed in `canonical_modules_compile` while reading `/proc/23617/io`. The first conditional receiver compile exited zero and retained its object, but the monitor recorded `MONITOR_OR_LAUNCH_ERROR` / `PermissionError`; that stage remains FAIL. The twenty later stages were NOT_RUN, and independent combined proof checking was SKIPPED. No Main import or closed C1 construction was reached. The Round22 successor repairs only optional I/O telemetry and records this prior failure without reclassifying it. The exact kernel producer, logical sources, thirty-stage order and all proof/identity/axiom requirements remain unchanged.
+
+The independent checker and its own RSS/swap process helper are unchanged; the Round22 repair applies to the modular process monitor.
 
 ## Exact object and checker
 

@@ -91,7 +91,7 @@ def sample_process_group(pgid: int) -> dict:
     members = []
     for row in _proc_members(pgid):
         if row['state'] == 'Z':
-            row.update(rss_bytes=0, swap_bytes=0, io={key: 0 for key in IO_COUNTERS})
+            row.update(rss_bytes=0, swap_bytes=0, io={}, io_coverage='NOT_LIVE')
             members.append(row)
             continue
         try:
@@ -100,18 +100,28 @@ def sample_process_group(pgid: int) -> dict:
                 key, _, value = line.partition(':')
                 if key in ('VmRSS', 'VmSwap'):
                     status[key] = int(value.split()[0]) * 1024
-            io = {}
-            for line in Path(f"/proc/{row['pid']}/io").read_text().splitlines():
-                key, _, value = line.partition(':')
-                if key in IO_COUNTERS:
-                    io[key] = int(value.strip())
-            if set(status) != {'VmRSS', 'VmSwap'} or set(io) != set(IO_COUNTERS):
+            if set(status) != {'VmRSS', 'VmSwap'}:
                 current = _stat(row['pid'])
                 if current['state'] == 'Z':
                     continue
                 raise RuntimeError(f"incomplete resource counters for PID {row['pid']}")
         except (FileNotFoundError, ProcessLookupError):
             continue
+        # RSS and swap above remain mandatory. I/O is optional diagnostic data:
+        # an unavailable I/O counter must not erase a measured member or weaken
+        # the memory watchdog. Missing values are not reported as measured zero.
+        io = {}
+        try:
+            for line in Path(f"/proc/{row['pid']}/io").read_text().splitlines():
+                key, _, value = line.partition(':')
+                if key in IO_COUNTERS:
+                    io[key] = int(value.strip())
+            if set(io) != set(IO_COUNTERS) or any(value < 0 for value in io.values()):
+                raise ValueError('incomplete or invalid optional process I/O counters')
+            row['io_coverage'] = 'AVAILABLE'
+        except (OSError, ValueError) as exc:
+            io = {}
+            row.update(io_coverage='UNAVAILABLE', io_error_type=type(exc).__name__)
         row.update(rss_bytes=status['VmRSS'], swap_bytes=status['VmSwap'], io=io)
         members.append(row)
     totals = {
@@ -121,12 +131,21 @@ def sample_process_group(pgid: int) -> dict:
         'system_ticks': sum(row['system_ticks'] for row in members),
         'minor_faults': sum(row['minor_faults'] for row in members),
         'major_faults': sum(row['major_faults'] for row in members),
-        'io': {key: sum(row['io'][key] for row in members) for key in IO_COUNTERS},
+        'io': {key: sum(row['io'].get(key, 0) for row in members) for key in IO_COUNTERS},
     }
     totals['rss_plus_swap_bytes'] = totals['rss_bytes'] + totals['swap_bytes']
     return {'pgid': pgid, 'members': members,
             'live_pids': [row['pid'] for row in members if row['state'] != 'Z'],
-            'totals': totals}
+            'totals': totals,
+            'io_coverage': {
+                'status': 'INCOMPLETE' if any(row['io_coverage'] == 'UNAVAILABLE' for row in members)
+                          else 'AVAILABLE_FOR_OBSERVED_LIVE_MEMBERS',
+                'available_member_samples': sum(row['io_coverage'] == 'AVAILABLE' for row in members),
+                'unavailable_member_samples': sum(row['io_coverage'] == 'UNAVAILABLE' for row in members),
+                'unavailable_members': [{'pid': row['pid'], 'error_type': row['io_error_type']}
+                                        for row in members if row['io_coverage'] == 'UNAVAILABLE'],
+                'aggregate_includes_only_available_counters': True,
+            }}
 
 
 def sample_host() -> dict:
@@ -165,8 +184,17 @@ class CounterHistory:
         self.previous = {}
         self.total = {key: 0 for key in ('user_ticks', 'system_ticks', 'minor_faults',
                                        'major_faults', *IO_COUNTERS)}
+        self.io_available_samples = 0
+        self.io_unavailable_samples = 0
+        self.io_errors_first = []
 
     def observe(self, snapshot: dict) -> None:
+        coverage = snapshot['io_coverage']
+        self.io_available_samples += coverage['available_member_samples']
+        self.io_unavailable_samples += coverage['unavailable_member_samples']
+        for item in coverage['unavailable_members']:
+            if item not in self.io_errors_first and len(self.io_errors_first) < 16:
+                self.io_errors_first.append(item)
         for member in snapshot['members']:
             identity = (member['pid'], member['start_ticks'])
             current = {key: member[key] for key in
@@ -175,7 +203,9 @@ class CounterHistory:
             previous = self.previous.get(identity, {})
             for key, value in current.items():
                 self.total[key] += max(0, value - previous.get(key, 0))
-            self.previous[identity] = {
+            # Preserve each last available I/O value across an unavailable
+            # sample, preventing its later return from being double-counted.
+            self.previous[identity] = previous | {
                 key: max(value, previous.get(key, 0)) for key, value in current.items()
             }
 
@@ -191,6 +221,14 @@ class CounterHistory:
             'cpu_and_fault_observations_are_lower_bounds': True,
             'io_observed_is_sampled_aggregate_not_exact_total': True,
             'io_aggregation_caveat': 'Linux process I/O can include waited-for children; parent+child aggregation may double-count transferred counters',
+            'optional_io_telemetry': {
+                'coverage_status': 'INCOMPLETE' if self.io_unavailable_samples
+                                   else 'AVAILABLE_FOR_OBSERVED_LIVE_MEMBERS',
+                'available_member_samples': self.io_available_samples,
+                'unavailable_member_samples': self.io_unavailable_samples,
+                'errors_first_at_most_16': self.io_errors_first,
+                'io_unavailability_does_not_relax_memory_or_exit_gates': True,
+            },
         }
 
 
@@ -279,7 +317,7 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
     argv = [os.fspath(arg) for arg in argv]
     env = dict(os.environ) if env is None else dict(env)
     row = {
-        'schema': 'MONITORED_PROCESS_GROUP_V1', 'name': str(name), 'status': 'RUNNING',
+        'schema': 'MONITORED_PROCESS_GROUP_OPTIONAL_IO_V2', 'name': str(name), 'status': 'RUNNING',
         'command': argv, 'cwd': str(cwd), 'started_utc': utc_now(),
         'log': str(log), 'telemetry': str(telemetry), 'exit_code': None,
         'timeout_seconds': timeout, 'rss_plus_swap_limit_bytes': memory_mib * 1024**2,
@@ -287,6 +325,7 @@ def run(name, argv, *, cwd, env, output, timeout, memory_mib=MAX_MEMORY_MIB,
         'progress_seconds': PROGRESS_SECONDS,
         'memory_enforcement': 'Sampled process-group RSS+swap; terminate on first observed excess; no kernel/cgroup hard cap claimed',
         'measurement_limits': 'VmRSS is asynchronously maintained; shared RSS may be counted per process; VmSwap excludes swapped shared memory; short-lived children and peaks between polls may be missed; trusted commands must not escape the process group',
+        'optional_io_policy': 'Unavailable process I/O counters are explicitly recorded as incomplete diagnostic coverage; mandatory RSS/swap, exit, EOF, log, cleanup and evidence checks are unchanged',
         'environment_resources': {key: env[key] for key in
                                   ('LEAN_NUM_THREADS', 'LEAN_ABORT_ON_PANIC') if key in env},
         'helper_sha256': sha256(Path(__file__).resolve()),
