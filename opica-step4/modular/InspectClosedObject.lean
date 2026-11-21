@@ -14,6 +14,18 @@ partial def constantsOf (e : Expr) : List Name :=
 unsafe def main (args : List String) : IO Unit := do
   let some path := args.head? | throw <| IO.userError "object path required"
   let (data, region) ← readModuleData path
+  if args.tail == ["--guard"] then
+    let expectedImports : Array Import := #[
+      { module := `Init }, { module := `Init, isMeta := true },
+      { module := `Main }, { module := `OPICAStep4.NativeValidated }, { module := `Lean }]
+    if data.isModule || data.imports != expectedImports ||
+        !data.constants.isEmpty || !data.constNames.isEmpty ||
+        !data.entries.isEmpty || !data.extraConstNames.isEmpty then
+      throw <| IO.userError "Guard object is not the exact empty ordinary import module"
+    region.free
+    IO.println "OPICA21_GUARD_OBJECT_AUDIT_PASS"
+    return
+  if !args.tail.isEmpty then throw <| IO.userError "Unexpected object-audit arguments"
   let wanted := [`Zeta23.OPICARound20.Closed.step4C1,
     `Zeta23.OPICARound20.Closed.literalC1,
     `Zeta23.OPICARound20.Closed.fullBoundaryFlatPositivity]
@@ -25,6 +37,15 @@ unsafe def main (args : List String) : IO Unit := do
     `Zeta23.OPICARound20.c1_iff_all_boundary_flat_nonnegative,
     `Zeta23.OPICARound20.Closed.step4C1, `Iff.mp]
   if data.isModule then throw <| IO.userError "Unexpected module-system object"
+  let expectedImports : Array Import := #[
+    { module := `Init }, { module := `Init, isMeta := true },
+    { module := `OPICAStep4.ImportGuard }]
+  if data.imports != expectedImports then
+    throw <| IO.userError "Closed object has unexpected direct imports or import flags"
+  if !data.entries.isEmpty then
+    throw <| IO.userError "Closed object unexpectedly contains elaborator extension entries"
+  if !data.extraConstNames.isEmpty then
+    throw <| IO.userError "Closed object unexpectedly contains extra IR constant names"
   if data.constNames != data.constants.map (·.name) then
     throw <| IO.userError "Object constant-name array mismatch"
   if data.constants.size != wanted.length then
@@ -49,6 +70,13 @@ unsafe def main (args : List String) : IO Unit := do
         if v.value != expected then throw <| IO.userError "Unexpected C1 proof value"
       if v.name == wanted[1]! && v.value != mkConst `Zeta23.OPICARound20.Closed.step4C1 then
         throw <| IO.userError "Unexpected literal consumer proof value"
+      if v.name == wanted[2]! then
+        let expected := mkApp4 (mkConst `Iff.mp)
+          (mkConst `Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds)
+          (mkConst `Zeta23.OPICARound20.AllBoundaryFlatNonnegative)
+          (mkConst `Zeta23.OPICARound20.c1_iff_all_boundary_flat_nonnegative)
+          (mkConst `Zeta23.OPICARound20.Closed.step4C1)
+        if v.value != expected then throw <| IO.userError "Unexpected full boundary-flat proof value"
       for n in constantsOf v.type ++ constantsOf v.value do
         if !allowed.contains n then throw <| IO.userError s!"Uncovered direct dependency: {n}"
       IO.println s!"OPICA20_ACTUAL_THEOREM {v.name}"

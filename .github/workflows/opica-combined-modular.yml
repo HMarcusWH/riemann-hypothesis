@@ -1,5 +1,5 @@
-name: OPICA exact Step 4 proof and claim verification
-run-name: OPICA exact Step 4 at ${{ github.sha }}
+name: OPICA exact Step 4 kernel-object proof and claim verification
+run-name: OPICA exact Step 4 kernel objects at ${{ github.sha }}
 on:
   push:
     branches: [research/opica-step4-combined-gate-20261121]
@@ -29,7 +29,7 @@ jobs:
       - name: Prepare bounded standard runner
         run: |
           set -euo pipefail
-          work="$RUNNER_TEMP/opica-step4-round20"
+          work="$RUNNER_TEMP/opica-step4-round21"
           mkdir -p "$work"
           printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
           sudo apt-get update -qq
@@ -44,7 +44,7 @@ jobs:
           cd supplier/opica-step4/transport
           python -m unittest -v test_verified_squashfs_store test_export_stream_store
           cd ../modular
-          python -m unittest -v test_verify_modular
+          python -m unittest -v test_verify_modular test_monitored_process
           cd ../independent
           python -m unittest -v test_independent
       - name: Fresh common-pin native source build
@@ -98,7 +98,7 @@ jobs:
           python supplier/opica-step4/independent/bootstrap_checker.py \
             --work "$OPICA_WORK/independent-checker" \
             --timeout 2400 --memory-mib 10000 --min-free-gib 6
-      - name: Execute exact modular proof and claim gates
+      - name: Execute exact kernel-object proof and claim gates
         run: |
           set -euo pipefail
           ulimit -S -n "$(ulimit -H -n)"
@@ -114,7 +114,7 @@ jobs:
             --comparison-helper "$GITHUB_WORKSPACE/supplier/opica-step4/portable_gate/comparison_control/.lake/build/bin/compare_exports" \
             --external-evidence "$GITHUB_WORKSPACE/supplier/opica-step4/modular/external-evidence" \
             --output "$OPICA_WORK/verification" \
-            --jobs 2 --compile-timeout 3600 --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
+            --jobs 2 --compile-timeout 1800 --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
       - name: Independently check the complete combined proof
         run: |
           set -euo pipefail

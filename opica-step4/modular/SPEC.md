@@ -1,14 +1,19 @@
-# OPICA20 modular certificate composition gate — proposed specification
+# OPICA21 stock-kernel object composition gate — proposed specification
 
-**Version:** OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1  
+**Version:** OPICA21_KERNEL_OBJECT_COMPOSITION_V1  
 **State:** IMPLEMENTED; only a complete execution receipt can record a pass.  
 **Date:** 21 November 2026, Europe/Stockholm.
 
 This is a separately versioned acceptance method. It must not overwrite, relabel, or retrospectively pass the Round 19 mandatory 25-stage gate. That gate remains NOT_RUN/BLOCKED unless it is actually executed successfully.
 
+
+## Historical execution and scope
+
+Round20 head `56869094eafb17b534ca6a30cf2296959e4d4d20`, run `44920309725`, passed its first nineteen modular stages and timed out in `fresh_import_guard_compile` after 3601.084 seconds with an empty Lean log. Its final ten stages were NOT_RUN and the independent stage was SKIPPED. It remains INCOMPLETE. This successor changes object production and adds sampled RSS/swap, CPU, page-fault, I/O and pressure telemetry; it does not retrospectively pass that run. The target proposition, complete native/supplier proof identity, standard-three-axiom policy and independent complete-closure requirement remain fixed.
+
 ## 1. Mathematical acceptance argument
 
-Let S be the complete proof dependency closure exported for the published original supplier targets. Let N be the native receiver and all its proof/definition dependencies, independently validated in the native-only common-pin environment. Let D be the newly compiled closed bridge and expanded consumers.
+Let S be the complete proof dependency closure exported for the published original supplier targets. Let N be the native receiver and all its proof/definition dependencies, independently validated in the native-only common-pin environment. Let D be the freshly kernel-checked closed theorem objects and expanded consumers.
 
 The desired composition is sound if:
 
@@ -32,7 +37,7 @@ Use:
         Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_riemannHypothesis
           _root_.riemannHypothesis
 
-Use a new OPICA20 namespace so that the new theorem cannot be confused with the unrun Round 19 object.
+Retain the exact OPICARound20 theorem names and mathematical specification. The failed Round20 run never produced these objects. The fresh output root, absence guard, new receipt schema and exact object hashes distinguish this execution from every earlier attempt.
 
 The published Main theorem is an explicit export target. The old internal endpoint UpperTheory.FinalTheorems.riemannHypothesis is not an explicit published target and is not used directly by Main's RH wrapper. Its membership in the published proof closure cannot be assumed. The Main-root change closes that coverage uncertainty.
 
@@ -59,7 +64,7 @@ The command must use all 38 original export targets in the original order, not j
 
 The existing export-targets.txt bytes have SHA256 9eeb2e5e55be4a78f6e4983fc950dba915b45ad8aeb7a02a32341927a89e05e8.
 
-**Final-environment binding is mandatory:** stream those exact targets using the final combined ClaimComparison module as the importer. Exporting Main alone is useful as an early preflight, but by itself does not establish what constants the final environment resolves. The exporter metadata records compiler/export format, not the root module name. A final-environment export should match if the relevant declarations are identical; an unexpected mismatch is a failure to bind, even if benign ordering differences are suspected.
+**Final-environment binding is mandatory:** stream those exact targets using the actual final OPICAStep4.MainClosedBridge module as the importer. Exporting Main alone is useful as an early preflight, but by itself does not establish what constants the final environment resolves. The exporter metadata records compiler/export format, not the root module name. A final-environment export should match if the relevant declarations are identical; an unexpected mismatch is a failure to bind, even if benign ordering differences are suspected.
 
 The complete export may be streamed through a bounded-memory SHA256 and byte-count sink. Retain exporter exit status, separate stderr, exact argv/environment/tool hashes and the digest/count. This avoids storing 61 GB without removing any certificate bytes from the identity check. The sink must reject partial/error exits. No normalization, dropped declarations or rewritten output is allowed before hashing. The full SHA256 is the required artifact identity. A differing prose byte count with the exact required digest is a metadata discrepancy to record and review, not evidence of changed certificate bytes. This distinction is concrete: the pilot challenge artifact hashes exactly to the published challenge digest but measures 350,862,311 bytes, while the MIT page states 350,862,970.
 
@@ -80,7 +85,7 @@ The external report and logs attest a completed independent proof check. The dig
 
 Accordingly, this design can establish the intended formal theorem under an explicitly disclosed externally verified supplier model. It cannot honestly be described as an independent local rerun of the supplier's kernels, or as satisfying a policy that requires those exact computations to be rerun here. No new logical RH axiom is introduced: the actual closed proof is loaded and its complete certificate is identified. The trust difference is in where that proof was checked.
 
-The still-running whole-proof Comparator/Lean-export jobs are not counted as passed. Completed con-leche/nanoda and comparison receipts are the supplier verification relied on by this version.
+The whole-proof Comparator/Lean-export jobs recorded as pending in the frozen evidence are not counted as passed. Completed con-leche/nanoda and comparison receipts are the supplier verification relied on by this version.
 
 ## 5. Native proof coverage
 
@@ -102,9 +107,24 @@ An alternative equally strict implementation is exact proof-export identity for 
 
 ## 7. New closed declarations
 
-Compile the OPICA20 bridge, independently expanded C1 consumer and claim-comparison consumer freshly into an empty output root with stock Lean, trust level zero, warnings treated as errors and no relaxed implicit binders.
+The exact Lean source files remain pinned as the mathematical specification. Their Main-importing elaborator compilation is **not run or claimed** by this version. Instead, a freshly built native producer uses the pinned stock Lean 4.33.1 APIs to create ordinary proof objects:
 
-Before compiling, reject any existing imported declaration with one of their intended names. After compiling, inspect their actual ConstantInfo records and require theorem kind, exact closed types, and no hidden parameters. A process exit or a printed success marker is not sufficient.
+1. Import the original Main and canonical NativeValidated environment at trust level zero, private visibility, with `loadExts=false`. Process-lifetime `leakEnv=true` only avoids reference-count/freeing work; it changes no declaration.
+2. Reject any preexisting intended closed name. Serialize an empty ordinary ImportGuard module with exactly the implicit Init imports and explicit Main, NativeValidated and Lean imports.
+3. In a separate process, actually reimport that newly written guard. Add exactly the three intended ordinary theorem declarations using checked stock-kernel insertion, with the exact closed types and proof terms.
+4. Use stock `mkModuleData`/`saveModuleData` with explicitly empty **new elaborator extension entries**. No logical constant, type, proof body or proof dependency is removed. No IR extra constants or unexpected module sidecars are allowed. This is not represented as a byte-identical elaborator output.
+5. Read the actual objects through a separate raw inspector; require exact ordinary import headers/flags, zero guard declarations, three closed theorem declarations, exact types/proof dependencies, empty new extension entries and no hidden parameters.
+6. Traverse actual loaded proof and type bodies for the four headline theorem axiom reports, failing on every unresolved constant. Empty extension metadata must never be interpreted as an empty axiom set. Only propext, Classical.choice and Quot.sound are accepted.
+7. Replay both freshly written modules through the stock kernel, and retain every later native/supplier identity and independent proof-closure gate.
+
+The loaded final environment must also contain every one of the exact fifty
+independent-checker roots in its fixed order. Reject unsafe or partial roots;
+require ordinary theorem kind for all five supplier headline roots, nine native
+roots and three closed roots. The primitive roots retain their legitimate kinds.
+The bound fifty-name inventory is checked again by the independent wrapper, so
+the reader's ability to skip unsafe requested roots cannot weaken coverage.
+
+The producer is not a trusted proof oracle. Its native executable, exact source files and build are recorded, and invalid-proof/existing-name controls must succeed. A printed success marker or an object file's existence cannot substitute for the raw inspection and actual kernel checks.
 
 Require direct constant dependencies of every new proof value and type to belong to:
 
@@ -133,17 +153,20 @@ Use a new receipt schema recording each stage's command, source/object identity,
 
 Required explicit scope fields:
 
-- gate_version: OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1
+- gate_version: OPICA21_KERNEL_OBJECT_COMPOSITION_V1
 - supplier_certificate_identity: MATCHES_PUBLISHED_FULL_CERTIFICATE
 - supplier_kernel_execution: EXTERNAL_PUBLISHED_RECEIPT; never LOCAL_PASS
 - native_full_kernel_execution: LOCAL_PASS
 - new_closed_declarations_kernel_execution: LOCAL_PASS
 - full_combined_export_kernel_execution: NOT_RUN_BY_THIS_GATE
 - prior_round19_25_stage_gate: NOT_RUN_OR_BLOCKED_UNCHANGED
+- fresh_closed_object_production: STOCK_KERNEL_CHECKED_ACTUAL_THREE_THEOREMS
+- closed_source_elaborator_compilation: NOT_RUN_BY_THIS_GATE
+- prior_round20_modular_v1_gate: INCOMPLETE_IMPORT_GUARD_TIMEOUT_AT_56869094
 - source_to_object_provenance: separately stated; no self-authenticating manifest claim
 - claim: exact C1 at the common integration pin, using the explicitly identified external supplier
 
-A legitimate final claim would be: “The exact native C1 theorem compiled and passed modular kernel/definition/axiom checks at the recorded common pin, using a supplier certificate byte-identical to the independently verified published artifact.” It must not say the full combined certificate was independently rechecked locally.
+A legitimate final claim would be: “The exact native C1 theorem was produced by checked stock-kernel insertion and passed modular kernel/definition/axiom checks at the recorded common pin, using a supplier certificate byte-identical to the independently verified published artifact.” This modular receipt alone must not claim a full combined proof rerun. The separate mandatory independent gate checks the complete combined 50-root proof/type closure directly from the objects; it does not replay a full augmented NDJSON file.
 
 ## 10. Adversarial failure cases
 
@@ -166,7 +189,7 @@ A legitimate final claim would be: “The exact native C1 theorem compiled and p
 
 This successor retains full object imports, an entire original supplier export traversal, native fresh replay, axiom traversal, final-environment definition comparisons and new-module kernel checks. These must be measured; the successful SquashFS pilot does not prove they fit.
 
-It avoids storing/reparsing a newly augmented 62 GB export and avoids repeating already attested supplier kernel computations. It does not need to fabricate an object, erase an RH proof, or treat a user-authored axiom as a theorem.
+It avoids the full-Main elaborator-extension import that timed out in Round20 and the second elaborator process that was never reached. The stock kernel-checked constants are serialized as ordinary modules with explicit metadata limitations. The separate independent gate still checks the complete supplier/native/closed proof closure. No RH assumption is substituted for the supplier proof.
 
 The original 25-stage gate would still require full augmented-export helper parsing, all configured export kernels and a fresh replay of the entire combined imported environment. Transparent compression saves disk but not their heap memory or runtime. It remains an independent, unexecuted alternative.
 

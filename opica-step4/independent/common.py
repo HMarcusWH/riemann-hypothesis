@@ -10,14 +10,14 @@ import subprocess
 import time
 from datetime import datetime, timezone
 
-SCHEMA = "INDEPENDENT_COMBINED_PROOF_V1"
+SCHEMA = "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1"
 CHECKER_HEAD = "cd2eceab2e9b10404c663b468639c8aa99d0d1f2"
 CHECKER_URL = "https://github.com/leanprover/con-leche.git"
 RUNTIME_NAME = "lean-4.36.0-linux"
 RUNTIME_URL = "https://github.com/leanprover/lean4/releases/download/v4.36.0/lean-4.36.0-linux.tar.zst"
 RUNTIME_SHA = "2b7ab1ed8b92d2e6abfaf41344823b510064dbc9c0260cac73eb496ab2dea6eb"
 RUNTIME_BYTES = 607649028
-MODULAR_RUNNER_SHA = "e73facc3098f023ca1a0c89a4320b7974f0afc6e842d0e82784d2426da0ac726"
+MODULAR_RUNNER_SHA = "32d19e6c9e89aefe74cdbfde6aace6a4eb28e1c80ebe88fcd8ca02def0ed8299"
 
 class Failure(RuntimeError):
     pass

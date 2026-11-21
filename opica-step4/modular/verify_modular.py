@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""OPICA20 modular certificate composition, a separate gate from Round19.
+"""OPICA21 kernel-object composition, separate from both earlier gate attempts.
 
 The supplier certificate is authenticated against an external published kernel
 receipt.  Native imports are replayed locally with --fresh; the actual newly
-compiled theorem values are inspected and replayed locally.  This program never
-claims that the original 25-stage gate or a full combined export replay ran.
+kernel-constructed theorem values are inspected and replayed locally. The stock
+kernel checks every fresh declaration. This avoids loading elaborator extensions;
+it does not claim that the original Main-importing Lean source compilation passed.
+The original 25-stage and Round20 modular gates retain their recorded dispositions.
 """
 from __future__ import annotations
 
@@ -29,7 +31,16 @@ HERE = Path(__file__).resolve().parent
 FROZEN = HERE.parent / "portable_gate"
 FROZEN_RUNNER_SHA = "a01ac482dd59444b2313dc525b63d22036de892a3076a23a06c80514d7df78ca"
 FROZEN_SPEC_SHA = "771b194e8330a6844705178a5bc4cfc09ece629c9a2c88031e1bb74615640862"
-GATE_VERSION = "OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1"
+GATE_VERSION = "OPICA21_KERNEL_OBJECT_COMPOSITION_V1"
+KERNEL_PRODUCER_FILES = {
+    "KernelBridge.lean": "bce55684b2e0ca99a46fc79e259573ae801523799d2c01cc5922c6233e49b977",
+    "lakefile.toml": "689bac7c7427b93750318c305b40cdf8c67264e1752c987e11989b93f0cc6fcc",
+    "lean-toolchain": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
+    "SELECTED_ROOT_INVENTORY.json": "5170df5090528ad6bb7edf8a2537dd2aa039284f8a358b4ee7dbeb84a52b48ff",
+    "PRODUCER_SPEC.md": "8f9a590976a3e994eb11bfb4e47c5ef7ecfb6bf8a3155eda7b514e51b7b6fad1"
+}
+MONITOR_SHA = "ecf83cee68c775842d692fe708f90c383ea0cc0add7dbded64d9f43dd96cc866"
+PRIOR_MODULAR_RUNNER_SHA = "e73facc3098f023ca1a0c89a4320b7974f0afc6e842d0e82784d2426da0ac726"
 EXTERNAL_HEAD = "bdb1810a06c78f246da285c9bcbe7db2cd992888"
 EXTERNAL_SRC_TREE = "24df20b62d9976ccd20da819bc20b16f808f0fdd"
 COMPILER_COMMIT = "819816b2e0a3bf405af45ae5c7af2491d8f5bee6"
@@ -38,7 +49,7 @@ SUPPLIER_SHA = "5ea74b912147c5c93cc2b6d70cc727cf908df2f62ac6a20480a3fa02f6be244e
 SUPPLIER_COMPRESSED_SHA = "61a8938ad5f5e57397c1c0e3b954916af546d9004ade01c3555744a681b05381"
 SUPPLIER_PUBLISHED_BYTES = 61_570_595_788
 TARGET_FILE_SHA = "9eeb2e5e55be4a78f6e4983fc950dba915b45ad8aeb7a02a32341927a89e05e8"
-INSPECTOR_SHA = "b04cfebf65ba35b940741f2480331f7b37667381eb851f3e5cbadd9ec7cdf8c6"
+INSPECTOR_SHA = "9d54c1c2fd25ade5d1aaa558c9c5d5fdbd156973a20f246b5caf661872fd262c"
 LOG_HASHES = {
     "audit.log": "0a1473fce6eed840011f4a76b1c51558fc6f03edd1e6bd1ee542e6c738d87a62",
     "con-leche-master.log": "23e27eacb9e8378569474cc185c0e98f6b995b4db0f8df88fd48a921084fed02",
@@ -83,6 +94,8 @@ CLOSED_TYPES = {
     "Zeta23.OPICARound20.Closed.fullBoundaryFlatPositivity":
         "Zeta23.OPICARound20.AllBoundaryFlatNonnegative",
 }
+SELECTED_ROOTS = (*SUPPLIER_TARGETS, *AUDIT_NAMES, *CLOSED_TYPES)
+MATHEMATICAL_ROOTS = (*HEADLINE_TARGETS, *AUDIT_NAMES, *CLOSED_TYPES)
 SOURCE_HASHES = {
     "OPICAStep4/ReceiverAudit.lean": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b",
     "OPICAStep4/ClaimFingerprint.lean": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56",
@@ -99,7 +112,7 @@ STAGES = (
     "canonical_fingerprint_export", "canonical_native_proof_export",
     "complete_native_fresh_kernel_replay", "comparison_controls", "compatible_environment",
     "shared_dependency_comparison", "complete_object_snapshot", "canonical_objects_promotion",
-    "fresh_import_guard_compile", "fresh_closed_module_compile", "actual_closed_object_audit",
+    "guarded_kernel_import", "fresh_closed_kernel_construction", "actual_closed_object_audit",
     "closed_type_and_axiom_audit", "import_guard_kernel_replay", "closed_module_kernel_replay",
     "final_native_proof_export_identity", "final_fingerprint_export",
     "canonical_statement_definition_comparison", "final_supplier_certificate_identity",
@@ -129,7 +142,7 @@ require, require_file, sha256, json_write = old.require, old.require_file, old.s
 
 def modular_spec(frozen: dict) -> dict:
     spec = copy.deepcopy(frozen)
-    spec.update(schema=GATE_VERSION, name="OPICA20 modular certificate composition",
+    spec.update(schema=GATE_VERSION, name="OPICA21 stock-kernel object composition",
                 external_endpoint="Main", external_theorem="riemannHypothesis",
                 recognized_external_heads={EXTERNAL_HEAD: "Frozen supplier fork checkpoint"},
                 closed_comparison_module=CLOSED_MODULE,
@@ -138,6 +151,10 @@ def modular_spec(frozen: dict) -> dict:
                 supplier_export_targets=list(SUPPLIER_TARGETS), supplier_export_sha256=SUPPLIER_SHA,
                 supplier_published_bytes=SUPPLIER_PUBLISHED_BYTES,
                 actual_closed_types=dict(CLOSED_TYPES), inspector_sha256=INSPECTOR_SHA,
+                kernel_producer_files=dict(KERNEL_PRODUCER_FILES), monitor_sha256=MONITOR_SHA,
+                object_production=("Pinned stock Lean kernel addDeclCore with checking enabled, followed "
+                    "by the stock ordinary-module writer. No Main-importing elaborator compilation is claimed."),
+                original_closed_source_role="PINNED_EXACT_MATHEMATICAL_SPECIFICATION_NOT_REELABORATED",
                 claim_boundary=("Exact native C1 at the common integration pin using the identified "
                     "externally kernel-checked supplier certificate; native environment and new "
                     "closed declaration values checked locally. No full combined export kernel "
@@ -273,6 +290,15 @@ def verify_supplier_checkpoint(repo, checkpoint, source_tree):
             "source_tree": source_tree, "checkpoint_ancestor": checkpoint}
 
 
+def parse_selected_root_audit(text):
+    roots = re.findall(r"(?m)^OPICA21_SAFE_SELECTED_ROOT (\S+)\s*$", text)
+    require(len(SELECTED_ROOTS) == len(set(SELECTED_ROOTS)) == 50,
+            "Expected selected-root inventory is not exactly fifty distinct names")
+    require(roots == list(SELECTED_ROOTS),
+            "Actual safe selected-root audit is missing, duplicated, substituted or reordered")
+    return roots
+
+
 class ModularGate(old.Gate):
     def __init__(self, args):
         require(not any(os.environ.get(k) for k in ("LD_PRELOAD", "LD_AUDIT", "DYLD_INSERT_LIBRARIES")),
@@ -292,6 +318,10 @@ class ModularGate(old.Gate):
             new_closed_declarations_kernel_execution="NOT_RUN",
             full_combined_export_kernel_execution="NOT_RUN_BY_THIS_GATE",
             prior_round19_25_stage_gate="NOT_RUN_OR_BLOCKED_UNCHANGED",
+            prior_round20_modular_v1_gate="INCOMPLETE_IMPORT_GUARD_TIMEOUT_AT_56869094",
+            prior_round20_modular_runner_sha256=PRIOR_MODULAR_RUNNER_SHA,
+            closed_source_elaborator_compilation="NOT_RUN_BY_THIS_GATE",
+            fresh_closed_object_production="NOT_RUN",
             source_to_object_provenance={"native": "PENDING_FRESH_BUILD_RECEIPT_VALIDATION",
                 "supplier": "NOT_ESTABLISHED_BY_OBJECT_SNAPSHOTS_OR_EXPORT_HASH"},
             claim="NOT_ESTABLISHED", stages=[{"name": n, "status": "NOT_RUN"} for n in STAGES])
@@ -315,6 +345,31 @@ class ModularGate(old.Gate):
         self.input_hashes[key] = value
         return value
 
+    def run_process(self, name, argv, cwd, timeout, *, env=None, stdout_path=None):
+        """Bound execution and preserve resource evidence; these records prove no theorem."""
+        monitor_path = HERE / "monitored_process.py"
+        require(sha256(monitor_path) == MONITOR_SHA, "Execution monitor source changed")
+        monitor_spec = importlib.util.spec_from_file_location("opica21_monitored_process", monitor_path)
+        monitor = importlib.util.module_from_spec(monitor_spec)
+        monitor_spec.loader.exec_module(monitor)
+        row, text = monitor.run(name, argv, cwd=cwd, env=env or self.env,
+            output=self.output, timeout=timeout, memory_mib=50000,
+            expected=0, log_limit=64 << 20, stdout_path=stdout_path)
+        if row.get("status") == "INCOMPLETE":
+            raise GateIncomplete(row.get("failure", name + " did not complete within its execution limits"))
+        require(row.get("status") == "PASS" and row.get("exit_code") == 0,
+                row.get("failure", name + " did not return a successful process result"))
+        diagnostics = old.compiler_diagnostics(text)
+        row["diagnostics"] = diagnostics
+        if diagnostics:
+            row.update(status="FAIL", failure=name + " emitted an error, warning or invalid-proof diagnostic")
+            json_write(self.output / (name + ".process.json"), row)
+            raise GateFailure(row["failure"])
+        json_write(self.output / (name + ".process.json"), row)
+        telemetry = self.output / (name + ".telemetry.jsonl")
+        self.bind_log(telemetry)
+        return row
+
     def source_identity(self):
         require(self.bind(self.package / "verify_combined.py") == FROZEN_RUNNER_SHA and
                 self.bind(self.spec_file) == FROZEN_SPEC_SHA, "Frozen helper/specification changed")
@@ -324,6 +379,16 @@ class ModularGate(old.Gate):
         result = super().source_identity()
         require(self.bind(self.inspector) == INSPECTOR_SHA, "Raw object inspector source changed")
         self.bind(Path(__file__))
+        require(bool(KERNEL_PRODUCER_FILES), "Reviewed kernel producer inventory is missing")
+        for relative, expected in KERNEL_PRODUCER_FILES.items():
+            require(self.bind(HERE / "kernel_producer" / relative) == expected,
+                    "Kernel producer source changed: " + relative)
+        root_inventory = json.loads((HERE / "kernel_producer/SELECTED_ROOT_INVENTORY.json").read_text())
+        require(root_inventory["ordered_roots"] == list(SELECTED_ROOTS) and
+                root_inventory["mathematical_roots"] == list(MATHEMATICAL_ROOTS),
+                "Generated producer root inventory differs from the exact gate roots")
+        require(self.bind(HERE / "monitored_process.py") == MONITOR_SHA,
+                "Execution monitor source changed")
         require(self.bind(self.external / "export-targets.txt") == TARGET_FILE_SHA,
                 "Original ordered supplier target file changed")
         require(tuple((self.external / "export-targets.txt").read_text().split()) == SUPPLIER_TARGETS,
@@ -456,6 +521,39 @@ class ModularGate(old.Gate):
         if self.args.comparator_lake:
             # Frozen validation also authenticates the optional judge toolchain.
             records["optional_official_tools"] = super().verification_tools()
+        producer_root = self.output / "kernel-producer"
+        require(not producer_root.exists(), "Kernel producer build directory must be fresh")
+        producer_root.mkdir()
+        for relative, expected in KERNEL_PRODUCER_FILES.items():
+            source = HERE / "kernel_producer" / relative
+            require(self.bind(source) == expected, "Kernel producer source changed")
+            destination = producer_root / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, destination)
+            require(self.bind(destination) == expected, "Kernel producer copied source changed")
+        build = self.run_process("build_kernel_producer", [str(self.args.lake.resolve()),
+            "build", "kernel_bridge"], producer_root, 600, env=self.canonical_env)
+        self.kernel_producer = producer_root / ".lake/build/bin/kernel_bridge"
+        producer_sha = self.bind(self.kernel_producer)
+        controls = self.run_process("kernel_producer_adversarial_controls",
+            [str(self.kernel_producer), "controls"], producer_root, 120, env=self.canonical_env)
+        control_text = Path(controls["log"]).read_text()
+        for marker in ("OPICA21_KERNEL_CONTROLS_PASS", "EMPTY_GUARD_AND_THREE_THEOREM_OBJECTS_REPLAYED",
+                       "INVALID_PROOF_REJECTED", "EXISTING_NAME_REJECTED",
+                       "OPAQUE_TRANSITIVE_NONSTANDARD_AXIOM_REJECTED", "UNRESOLVED_DEPENDENCY_REJECTED",
+                       "NON_THEOREM_MATHEMATICAL_ROOT_REJECTED", "MISSING_SELECTED_ROOT_REJECTED",
+                       "DUPLICATE_SELECTED_ROOT_REJECTED", "UNSAFE_SELECTED_ROOT_REJECTED",
+                       "PARTIAL_SELECTED_ROOT_REJECTED"):
+            require(control_text.splitlines().count(marker) == 1,
+                    "Kernel producer control marker missing or duplicated: " + marker)
+        self.bind_log(Path(build["log"]))
+        self.bind_log(Path(controls["log"]))
+        records["kernel_producer"] = {
+            "path": str(self.kernel_producer), "sha256": producer_sha,
+            "sources": dict(KERNEL_PRODUCER_FILES), "build": build, "controls": controls,
+            "role": "Untrusted producer; stock kernel checking and subsequent proof/claim gates establish acceptance",
+            "new_elaborator_extension_entries": "EMPTY; no logical constant, type, proof or dependency omitted",
+        }
         self.receipt["verification_tools"] = records
         return records
 
@@ -588,11 +686,49 @@ class ModularGate(old.Gate):
         return {"exact_canonical_artifacts_promoted": rows,
                 "scope": "Same namespace root contains every authored OPICAStep4 import"}
 
-    def fresh_import_guard_compile(self):
-        row = self.compile_module("OPICAStep4.ImportGuard", "fresh_import_guard_compile")
+    def kernel_construct(self, module, mode, stage_name):
+        obj = self.lib / old.module_path(module, ".olean")
+        obj.parent.mkdir(parents=True, exist_ok=True)
+        artifact_pattern = module.rsplit(".", 1)[-1] + ".*"
+        require(not list(obj.parent.glob(artifact_pattern)), "Kernel construction output and sidecars must be fresh")
+        row = self.run_process(stage_name, [str(self.kernel_producer), mode, str(obj)],
+            self.sources, self.args.compile_timeout, env=self.env)
+        require_file(obj, "Kernel producer returned without the required ordinary object")
+        require(set(obj.parent.glob(artifact_pattern)) == {obj},
+                "Kernel producer created an unexpected module sidecar")
+        row.update(module=module, products={".olean": {"path": str(obj), "sha256": self.bind(obj)}},
+            original_lean_specification_sha256=self.bind(self.sources / old.module_path(module, ".lean")),
+            producer_sha256=self.bind(self.kernel_producer),
+            production="STOCK_KERNEL_CHECKED_DECLARATIONS_AND_STOCK_MODULE_DATA_WRITER",
+            source_elaborator_compilation="NOT_RUN", new_elaborator_extension_entries="EMPTY")
+        self.compiled[module] = row
+        self.bind_log(Path(row["log"]))
+        return row
+
+    def guarded_kernel_import(self):
+        row = self.kernel_construct("OPICAStep4.ImportGuard", "guard", "guarded_kernel_import")
         text = Path(row["log"]).read_text()
         require(text.count("OPICA20_NEW_NAMES_ABSENT") == 1, "Preexisting-name guard success marker missing or duplicated")
         self.bind_log(Path(row["log"]))
+        obj = self.lib / old.module_path("OPICAStep4.ImportGuard", ".olean")
+        audit = self.run_process("actual_guard_object_audit", [str(self.lean),
+            "-DwarningAsError=true", "-DrelaxedAutoImplicit=false", "--run", str(self.inspector),
+            str(obj), "--guard"], self.sources, 120, env=self.canonical_env)
+        audit_text = Path(audit["log"]).read_text()
+        require(audit_text.splitlines().count("OPICA21_GUARD_OBJECT_AUDIT_PASS") == 1,
+                "Actual guard object audit marker missing or duplicated")
+        self.bind_log(Path(audit["log"]))
+        row["raw_object_audit"] = audit
+        return row
+
+    def fresh_closed_kernel_construction(self):
+        row = self.kernel_construct(CLOSED_MODULE, "closed", "fresh_closed_kernel_construction")
+        text = Path(row["log"]).read_text()
+        row["ordered_safe_roots"] = parse_selected_root_audit(text)
+        row["mathematical_theorem_roots"] = list(MATHEMATICAL_ROOTS)
+        require(text.splitlines().count("OPICA21_KERNEL_CLOSED_OBJECT_PASS") == 1,
+                "Kernel construction did not complete its actual object and axiom audits")
+        self.receipt["fresh_closed_object_production"] = "STOCK_KERNEL_CHECKED_ACTUAL_THREE_THEOREMS"
         return row
 
     def actual_closed_object_audit(self):
@@ -684,7 +820,6 @@ class ModularGate(old.Gate):
     def execute(self):
         actions = {name: getattr(self, name) for name in STAGES if hasattr(self, name)}
         actions.update(
-            fresh_closed_module_compile=lambda: self.compile_module(CLOSED_MODULE, "fresh_closed_module_compile"),
             import_guard_kernel_replay=lambda: self.new_module_replay("OPICAStep4.ImportGuard", "import_guard_kernel_replay"),
             closed_module_kernel_replay=lambda: self.new_module_replay(CLOSED_MODULE, "closed_module_kernel_replay"),
             final_input_integrity=self.final_integrity)
@@ -700,12 +835,15 @@ class ModularGate(old.Gate):
                 "new_closed_declarations_kernel_execution": "LOCAL_PASS",
                 "full_combined_export_kernel_execution": "NOT_RUN_BY_THIS_GATE",
                 "prior_round19_25_stage_gate": "NOT_RUN_OR_BLOCKED_UNCHANGED",
+                "fresh_closed_object_production": "STOCK_KERNEL_CHECKED_ACTUAL_THREE_THEOREMS",
+                "closed_source_elaborator_compilation": "NOT_RUN_BY_THIS_GATE",
             }
             require(all(self.receipt.get(k) == v for k, v in required_scope.items()),
                     "Completed stage scope does not support the required modular claim")
             self.receipt.update(status="PASS",
                 closure_claim="EXACT_NATIVE_C1_AT_COMMON_PIN_UNDER_EXPLICIT_EXTERNAL_SUPPLIER_CERTIFICATE_MODEL",
-                claim=("Exact native C1 compiled and passed modular kernel/definition/axiom checks at the "
+                claim=("Exact native C1 was constructed as an ordinary checked theorem object by the stock kernel "
+                       "and passed modular kernel/definition/axiom checks at the "
                        "recorded common pin, using a supplier certificate byte-identical to the independently "
                        "verified published artifact."))
             code = 0

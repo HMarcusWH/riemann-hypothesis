@@ -1,0 +1,11 @@
+name = "opica_kernel_bridge"
+version = "0.1.0"
+defaultTargets = ["kernel_bridge"]
+
+[leanOptions]
+warningAsError = true
+relaxedAutoImplicit = false
+
+[[lean_exe]]
+name = "kernel_bridge"
+root = "KernelBridge"

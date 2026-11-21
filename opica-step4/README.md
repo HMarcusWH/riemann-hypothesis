@@ -23,12 +23,12 @@ with PASS. The existence of this branch, a successful resource pilot, a cache
 download, or a successful native bootstrap does not establish the closed
 theorem. Every required stage must complete.
 
-`OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1` is a separately specified modular
+`OPICA21_KERNEL_OBJECT_COMPOSITION_V1` is a separately specified modular
 verification method. It combines:
 
 1. A fresh native source build and complete fresh kernel replay of the native
    imported environment.
-2. Actual compilation, raw theorem-object inspection, exact closed type and
+2. Checked stock-kernel construction, raw theorem-object inspection, exact closed type and
    transitive axiom audits, and kernel replay of the new named declarations.
 3. Exact equality of the complete native proof export before and after the
    supplier imports, including proof values and transitive definitions.
@@ -44,7 +44,7 @@ does not claim those external kernel computations were executed locally.
 The certificate hash identifies the exact externally attested object; the
 publisher's execution report is an explicit trust premise.
 
-After the modular gate passes, `INDEPENDENT_COMBINED_PROOF_V1` checks the complete
+After the modular gate passes, `INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1` checks the complete
 combined proof dependency closure directly from the original compiled files.
 It rebuilds unchanged con-leche commit
 `cd2eceab2e9b10404c663b468639c8aa99d0d1f2` with its separately pinned official
@@ -72,6 +72,12 @@ PASS supports its external-certificate model; the independent PASS additionally
 requires the complete actual combined proof check here. Neither establishes an
 original-pin production rebuild or erases the old procedure's outstanding
 status. See `modular/SPEC.md` for the modular acceptance argument.
+
+## Preserved earlier result and changed execution method
+
+Round20 head `56869094eafb17b534ca6a30cf2296959e4d4d20` passed its first nineteen modular stages, then its full-Main elaborator import timed out after one hour. The remaining ten stages and complete independent proof check did not run. That attempt remains INCOMPLETE.
+
+This version uses the pinned stock kernel to check the exact three theorem declarations and stock module-data APIs to write ordinary proof objects. It imports the original proof constants with `loadExts=false`, preserving their full types, bodies and dependencies while avoiding elaborator-extension initialization. The new modules explicitly have empty elaborator extension entries. The raw inspector validates exact ordinary imports, zero/three declarations, types, values and metadata; the later stock and independent kernels still check the actual proof. The original Lean bridge text is a pinned mathematical specification, and its full-Main elaborator compilation is not claimed. Execution-only telemetry records sampled RSS, swap, CPU, page faults and I/O, with bounded time and sampled memory enforcement.
 
 ## Reproducible execution
 

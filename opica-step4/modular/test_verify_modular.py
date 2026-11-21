@@ -170,7 +170,8 @@ class GateControls(unittest.TestCase):
             gate.modular_spec(spec)
 
     def test_required_stages_include_both_proof_and_semantic_checks(self):
-        required = {"complete_native_fresh_kernel_replay", "fresh_import_guard_compile",
+        required = {"complete_native_fresh_kernel_replay", "guarded_kernel_import",
+            "fresh_closed_kernel_construction",
             "actual_closed_object_audit", "closed_type_and_axiom_audit", "closed_module_kernel_replay",
             "final_native_proof_export_identity", "canonical_statement_definition_comparison",
             "final_supplier_certificate_identity", "comparison_controls", "final_input_integrity"}

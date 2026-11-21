@@ -19,6 +19,8 @@ def passing_modular_shape():
         "supplier_kernel_execution":"EXTERNAL_PUBLISHED_RECEIPT","native_full_kernel_execution":"LOCAL_PASS",
         "new_closed_declarations_kernel_execution":"LOCAL_PASS","full_combined_export_kernel_execution":"NOT_RUN_BY_THIS_GATE",
         "prior_round19_25_stage_gate":"NOT_RUN_OR_BLOCKED_UNCHANGED",
+        "fresh_closed_object_production":"STOCK_KERNEL_CHECKED_ACTUAL_THREE_THEOREMS",
+        "closed_source_elaborator_compilation":"NOT_RUN_BY_THIS_GATE",
         "closure_claim":"EXACT_NATIVE_C1_AT_COMMON_PIN_UNDER_EXPLICIT_EXTERNAL_SUPPLIER_CERTIFICATE_MODEL"}
 
 
@@ -35,7 +37,10 @@ class ReceiptTests(unittest.TestCase):
 
     def test_changed_stage_head_or_scope_rejected(self):
         for field,value in (("status","RUNNING"),("exit_code",1),("runner_sha256","0"*64),
-                            ("prior_round19_25_stage_gate","PASS"),("native_full_kernel_execution","NOT_RUN")):
+                            ("prior_round19_25_stage_gate","PASS"),("native_full_kernel_execution","NOT_RUN"),
+                            ("schema","OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1"),
+                            ("fresh_closed_object_production","NOT_RUN"),
+                            ("closed_source_elaborator_compilation","PASS")):
             data=passing_modular_shape();data[field]=value
             with self.subTest(field=field),self.assertRaises(c.Failure):v.assert_modular_claim(data)
         for mutation in (lambda x:x.pop(),lambda x:x.reverse(),lambda x:x.append(x[0]),lambda x:x[3].update(status="RUNNING")):
@@ -51,6 +56,14 @@ class ReceiptTests(unittest.TestCase):
         for log in (accepted_log(49),accepted_log(count=0),accepted_log().replace("--verified","--trusted"),
                     accepted_log()+accepted_log(),accepted_log().replace("check done: 1500000","check done: 1499999")):
             with self.assertRaises(c.Failure):v.acceptance(log,50,minimum=1468421,complete_prelude=True)
+
+    def test_actual_safe_root_inventory_cannot_skip_duplicate_or_reorder(self):
+        lines = ["OPICA21_SAFE_SELECTED_ROOT " + name for name in v.ROOTS]
+        self.assertEqual(v.mod.parse_selected_root_audit("\n".join(lines) + "\n"), list(v.ROOTS))
+        for changed in (lines[:-1], lines + lines[:1], list(reversed(lines)),
+                        lines[:-1] + ["OPICA21_SAFE_SELECTED_ROOT Forged.root"]):
+            with self.assertRaises(v.mod.GateFailure):
+                v.mod.parse_selected_root_audit("\n".join(changed) + "\n")
 
     def test_missing_gate_fails_with_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:

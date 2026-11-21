@@ -1,16 +1,18 @@
 {
-  "version": "OPICA20_SOURCE_BUNDLE_V1",
+  "version": "OPICA21_SOURCE_BUNDLE_V1",
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
-  "gate": "OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1",
+  "gate": "OPICA21_KERNEL_OBJECT_COMPOSITION_V1",
   "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
-  "independent_gate": "INDEPENDENT_COMBINED_PROOF_V1",
-  "workflow_sha256": "3e4a83693f5c9617d6a97bd489fb879421ba34622e55233673375b4b8742920f",
+  "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
+  "workflow_sha256": "d9967eb31b7373f73890490f44c7e318c3baf0e8cfb69c58fc9428c6f14f1a15",
+  "prior_execution_head": "56869094eafb17b534ca6a30cf2296959e4d4d20",
+  "prior_execution_disposition": "INCOMPLETE_IMPORT_GUARD_TIMEOUT; INDEPENDENT_SKIPPED",
   "files": [
     {
       "path": "README.md",
-      "bytes": 6427,
-      "sha256": "f20b7fb152ff4c456607d0741e05cebfc0f06479b085738f07e3f3de17eab947"
+      "bytes": 7593,
+      "sha256": "0f409ac36557d65eaee29ae35edf4094fe0e9e6eb70b87801eb6d830e274abfa"
     },
     {
       "path": "collect_evidence.py",
@@ -19,8 +21,8 @@
     },
     {
       "path": "independent/SPEC.md",
-      "bytes": 7026,
-      "sha256": "a6f02c14683d65c3b55cd11f4a35f0543414534a8813d2ca51557c26e5a37ac4"
+      "bytes": 7620,
+      "sha256": "7233de58ba5436abdd2da926eabeb72647eb0c2d202d44a170131a55740846c4"
     },
     {
       "path": "independent/bootstrap_checker.py",
@@ -29,28 +31,28 @@
     },
     {
       "path": "independent/common.py",
-      "bytes": 7471,
-      "sha256": "530eb00d4e2aebdf5ceb4862845ec02b4bcad4290eca0439e5198349ac173874"
+      "bytes": 7485,
+      "sha256": "98f3c0f9178cea5853d5ccec1f2b0602b24ba2c99e13459d42191db2eda89eaa"
     },
     {
       "path": "independent/test_independent.py",
-      "bytes": 7578,
-      "sha256": "560b322c7913e26df5ded1bcb0c9c940d3a94796e8ef5a7cc8012ad3f226af92"
+      "bytes": 8516,
+      "sha256": "668363d537f720e71463b2ea01daf607a36cc20a00310c58487c056c834b4c49"
     },
     {
       "path": "independent/verify_independent.py",
-      "bytes": 35342,
-      "sha256": "70be444ab8be5d16b8c6b54d1eb80824c69bf95e425bbe80d1d0cca23e1c8646"
+      "bytes": 36425,
+      "sha256": "cceb0b3467675dd87e761ec668f0ffc54f89adf2ca2360cc57d6c41e4319687a"
     },
     {
       "path": "modular/InspectClosedObject.lean",
-      "bytes": 3263,
-      "sha256": "b04cfebf65ba35b940741f2480331f7b37667381eb851f3e5cbadd9ec7cdf8c6"
+      "bytes": 4957,
+      "sha256": "9d54c1c2fd25ade5d1aaa558c9c5d5fdbd156973a20f246b5caf661872fd262c"
     },
     {
       "path": "modular/SPEC.md",
-      "bytes": 16195,
-      "sha256": "b22d9dbcdd0a85dde3746080c0f5afeef1327497c99998363ec8d100dd13e7fc"
+      "bytes": 19759,
+      "sha256": "8218a5b5b9ed20033b30c77dd08fa9e146a140bcda0ac6fdf6f8b0d668a23033"
     },
     {
       "path": "modular/external-evidence/FETCH_RECEIPT.json",
@@ -88,14 +90,49 @@
       "sha256": "d4c5360b02d8dd885150c1cc28b616cb6fb5bf5b20d142558d79a7b15ae9d9df"
     },
     {
+      "path": "modular/kernel_producer/KernelBridge.lean",
+      "bytes": 22655,
+      "sha256": "bce55684b2e0ca99a46fc79e259573ae801523799d2c01cc5922c6233e49b977"
+    },
+    {
+      "path": "modular/kernel_producer/PRODUCER_SPEC.md",
+      "bytes": 10676,
+      "sha256": "8f9a590976a3e994eb11bfb4e47c5ef7ecfb6bf8a3155eda7b514e51b7b6fad1"
+    },
+    {
+      "path": "modular/kernel_producer/SELECTED_ROOT_INVENTORY.json",
+      "bytes": 2856,
+      "sha256": "5170df5090528ad6bb7edf8a2537dd2aa039284f8a358b4ee7dbeb84a52b48ff"
+    },
+    {
+      "path": "modular/kernel_producer/lakefile.toml",
+      "bytes": 206,
+      "sha256": "689bac7c7427b93750318c305b40cdf8c67264e1752c987e11989b93f0cc6fcc"
+    },
+    {
+      "path": "modular/kernel_producer/lean-toolchain",
+      "bytes": 25,
+      "sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71"
+    },
+    {
+      "path": "modular/monitored_process.py",
+      "bytes": 27227,
+      "sha256": "ecf83cee68c775842d692fe708f90c383ea0cc0add7dbded64d9f43dd96cc866"
+    },
+    {
+      "path": "modular/test_monitored_process.py",
+      "bytes": 9021,
+      "sha256": "ba9c5cbacf83c0f82f0962b8265dbe7adc3fc7fac48efae819a6cbb5c724db52"
+    },
+    {
       "path": "modular/test_verify_modular.py",
-      "bytes": 12379,
-      "sha256": "2c03b34a8e900b6ce6d23a718c8edc72eb65610e7079e0458d613bfe30bb855f"
+      "bytes": 12422,
+      "sha256": "947e3c677f20c7f4dc108fa674225f9157ad4176fe0b858697a24ee13b2a1716"
     },
     {
       "path": "modular/verify_modular.py",
-      "bytes": 44129,
-      "sha256": "e73facc3098f023ca1a0c89a4320b7974f0afc6e842d0e82784d2426da0ac726"
+      "bytes": 53693,
+      "sha256": "32d19e6c9e89aefe74cdbfde6aace6a4eb28e1c80ebe88fcd8ca02def0ed8299"
     },
     {
       "path": "native_bootstrap/BUNDLE_MANIFEST.json",
@@ -213,6 +250,11 @@
       "sha256": "6831efa2eb4a043a2d1984fa46b465e0ea5fe9e10221f0c1262d12df4fdc75f3"
     },
     {
+      "path": "portable_gate/comparison_control/Comparator.lean",
+      "bytes": 26,
+      "sha256": "86a19f1cfd9d013974deb24310d5d619c344c5f81fd6cd65913f7a1980864857"
+    },
+    {
       "path": "portable_gate/comparison_control/Comparator/Axioms.lean",
       "bytes": 2389,
       "sha256": "863c5e1329811be0427880e08c171de733343491c5a3619b5dbf2e12b34c6125"
@@ -228,24 +270,19 @@
       "sha256": "693d845330dd7122565aeb19314a3e3de4b49f9a8a7ac6e1fadbc9ab374b9f88"
     },
     {
-      "path": "portable_gate/comparison_control/Comparator.lean",
-      "bytes": 26,
-      "sha256": "86a19f1cfd9d013974deb24310d5d619c344c5f81fd6cd65913f7a1980864857"
-    },
-    {
       "path": "portable_gate/comparison_control/CompareExports.lean",
       "bytes": 3276,
       "sha256": "8dfb14910edfc92b86e9e188c36e028003e36a566c7ed1f6bf6b6bd335c56635"
     },
     {
-      "path": "portable_gate/comparison_control/Export/Parse.lean",
-      "bytes": 20491,
-      "sha256": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
-    },
-    {
       "path": "portable_gate/comparison_control/Export.lean",
       "bytes": 20,
       "sha256": "4073b8a98a3a0671d867d93ba1cadaaf890fb011f4000e6e2e54ce338cc1b7a5"
+    },
+    {
+      "path": "portable_gate/comparison_control/Export/Parse.lean",
+      "bytes": 20491,
+      "sha256": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
     },
     {
       "path": "portable_gate/comparison_control/LICENSE",

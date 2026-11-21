@@ -1,18 +1,18 @@
-# INDEPENDENT_COMBINED_PROOF_V1
+# INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1
 
 This is an additional independent checker execution after
-`OPICA20_MODULAR_CERTIFICATE_COMPOSITION_V1` passes all 30 stages. It neither
+`OPICA21_KERNEL_OBJECT_COMPOSITION_V1` passes all 30 stages. It neither
 modifies nor reports PASS for the original Round19 25-stage gate. It does not
 claim a full combined NDJSON kernel run or a fresh compilation of con-leche's
 separate soundness metatheory. Final exact common-pin claim review requires
 both the modular 30-stage PASS and this complete independent-closure PASS, plus
 the actual theorem/type/axiom/source evidence. This checker receipt alone does
 not register a project RH claim or original-pin production acceptance. The
-original 25-stage gate retains its unexecuted status and cannot be reported PASS.
+original 25-stage gate retains its unexecuted status and cannot be reported PASS. The Round20 modular attempt remains INCOMPLETE at its import-guard timeout; the current stock-kernel construction method does not claim full-source elaboration.
 
 ## Exact object and checker
 
-The selected module is the actual newly compiled
+The selected module is the actual newly kernel-constructed
 `OPICAStep4.MainClosedBridge`. The ordered root list is exactly the frozen
 modular runner's 38 `SUPPLIER_TARGETS`, nine `AUDIT_NAMES`, and three
 `CLOSED_TYPES` keys, in that order: 50 distinct roots. The complete statement
@@ -83,9 +83,15 @@ select exactly 50 roots, finish checking every emitted record, and report
 consistent parse/check/accept counts. The accepted count must be at least the
 1,468,418 original supplier records plus the three actual new closed theorems.
 All explicit primitive roots must be present without synthesized prelude
-records. Absent roots are rejected by the pinned reader. Unsafe/partial roots
-can be skipped by that reader, so the inherited exact safe-theorem/root-kind
-and type audits for the three actual new theorem declarations remain mandatory.
+records. Absent roots are rejected by the pinned reader. The reader can skip
+unsafe/partial roots, so the predecessor must also inspect all fifty actual
+loaded roots and reject missing, unsafe or partial declarations. All seventeen
+mathematical roots (five supplier, nine native, three new) must be ordinary safe
+theorems. Primitive and quotient roots retain their legitimate declaration kinds.
+The independent wrapper rechecks the bound ordered fifty-name inventory from
+the actual construction log, alongside the existing exact closed-type, raw-object
+and transitive-three-axiom audits. A requested root count alone cannot establish
+this coverage.
 
 ## Resource limits and CLI
 

@@ -47,6 +47,8 @@ def assert_modular_claim(data):
         "new_closed_declarations_kernel_execution": "LOCAL_PASS",
         "full_combined_export_kernel_execution": "NOT_RUN_BY_THIS_GATE",
         "prior_round19_25_stage_gate": "NOT_RUN_OR_BLOCKED_UNCHANGED",
+        "fresh_closed_object_production": "STOCK_KERNEL_CHECKED_ACTUAL_THREE_THEOREMS",
+        "closed_source_elaborator_compilation": "NOT_RUN_BY_THIS_GATE",
         "closure_claim": "EXACT_NATIVE_C1_AT_COMMON_PIN_UNDER_EXPLICIT_EXTERNAL_SUPPLIER_CERTIFICATE_MODEL"}
     require(all(data.get(k) == v for k, v in expected.items()), "Modular claim/scope mismatch")
     return {row["name"]: row["details"] for row in stages}
@@ -309,12 +311,24 @@ class Independent:
         require(len(names) == 3 and set(names) == set(mod.CLOSED_TYPES) and text.count("OPICA20_CLOSED_OBJECT_AUDIT_PASS") == 1,
                 "Raw safe-theorem/root-presence audit incomplete")
         self.bind(HERE.parent/"modular/InspectClosedObject.lean",mod.INSPECTOR_SHA)
-        closed_compile = self.details["fresh_closed_module_compile"]
-        parsed = old.parse_audit(Path(closed_compile["log"]).read_text(),["riemannHypothesis",*mod.CLOSED_TYPES],ALLOWED_AXIOMS)
+        closed_compile = self.details["fresh_closed_kernel_construction"]
+        require(closed_compile["production"] == "STOCK_KERNEL_CHECKED_DECLARATIONS_AND_STOCK_MODULE_DATA_WRITER"
+                and closed_compile["source_elaborator_compilation"] == "NOT_RUN"
+                and closed_compile["new_elaborator_extension_entries"] == "EMPTY",
+                "Closed object production method or metadata scope changed")
+        closed_log = Path(closed_compile["log"])
+        require(self.input_files.get(str(closed_log)) == closed_compile["log_sha256"],
+                "Actual selected-root/type/axiom audit log is not bound")
+        closed_text = closed_log.read_text()
+        safe_roots = mod.parse_selected_root_audit(closed_text)
+        require(safe_roots == list(ROOTS) == closed_compile["ordered_safe_roots"] and
+                closed_compile["mathematical_theorem_roots"] == list(mod.MATHEMATICAL_ROOTS),
+                "Actual root-presence/safety/theorem-kind coverage changed")
+        parsed = old.parse_audit(closed_text,["riemannHypothesis",*mod.CLOSED_TYPES],ALLOWED_AXIOMS)
         for name,typ in {"riemannHypothesis":"RiemannHypothesis",**mod.CLOSED_TYPES}.items():
             require(" ".join(parsed[name]["type"].split()) in (name+" : "+typ,"@"+name+" : "+typ), "Closed root type has changed")
         closed_report = self.gate/"CLOSED_TYPES_AND_TRANSITIVE_AXIOMS.json"
-        require(parsed == read_json(closed_report), "Closed type/axiom report differs from actual compiler audit")
+        require(parsed == read_json(closed_report), "Closed type/axiom report differs from actual kernel-object audit")
         native = self.details["canonical_type_and_axiom_audit"]
         require(native["targets"] == list(mod.AUDIT_NAMES) and set(native["allowed_axioms"]) == ALLOWED_AXIOMS, "Native axiom coverage changed")
         native_data = read_json(native["report"])
@@ -444,7 +458,7 @@ class Independent:
             timeout=self.args.timeout,memory=self.args.memory_mib)
         count=acceptance(text,50,minimum=1468418+3,complete_prelude=True)
         self.receipt.update(accepted_declaration_records=count,independent_combined_proof_execution="LOCAL_PASS",
-            selected_root_presence="ALL_50_REQUIRED_BY_READER; THREE_CLOSED_ROOTS_AUDITED_AS_SAFE_THEOREMS",
+            selected_root_presence="ALL_50_PRESENT_SAFE_AND_NONPARTIAL; ALL_17_MATHEMATICAL_ROOTS_AUDITED_AS_THEOREMS",
             proof_scope="Complete transitive statement and proof dependency closure of all 50 exact roots")
         return {"process":row,"accepted_declaration_records":count,"ordered_roots":list(ROOTS),
             "direct_object_module":mod.CLOSED_MODULE,"root_count":50,"mode":"--verified --olean",
