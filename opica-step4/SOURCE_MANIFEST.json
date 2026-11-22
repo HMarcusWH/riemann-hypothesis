@@ -16,8 +16,8 @@
     },
     {
       "path": "ROUND24_EXECUTION_HANDOVER_2026-11-22.md",
-      "bytes": 5417,
-      "sha256": "1ebdb5305acd4ad76f581ceff15dd9847f1418295648fd49ee421ff6cb2d0870"
+      "bytes": 7577,
+      "sha256": "a28c29a8e3f8139efc9e037a50d2f595d3fdbaa6ab016915c8e2cc6d13da26eb"
     },
     {
       "path": "collect_evidence.py",
@@ -131,8 +131,8 @@
     },
     {
       "path": "modular/test_verify_modular.py",
-      "bytes": 12422,
-      "sha256": "947e3c677f20c7f4dc108fa674225f9157ad4176fe0b858697a24ee13b2a1716"
+      "bytes": 12654,
+      "sha256": "8bf6cd6b676bf62e6816729670ef9a1e85b85d7ef648320e25e894dbf93b2241"
     },
     {
       "path": "modular/verify_modular.py",

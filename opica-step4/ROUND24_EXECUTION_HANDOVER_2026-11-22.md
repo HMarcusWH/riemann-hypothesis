@@ -104,3 +104,38 @@ The authoritative receipts are `MODULAR_GATE_RECEIPT.json` and
 The original Round19 procedure and original native-pin rebuild retain their
 separate status. C1 and RH remain OPEN pending the complete required proof
 and claim-validation evidence.
+
+## First hosted execution and control correction — 10:17 UTC
+
+The enabled workflow ran as [45011433999, attempt 1](https://github.com/HMarcusWH/riemann-hypothesis/actions/runs/45011433999)
+at exact documentation head `c7a44302dd4a616c3b26208222732e751b5c216d`, tree
+`14c8e5ee6a857a8275c47e29126ebcdb4b87f978`, job `137174408329`.
+Runner preparation passed. The transport suite passed 24 controls. The
+60-control modular/monitor suite then ended with one error: the terminated
+child's `/proc/<pid>/stat` disappeared between `exists()` and `read_text()` in
+`test_timeout_kills_descendant_after_producer_leader_exits`. The independent
+control suite and every native, supplier and proof stage were skipped. This
+run supplies no modular or independent proof receipt and no theorem result.
+
+The failure artifact `14749943087` is 2,305 bytes, SHA256
+`a264ae7d9ee0f9d258b7efe1ae79a34686f1b68558f339b9bae031f99981a596`.
+It preserves runner resources; the terminal job log preserves the traceback.
+
+The next descendant corrects only the two test-side `/proc` observation races:
+read the state directly, accept only `FileNotFoundError` as an already reaped
+child, and otherwise retain the `Z`/`X` requirement. A readable live child
+still fails. Other read errors and malformed states remain errors. The test's
+required `GateIncomplete` result, polling budget, production cleanup code,
+proof verifiers, Lean sources, workflow, source pins and all stage deadlines
+are unchanged. The source manifest records the changed test and this handover.
+
+The corrected source passed all 97 published controls locally, plus six
+focused cases: disappearance between reads, an already reaped child, `X`
+state, rejection of a live child, propagation of a permission error and
+propagation of a malformed-state error. These controls are mechanism evidence,
+not a Step4 or RH proof. Local review receipt SHA256:
+`6b40bc1de7b714761383c928f680b1cf1b4b2e32aa74542d0daf499adf3bece7`.
+
+The successor Actions run must record its own exact commit/tree/run identity
+and execute the full acceptance sequence above. The failed run is retained as
+a distinct attempt; it is not relabelled as passed.

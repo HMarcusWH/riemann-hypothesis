@@ -89,11 +89,19 @@ class StreamControls(unittest.TestCase):
         pid = int((self.root / "child.pid").read_text())
         state = Path(f"/proc/{pid}/stat")
         for _ in range(100):
-            if not state.exists() or state.read_text().split()[2] in ("Z", "X"):
+            try:
+                process_state = state.read_text().split()[2]
+            except FileNotFoundError:
+                break
+            if process_state in ("Z", "X"):
                 break
             time.sleep(0.01)
-        if state.exists():
-            self.assertIn(state.read_text().split()[2], ("Z", "X"))
+        try:
+            process_state = state.read_text().split()[2]
+        except FileNotFoundError:
+            pass  # A reaped child has no /proc entry.
+        else:
+            self.assertIn(process_state, ("Z", "X"))
 
     def test_existing_output_is_rejected_without_overwrite(self):
         path = self.root / "output.bin"
