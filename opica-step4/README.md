@@ -73,6 +73,33 @@ requires the complete actual combined proof check here. Neither establishes an
 original-pin production rebuild or erases the old procedure's outstanding
 status. See `modular/SPEC.md` for the modular acceptance argument.
 
+## Round24 storage experiment and preserved Round23 result
+
+Round23 head `780928f57bda7773971dcb7fc080a52ded6b2b32`, run `44954415707`,
+finished with 19 PASS / 1 INCOMPLETE / 10 NOT_RUN. Its guarded stock import
+reached the unchanged 1,800-second deadline, was terminated with exit -15, and
+completed process-group cleanup. It emitted only `IMPORT_BEGIN`; no guard or
+closed theorem object was produced, and independent combined checking was
+SKIPPED. No Lean proof rejection or OOM was reported. The recorded system CPU,
+page faults and I/O support investigating compressed-file access costs, but do
+not identify the exact internal import subphase or establish a completion time.
+
+Round24 changes only the supplier SquashFS data block from 1 MiB to a fixed
+64 KiB. It retains zstd level 9, the current read-only mount mode, the 40 GiB
+image cap, 45 GiB free-disk preflight and 1,800-second import deadline. Every
+original archive and file digest, all 350,374 mounted-file checks, and every
+proof, source, axiom, definition and final-integrity requirement remain in
+force. The modular and independent verifier code and gate versions are
+unchanged. The fresh workflow directory distinguishes this storage attempt.
+
+A real SquashFS control checks the actual 65,536-byte block size and recovers
+exact multi-block, tail and small-file bytes. It establishes transport behavior
+only. Performance and full-image capacity remain unproved: the previous image
+was 30,092,009,472 bytes (28.025 GiB), and smaller blocks may compress less well.
+The existing 40 GiB cap must still be met by the actual image. A 45 GiB preflight
+does not by itself guarantee all later tool and output space; those checks must
+also pass. C1 and RH remain OPEN until all proof and claim gates complete.
+
 ## Preserved earlier results and bounded counter reconciliation
 
 Round21 head `56b129cc2212eb28d0c32867d49078dbae6a34be`, run `44935463985`, passed nine modular stages and failed in `canonical_modules_compile` while reading `/proc/23617/io`. The first conditional receiver compile exited zero and retained its object, but the monitor recorded `MONITOR_OR_LAUNCH_ERROR` / `PermissionError`; that stage remains FAIL. The twenty later stages were NOT_RUN, and independent combined proof checking was SKIPPED. No Main import or closed C1 construction was reached. Round22 repaired only optional I/O telemetry and recorded this prior failure without reclassifying it. The exact kernel producer, logical sources, thirty-stage order and all proof/identity/axiom requirements remain unchanged.

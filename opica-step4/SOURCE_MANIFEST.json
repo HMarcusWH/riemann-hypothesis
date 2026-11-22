@@ -1,18 +1,18 @@
 {
-  "version": "OPICA23_SOURCE_BUNDLE_V1",
+  "version": "OPICA24_SOURCE_BUNDLE_V1",
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
   "gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
-  "scope": "Source identity only. No completed combined verification is asserted by this manifest.",
+  "scope": "Source identity only. Fixed 64 KiB supplier storage experiment; modular and independent proof gates unchanged. No completed combined verification is asserted.",
   "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
-  "workflow_sha256": "ca3191b5f8759aff68b02a537a66f98f692134db15473847ee6656ba5cca4f0c",
-  "prior_execution_head": "70bfbd662f42aff97194c34ef3b6ee996f3cc1a1",
-  "prior_execution_disposition": "FAIL_MANDATORY_PROC_COUNTERS; 9PASS_1FAIL_20NOT_RUN; COMPILER_EXIT_ZERO; INDEPENDENT_SKIPPED",
+  "workflow_sha256": "98f2869cf29f6ac34cbff7e52d1fbfeb007c1ae151ce434a140c2ac3ea4ac1df",
+  "prior_execution_head": "780928f57bda7773971dcb7fc080a52ded6b2b32",
+  "prior_execution_disposition": "INCOMPLETE_GUARDED_KERNEL_IMPORT_TIMEOUT; 19PASS_1INCOMPLETE_10NOT_RUN; NO_GUARD_OR_CLOSED_OBJECT; INDEPENDENT_SKIPPED",
   "files": [
     {
       "path": "README.md",
-      "bytes": 10690,
-      "sha256": "e5df21c0a35b8ae6313fc8264f3a806c516b005a962d88be39cab1e506426950"
+      "bytes": 12459,
+      "sha256": "641d58fb81c610e8fff4847b07007879f7d5e37b6bdb34de720be20f276bf950"
     },
     {
       "path": "collect_evidence.py",
@@ -51,8 +51,8 @@
     },
     {
       "path": "modular/SPEC.md",
-      "bytes": 22840,
-      "sha256": "ae6de9cb2fab204f2a8fd0ebaa7d88b01875b0f0f48f1f42f3ca174d2e67e487"
+      "bytes": 23453,
+      "sha256": "c1f2113174162211cbb32a759d1d09f1a59077161953bb2de2aadb322bc621c3"
     },
     {
       "path": "modular/external-evidence/FETCH_RECEIPT.json",
@@ -376,13 +376,13 @@
     },
     {
       "path": "transport/test_verified_squashfs_store.py",
-      "bytes": 5665,
-      "sha256": "dff5878b26ff9eefdf21152731131da84bf08c975db31a589a4068501d4e4f30"
+      "bytes": 8028,
+      "sha256": "7cfacaca37fc4baf36c433e08a85b2594a035b27c9bcb9be79d856ecfbbacbe7"
     },
     {
       "path": "transport/verified_squashfs_store.py",
-      "bytes": 17259,
-      "sha256": "72d9a31a1c9eed464b186370fd0d6f1de89bc2572a512b5efa053133021a1f3e"
+      "bytes": 17260,
+      "sha256": "36e330ddc0a9baae25de15d489dfbcf0c5ce8049cc472db031be58eaa1174d49"
     }
   ]
 }

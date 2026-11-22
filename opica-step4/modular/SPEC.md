@@ -107,6 +107,15 @@ Record all native theorem targets used by D, their exact types, actual proof bod
 
 ## 6. Coherence and collision protection
 
+The Round24 execution bundle retains this gate and its verifier unchanged. Its
+sole transport-layout change is a fixed 64 KiB SquashFS data block in place of
+1 MiB, with zstd level 9, the current read-only mount, image/free-disk limits and
+all execution deadlines unchanged. The original archive identity and every
+expanded/mounted file hash remain mandatory. The new multi-block/tail/fragment
+round-trip control establishes storage correctness, not a speed or capacity
+guarantee. Round23's guarded-import timeout remains INCOMPLETE; neither that
+attempt nor this unexecuted layout establishes a closed theorem.
+
 Freeze the actual Lean core, Mathlib and package objects; require exact byte identity and resolution between native-only and final environments. Reject shadowed module paths, changed inventories, changed source trees and changed package revisions. Hash-mounted SquashFS inputs are legitimate if their expanded file bytes match; compression does not change proof semantics.
 
 **Constant-level collision checking is mandatory too.** Lean can allow duplicate theorem names with matching signatures while ignoring proof-value differences during import finalization. Module path checks alone therefore do not close every substitution route.

@@ -212,7 +212,7 @@ def build_store(source, manifest: bytes, pin: Pin, output: Path, *,
         partial = staging / "proof-store.partial"
         packlog = staging / "mksquashfs.log"
         command = [str(packer_path), "-", str(partial), "-tar", "-noappend", "-comp", "zstd",
-                   "-Xcompression-level", str(compression_level), "-b", "1M", "-mem", f"{memory_mb}M",
+                   "-Xcompression-level", str(compression_level), "-b", "64K", "-mem", f"{memory_mb}M",
                    "-processors", str(processors), "-no-progress", "-no-xattrs", "-all-root",
                    "-all-time", "0", "-mkfs-time", "0", "-exit-on-error"]
         proc = None

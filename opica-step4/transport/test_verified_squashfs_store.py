@@ -70,6 +70,40 @@ class TransportTests(unittest.TestCase):
             self.assertEqual({str(p.relative_to(output)):p.read_bytes() for p in output.rglob('*') if p.is_file()},
                              {n:d for n,d,k in entries})
 
+    def test_actual_64k_multiblock_tail_and_fragment_roundtrip(self):
+        block_size = 65536
+        first = bytes(range(256)) * 256
+        second = hashlib.shake_256(b'OPICA64K second block').digest(4096) * 16
+        large = first + second + first[::-1] + hashlib.shake_256(b'OPICA64K tail').digest(731)
+        small = b'small fragment\0' + hashlib.shake_256(b'OPICA64K fragment').digest(997)
+        self.assertEqual(len(large), 3 * block_size + 731)
+        self.assertLess(len(small), block_size)
+        entries = [('MultiBlock.olean', large, 'file'), ('Small.ilean', small, 'file')]
+        with tempfile.TemporaryDirectory() as tmp:
+            receipt = self.build(fixture(entries), tmp)
+            self.assertFalse(receipt['proof_validity_established'])
+            self.assertFalse(receipt['production_supplier'])
+            image = Path(tmp) / 'proof.sqfs'
+            info = subprocess.run([UNSQUASHFS, '-s', str(image)], capture_output=True, text=True)
+            self.assertEqual(info.returncode, 0, info.stderr)
+            self.assertRegex(info.stdout, r'(?m)^Block size 65536\s*$')
+            output = Path(tmp) / 'unpacked'
+            unpack = subprocess.run([UNSQUASHFS, '-no-progress', '-processors', '1',
+                                     '-d', str(output), str(image)], capture_output=True)
+            self.assertEqual(unpack.returncode, 0, unpack.stderr)
+            self.assertEqual({str(p.relative_to(output)): p.read_bytes()
+                              for p in output.rglob('*') if p.is_file()},
+                             {name: data for name, data, _ in entries})
+            print(json.dumps({'control': 'OPICA24_64K_MULTIBLOCK_ROUNDTRIP',
+                              'status': 'PASS', 'block_size_bytes': block_size,
+                              'stock_unsquashfs_summary': info.stdout,
+                              'image_sha256': receipt['image_sha256'],
+                              'image_bytes': receipt['image_bytes'],
+                              'readback_files': [{'path': name, 'bytes': (output / name).stat().st_size,
+                                                  'sha256': hashlib.sha256((output / name).read_bytes()).hexdigest()}
+                                                 for name, _, _ in entries],
+                              'proof_validity_established': False}), flush=True)
+
     def test_source_archive_hash_mismatch(self):
         a,m,p=fixture(); p=Pin(**{**p.__dict__,'archive_sha256':'0'*64})
         self.rejected((a,m,p))

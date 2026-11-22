@@ -29,7 +29,7 @@ jobs:
       - name: Prepare bounded standard runner
         run: |
           set -euo pipefail
-          work="$RUNNER_TEMP/opica-step4-round23"
+          work="$RUNNER_TEMP/opica-step4-round24"
           mkdir -p "$work"
           printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
           sudo apt-get update -qq
