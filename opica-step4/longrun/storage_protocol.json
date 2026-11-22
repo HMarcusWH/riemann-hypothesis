@@ -1,0 +1,17 @@
+{
+  "schema": "OPICA_STORAGE_COMPARISON_PROTOCOL_V1",
+  "status": "OPTIONAL_NONACCEPTING_EXPERIMENT",
+  "original_storage": "read_only_direct_io_squashfs_64k",
+  "alternative": "read_only_verified_unpacked_nvme",
+  "manifest_source": "original_published_350374_sha256sum",
+  "sample_selection": "SHA256 of relative path; ascending; first 512 (cap 4096)",
+  "metric": "elapsed wall, confirmed bytes, outside observer CPU/I/O/fault telemetry",
+  "scope": "Diagnostic-only; same hashes do not prove full environment/replay; no causal interpretation without matched host and conditions",
+  "do_not_claim": [
+    "whole_corpus_validation",
+    "proof_authority",
+    "RH",
+    "performance_causality"
+  ],
+  "complete_source_verification": "separate mandatory full sha256sum check in original pipeline"
+}
