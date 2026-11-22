@@ -296,7 +296,8 @@ def phase_markers(text):
         match = re.fullmatch(r"IMPORT_DIAGNOSTIC mono_ms=(\d+) (.+)", line)
         require(match is not None, "Unexpected diagnostic log line")
         rows.append({"mono_ms": int(match[1]), "message": match[2]})
-    expected = ["DIAGNOSTIC_ONLY selection=exact-guard mode=split imports=#[Init, Init, Main, OPICAStep4.NativeValidated, Lean]",
+    # Pinned Lean ToString Import prints public/meta flags; the earlier actual probe log confirms this rendering.
+    expected = ["DIAGNOSTIC_ONLY selection=exact-guard mode=split imports=#[public import Init, public meta import Init, public import Main, public import OPICAStep4.NativeValidated, public import Lean]",
                 "NO_THEOREM_ACCEPTANCE no_object_output no_kernel_replay no_axiom_audit", "CORE_BEGIN", "CORE_END",
                 "FINALIZE_BEGIN leakEnv=true loadExts=false level=private trustLevel=0", "FINALIZE_END"]
     for index, row in enumerate(rows):

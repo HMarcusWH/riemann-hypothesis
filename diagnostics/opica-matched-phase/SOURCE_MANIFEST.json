@@ -32,13 +32,13 @@
     },
     {
       "path": "diagnostics/opica-matched-phase/runner.py",
-      "bytes": 31895,
-      "sha256": "53420302c43fd41ee1aaee69a94971df452d45db758a49bddf2ce4675fb59d98"
+      "bytes": 32084,
+      "sha256": "36944968edc9dad49ee7cd8c199d4cb76dd0674c685ece01e215b9bb3cb33985"
     },
     {
       "path": "diagnostics/opica-matched-phase/test_runner.py",
-      "bytes": 16229,
-      "sha256": "95f1d7f0684fc2d5c5c18fd629446051f81ff20919a179bbbcbdb3692e5335df"
+      "bytes": 17881,
+      "sha256": "af54185345715e737d3c74c47672970acc9443a108ed25ce6fd358e4567aa96c"
     }
   ],
   "scope": "Additive unpublished diagnostic only; all original source, proof contracts and budgets unchanged",
