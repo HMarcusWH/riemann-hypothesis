@@ -15,6 +15,11 @@
       "sha256": "641d58fb81c610e8fff4847b07007879f7d5e37b6bdb34de720be20f276bf950"
     },
     {
+      "path": "ROUND24_EXECUTION_HANDOVER_2026-11-22.md",
+      "bytes": 5417,
+      "sha256": "1ebdb5305acd4ad76f581ceff15dd9847f1418295648fd49ee421ff6cb2d0870"
+    },
+    {
       "path": "collect_evidence.py",
       "bytes": 2475,
       "sha256": "2b899919f2325393098b781e36ad90617a8a3967579d5d04c3696de4d0ed583b"
