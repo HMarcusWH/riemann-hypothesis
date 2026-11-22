@@ -1,0 +1,647 @@
+name: Native canonical-index V2 refresh preparation
+run-name: Native canonical-index V2 preparation controlled by ${{ github.sha }}
+
+on:
+  push:
+    branches: [research/opica-native-canonical-index-v2-20261122]
+    paths: [.github/workflows/opica-native-canonical-refresh-v2.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-canonical-preparation-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Explicitly selected preparation for the published reviewed native commit/tree.
+  # Preparation outputs remain candidates until full native qualification.
+  CANONICAL_REFRESH_SELECTION: 'native-common-pin-canonical-index-v2'
+  NATIVE_COMMIT: '200777fa9afa8c00a193c0070866d58791f54fdc'
+  NATIVE_TREE: '03e7c2d3caa9c579124ccec089d1d6b47a6ed39e'
+  CONTROLLER_PARENT: '57e0705d37434bf3aba28741d5d089b3b06250fd'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  LEAN_NUM_THREADS: '2'
+
+jobs:
+  canonical-candidate:
+    name: Authenticated native preparation and canonical candidate only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Require the explicit reviewed selection
+        id: selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/native-canonical-preparation-v2"
+          mkdir "$out"
+          printf 'CANONICAL_EVIDENCE=%s\n' "$out" >> "$GITHUB_ENV"
+          python3 -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          out = Path(os.environ['RUNNER_TEMP']) / 'native-canonical-preparation-v2'
+          fields = ('GITHUB_REPOSITORY', 'GITHUB_SHA', 'GITHUB_REF', 'GITHUB_WORKFLOW_REF',
+                    'GITHUB_WORKFLOW_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                    'GITHUB_EVENT_NAME', 'CANONICAL_REFRESH_SELECTION', 'NATIVE_COMMIT',
+                    'NATIVE_TREE', 'CONTROLLER_PARENT')
+          context = {name: os.environ.get(name) for name in fields}
+          context.update(schema='NATIVE_CANONICAL_REQUEST_V2', authority='PREPARATION_ONLY', proof_acceptance=False,
+                         native_production_acceptance=False, RH='OPEN', Step4='OPEN')
+          (out / 'requested-context.json').write_text(json.dumps(context, indent=2) + '\n')
+          if os.environ['GITHUB_REPOSITORY'] != 'HMarcusWH/riemann-hypothesis':
+              raise SystemExit('Controller repository differs')
+          if os.environ['GITHUB_REF'] != 'refs/heads/research/opica-native-canonical-index-v2-20261122':
+              raise SystemExit('Controller branch differs')
+          if os.environ['GITHUB_EVENT_NAME'] not in {'push', 'workflow_dispatch'}:
+              raise SystemExit('Controller event differs')
+          for name in ('NATIVE_COMMIT', 'NATIVE_TREE', 'CONTROLLER_PARENT'):
+              if re.fullmatch(r'[0-9a-f]{40}', os.environ[name]) is None:
+                  raise SystemExit('An exact source identity is required: ' + name)
+          if os.environ['CANONICAL_REFRESH_SELECTION'] != 'native-common-pin-canonical-index-v2':
+              raise SystemExit('NOT_SELECTED: no native checkout, preparation or canonical writer started')
+          PY
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        id: controller_checkout
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 2
+          sparse-checkout: .github/workflows/opica-native-canonical-refresh-v2.yml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Bind the one-file controller delta
+        id: controller_source
+        working-directory: controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          def git(*args):
+              return subprocess.check_output(['git', *args])
+          head = git('rev-parse', 'HEAD').decode().strip()
+          parent = git('rev-parse', 'HEAD^').decode().strip()
+          if head != os.environ['GITHUB_SHA'] or parent != os.environ['CONTROLLER_PARENT']:
+              raise SystemExit('Controller must be the reviewed single commit on the exact parent')
+          if len(git('show', '-s', '--format=%P', 'HEAD').split()) != 1:
+              raise SystemExit('A merge controller is not the reviewed source delta')
+          path = '.github/workflows/opica-native-canonical-refresh-v2.yml'
+          delta = git('diff', '--name-status', '-z', 'HEAD^', 'HEAD').split(b'\0')
+          if delta != [b'A', path.encode(), b'']:
+              raise SystemExit('Controller changes a path outside the single added workflow')
+          raw = Path(path).read_bytes()
+          if raw != git('show', 'HEAD:' + path) or git('status', '--porcelain', '--untracked-files=all'):
+              raise SystemExit('Controller workflow is not the exact clean checked-out blob')
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          (out / 'controller-workflow.yml').write_bytes(raw)
+          record = {'schema': 'NATIVE_CANONICAL_CONTROLLER_SOURCE_V2', 'head': head, 'tree': git('rev-parse', 'HEAD^{tree}').decode().strip(),
+                    'parent': parent, 'path': path, 'sha256': hashlib.sha256(raw).hexdigest(),
+                    'scope': 'ONE_ADDED_SUPPLIER_WORKFLOW_ONLY', 'proof_acceptance': False}
+          (out / 'controller-source.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        id: native_checkout
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: ${{ env.NATIVE_COMMIT }}
+          path: host
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.13.5'
+
+      - name: Bind the clean native source and versioned canonical boundary
+        id: native_source
+        working-directory: host
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$CANONICAL_EVIDENCE"
+          cat > "$out/observe-canonical-v2.py" <<'PY'
+          """Fixed V2 canonical observations, with no compiler or production authority."""
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import subprocess
+          import sys
+          
+          REPO = Path.cwd().resolve()
+          OUT = Path(os.environ['CANONICAL_EVIDENCE'])
+          NATIVE = '200777fa9afa8c00a193c0070866d58791f54fdc'
+          NATIVE_TREE = '03e7c2d3caa9c579124ccec089d1d6b47a6ed39e'
+          POLICY = 'research/RHRC/integration/opica_step4_production/CANONICAL_SOURCE_SCOPE_V2.json'
+          POLICY_SHA = '79e5b9b46617ad40bdc5db9ade8450667b6508572b8925adaf82e0a0f9ab5f57'
+          HISTORY = 'research/RHRC/integration/opica_step4_production/HISTORICAL_REGISTERED_INDEX_V1.json'
+          HISTORY_SHA = 'ff54996967889b3ef005097550294684e9c5147e94f0a9fc023af2701e5f5c5f'
+          HISTORICAL_COMMIT = 'bf75a3a698c42852beda5c95669b06997559c4c0'
+          HISTORICAL_TREE = '3d8200c0d972d313d70532c12a2a2909a5123cbc'
+          INDEX = 'research/RHRC/graph/compiler/REGISTERED_DECLARATION_DEPENDENCIES.jsonl'
+          PROTECTED = {
+              'research/RHRC/ffbbp/generated/history/RHKG_CANDIDATE_REDUCTION_ASSURANCE_v1_PR265.json': '226b2d12e6fa5551df31972591fbdce7d23187d9461e0ec01e6114591d903493',
+              'research/RHRC/ool/generated/history/RHKG_OOL_PHASE_ATLAS_v1_PR266.json': '59905fcf4b8ae2e0219ddc006b0e4e39a1b70ad4205547d145312beea654e2ed',
+              'research/RHRC/ool/generated/history/RHKG_OOL_ROUTE_CONTACTS_v1_PR266.jsonl': 'f00b39376c8db5cc85b52593cd9cd1ab31243eb650180426f475df01d85f6791',
+          }
+          
+          
+          def need(ok, message):
+              if not ok:
+                  raise ValueError(message)
+          
+          
+          def git(*args):
+              env = {**os.environ, 'GIT_NO_LAZY_FETCH': '1', 'GIT_TERMINAL_PROMPT': '0'}
+              return subprocess.check_output(['git', *args], cwd=REPO, env=env, timeout=60)
+          
+          
+          def identity():
+              return {'head': git('rev-parse', 'HEAD').decode().strip(),
+                      'tree': git('rev-parse', 'HEAD^{tree}').decode().strip()}
+          
+          
+          def put(name, value):
+              with (OUT / name).open('x', encoding='utf-8') as stream:
+                  json.dump(value, stream, sort_keys=True, indent=2, allow_nan=False)
+                  stream.write('\n'); stream.flush(); os.fsync(stream.fileno())
+              return value
+          
+          
+          def read(name):
+              return json.loads((OUT / name).read_text())
+          
+          
+          def tree_entries(revision='HEAD'):
+              entries = {}
+              for row in git('ls-tree', '-r', '-z', revision).split(b'\0'):
+                  if row:
+                      fields, name = row.split(b'\t', 1)
+                      mode, kind, oid = fields.decode().split()
+                      need(kind == 'blob' and mode in ('100644', '100755'), 'Nonregular tracked subject')
+                      entries[name.decode()] = (mode, kind, oid)
+              return entries
+          
+          
+          def regular(path):
+              target = REPO / path
+              for ancestor in (target, *target.parents):
+                  if ancestor == REPO:
+                      break
+                  need(not ancestor.is_symlink(), 'Linked source or product: ' + path)
+              need(stat.S_ISREG(target.lstat().st_mode), 'Nonregular source or product: ' + path)
+              return target
+          
+          
+          def file_record(path):
+              target = regular(path); before = target.stat()
+              blob = hashlib.sha1(b'blob ' + str(before.st_size).encode() + b'\0'); digest = hashlib.sha256()
+              with target.open('rb') as stream:
+                  while chunk := stream.read(1024 * 1024):
+                      blob.update(chunk); digest.update(chunk)
+              after = target.stat()
+              need((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_mode) ==
+                   (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_mode),
+                   'Source or product changed during observation: ' + path)
+              return {'mode': '100755' if before.st_mode & 0o111 else '100644',
+                      'git_blob': blob.hexdigest(), 'bytes': before.st_size, 'sha256': digest.hexdigest()}
+          
+          
+          def digest(path):
+              row = file_record(path)
+              need(row['mode'] == '100644', 'Executable generated product: ' + path)
+              return row['sha256']
+          
+          
+          def source_module():
+              sys.path.insert(0, str(REPO))
+              from research.RHRC.integration.opica_step4_production import canonical_source_scope_v2
+              return canonical_source_scope_v2
+          
+          
+          def ignored_source_providers():
+              names = [raw.decode() for raw in git('ls-files', '-z', '--others', '--ignored', '--exclude-standard').split(b'\0') if raw]
+              return sorted(name for name in names if
+                            name.startswith(('Zeta23/', 'research/', '.github/', 'docs/examples/')) and
+                            name.endswith(('.lean', '.lean.in', '.py', '.yml', '.yaml')))
+          
+          
+          def observe_nonlive(phase, allowed, baseline=None):
+              row = {'schema': 'NATIVE_CANONICAL_NONLIVE_SOURCE_V2', 'phase': phase,
+                     'status': 'INCOMPLETE', 'head': None, 'tree': None, 'files': {}, 'errors': [],
+                     'matches_before': None, 'ignored_source_providers': [], 'proof_acceptance': False}
+              try:
+                  row.update(identity())
+                  row['ignored_source_providers'] = ignored_source_providers()
+                  need(not row['ignored_source_providers'], 'Ignored executable/source provider')
+                  entries = tree_entries()
+                  expected = {p: v for p, v in entries.items() if p not in set(allowed)}
+                  need(len(entries) == 5955 and len(expected) == 5877, 'Exact tracked/nonlive inventory differs')
+                  if baseline is not None:
+                      need(set(expected) == set(baseline['files']), 'Nonlive path inventory changed')
+                  for path, (mode, _, oid) in sorted(expected.items()):
+                      try:
+                          actual = file_record(path); row['files'][path] = actual
+                          need((actual['mode'], actual['git_blob']) == (mode, oid), 'Nonlive bytes/mode differ from committed source: ' + path)
+                      except (OSError, ValueError) as exc:
+                          row['errors'].append({'path': path, 'error': type(exc).__name__ + ': ' + str(exc)})
+                  need((row['head'], row['tree']) == (NATIVE, NATIVE_TREE), 'Native head/tree changed')
+                  if baseline is not None:
+                      row['matches_before'] = (row['head'], row['tree'], row['files']) == (
+                          baseline['head'], baseline['tree'], baseline['files'])
+                      need(row['matches_before'], 'Actual nonlive source bytes differ from initial snapshot')
+                  row['status'] = 'PASS_NONLIVE_SOURCE_BYTES_ONLY' if not row['errors'] else 'FAILED'
+              except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                  row['errors'].append({'error': type(exc).__name__ + ': ' + str(exc)}); row['status'] = 'FAILED'
+              return put('nonlive-source-' + phase + '.json', row)
+          
+          
+          def observe_products(phase, allowed, command=None):
+              row = {'schema': 'NATIVE_CANONICAL_PRODUCT_PHASE_V2', 'phase': phase,
+                     'status': 'INCOMPLETE', 'hashes78': {}, 'dated_historical': {}, 'errors': [],
+                     'command': command, 'proof_acceptance': False}
+              for path in allowed:
+                  try:
+                      row['hashes78'][path] = digest(path)
+                  except (OSError, ValueError) as exc:
+                      row['errors'].append({'path': path, 'error': type(exc).__name__ + ': ' + str(exc)})
+              for path in PROTECTED:
+                  try:
+                      row['dated_historical'][path] = digest(path)
+                  except (OSError, ValueError) as exc:
+                      row['errors'].append({'path': path, 'error': type(exc).__name__ + ': ' + str(exc)})
+              if row['dated_historical'] != PROTECTED:
+                  row['errors'].append({'error': 'Dated historical hashes differ or are unavailable'})
+              row['status'] = 'PASS_COMPLETE_PHASE_HASH_OBSERVATION' if len(row['hashes78']) == 78 and not row['errors'] else 'FAILED'
+              return put('after-' + phase + '-products.json', row)
+          
+          
+          def observe_current_storage(phase, products):
+              row = {'schema': 'NATIVE_CANONICAL_CURRENT_STORAGE_V2', 'phase': phase,
+                     'status': 'INCOMPLETE', 'hashes17': {}, 'result': None, 'errors': [],
+                     'matches_phase_hashes': False, 'proof_acceptance': False}
+              try:
+                  scope = source_module(); errors = scope.storage.shard_file_errors(REPO)
+                  need(not errors, 'Current physical shard set differs: ' + repr(errors))
+                  raw_index = regular(INDEX).read_bytes()
+                  result = scope.coherent_storage(lambda p: raw_index if p == INDEX else regular(p).read_bytes())
+                  index = scope.storage._index(raw_index)
+                  row['hashes17'] = {INDEX: result['index_sha256'], **{r['path']: r['sha256'] for r in index['shards']}}
+                  row['result'] = result
+                  row['matches_phase_hashes'] = all(products['hashes78'].get(p) == digest for p, digest in row['hashes17'].items())
+                  need(len(row['hashes17']) == 17 and row['matches_phase_hashes'], 'Strict storage result differs from persisted phase hashes')
+                  row['status'] = 'PASS_CURRENT_STORAGE_COHERENCE_ONLY'
+              except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+                  row['errors'].append({'error': type(exc).__name__ + ': ' + str(exc)}); row['status'] = 'FAILED'
+              return put('after-' + phase + '-storage.json', row)
+          
+          
+          def observe_history(phase):
+              row = {'schema': 'NATIVE_CANONICAL_HISTORICAL_STORAGE_V2', 'phase': phase,
+                     'status': 'INCOMPLETE', 'descriptor_sha256': None, 'result': None,
+                     'errors': [], 'proof_acceptance': False}
+              try:
+                  raw = regular(HISTORY).read_bytes(); row['descriptor_sha256'] = hashlib.sha256(raw).hexdigest()
+                  need(row['descriptor_sha256'] == HISTORY_SHA, 'Historical descriptor differs')
+                  need(git('rev-parse', HISTORICAL_COMMIT + '^{tree}').decode().strip() == HISTORICAL_TREE,
+                       'Historical tree differs')
+                  scope = source_module()
+                  row['result'] = scope.verify_historical_storage(tree_entries(HISTORICAL_COMMIT), json.loads(raw),
+                                                                  lambda oid: git('cat-file', 'blob', oid))
+                  row['status'] = 'PASS_IMMUTABLE_HISTORICAL_17_OBJECTS_ONLY'
+              except (OSError, ValueError, KeyError, subprocess.SubprocessError) as exc:
+                  row['errors'].append({'error': type(exc).__name__ + ': ' + str(exc)}); row['status'] = 'FAILED'
+              return put('historical-storage-' + phase + '.json', row)
+          
+          
+          def require_observation(row, status):
+              need(row['status'] == status and not row['errors'], 'Required observation failed: ' + row['schema'])
+          
+          
+          def before():
+              need(identity() == {'head': NATIVE, 'tree': NATIVE_TREE}, 'Exact native source differs')
+              need((os.environ['NATIVE_COMMIT'], os.environ['NATIVE_TREE']) == (NATIVE, NATIVE_TREE), 'Requested native identity differs')
+              need(not git('status', '--porcelain', '--untracked-files=all'), 'Native checkout is not clean')
+              need(digest(POLICY) == POLICY_SHA, 'Reviewed V2 source policy differs')
+              policy = json.loads(regular(POLICY).read_bytes()); allowed = policy['generated']
+              need(len(allowed) == 78 and allowed == sorted(set(allowed)) and INDEX in allowed and
+                   set(allowed).isdisjoint(PROTECTED), 'Exact 78-live/three-dated inventory differs')
+              nonlive = observe_nonlive('before', allowed)
+              require_observation(nonlive, 'PASS_NONLIVE_SOURCE_BYTES_ONLY')
+              historical = observe_history('before')
+              require_observation(historical, 'PASS_IMMUTABLE_HISTORICAL_17_OBJECTS_ONLY')
+              dated = {p: digest(p) for p in PROTECTED}; need(dated == PROTECTED, 'Dated history differs')
+              put('canonical-boundary-before.json', {
+                  'schema': 'NATIVE_CANONICAL_BOUNDARY_V2', 'checked_commit': NATIVE, 'checked_tree': NATIVE_TREE,
+                  'policy_path': POLICY, 'policy_sha256': POLICY_SHA, 'history_descriptor_sha256': HISTORY_SHA,
+                  'active_generated_before': {p: digest(p) for p in allowed},
+                  'protected_historical': PROTECTED, 'historical_observation': 'historical-storage-before.json',
+                  'nonlive_source_observation': 'nonlive-source-before.json', 'proof_acceptance': False,
+              })
+          
+          
+          if __name__ == '__main__':
+              args = sys.argv[1:]
+              if args == ['before']:
+                  before()
+              elif len(args) == 2 and args[0] == 'storage' and args[1] in ('write', 'check'):
+                  phase = args[1]
+                  require_observation(observe_current_storage(phase, read('after-'+phase+'-products.json')),
+                                      'PASS_CURRENT_STORAGE_COHERENCE_ONLY')
+              elif args == ['history-after']:
+                  require_observation(observe_history('after'), 'PASS_IMMUTABLE_HISTORICAL_17_OBJECTS_ONLY')
+              else:
+                  raise SystemExit('Only the fixed before, storage write/check, or history-after observation is callable')
+          PY
+          python -B "$out/observe-canonical-v2.py" before
+
+      # Unchanged native composite: cli inspect, exact runtime/package selection,
+      # native isolation probes, then cli prepare with its existing cache lease.
+      - uses: ./host/.github/actions/opica4-runtime
+        id: runtime
+        with:
+          native: 'true'
+          provider: 'false'
+
+      - name: Run the existing canonical writer and checker with one cache owner
+        id: canonical
+        working-directory: host
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$CANONICAL_EVIDENCE"
+          cat > "$out/run-canonical.py" <<'PY'
+          """Exact original native writer/checker with explicit V2 observation custody."""
+          import hashlib
+          import importlib.util
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          import time
+          
+          repo = Path.cwd().resolve()
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          sys.path.insert(0, str(repo))
+          from research.RHRC.integration.opica_composition.cache_owner import CacheWriterLease
+          spec = importlib.util.spec_from_file_location('canonical_observer_v2', out/'observe-canonical-v2.py')
+          observer = importlib.util.module_from_spec(spec); spec.loader.exec_module(observer)
+          
+          
+          def check_delta(names, untracked, allowed, protected, observed):
+              observer.need(names <= set(allowed), 'Undeclared changed paths: ' + repr(sorted(names-set(allowed))))
+              observer.need(not untracked, 'Canonical producer created undeclared files')
+              observer.need(observed == protected, 'Protected dated historical products changed')
+          
+          
+          def check_source(source, boundary, historical):
+              expected = {'schema': 'OPICAS4_CANONICAL_INDEX_SOURCE_INSPECTION_V2', 'status': 'PASS_SOURCE_SCOPE_ONLY',
+                          'checked_commit': boundary['checked_commit'], 'checked_tree': boundary['checked_tree'],
+                          'path_policy': observer.POLICY_SHA, 'canonical_product_count': 78,
+                          'unchanged_dated_historical_product_count': 3, 'successor_human_review': 'PENDING',
+                          'current_compiler_accepted': False, 'full_round4_accepted': False,
+                          'step4_receiver_accepted': False, 'joint_acceptance_established': False, 'RH': 'OPEN', 'Step4': 'OPEN'}
+              observer.need(all(type(source.get(k)) is type(v) and source.get(k) == v for k, v in expected.items()),
+                            'Fresh current V2 source inspection or authority differs')
+              observer.need(source.get('historical_registered_storage') == historical['result'],
+                            'Fresh current source inspection does not bind the same immutable historical17 objects')
+          
+          
+          before = observer.read('canonical-boundary-before.json')
+          baseline = observer.read('nonlive-source-before.json')
+          historical_before = observer.read('historical-storage-before.json')
+          report = {'schema': 'NATIVE_CANONICAL_CANDIDATE_OPERATION_V2',
+                    'authority': 'CANONICAL_REFRESH_PREPARATION_ONLY', 'status': 'INCOMPLETE',
+                    'commands': [], 'checked_commit': before['checked_commit'], 'checked_tree': before['checked_tree'],
+                    'proof_acceptance': False, 'native_production_acceptance': False, 'RH': 'OPEN', 'Step4': 'OPEN',
+                    'observations': {}, 'observation_errors': []}
+          
+          
+          def child_observation(label, arguments, filename):
+              argv = [sys.executable, '-B', str(out/'observe-canonical-v2.py'), *arguments]
+              command = {'argv': argv, 'started_unix': time.time(), 'exit_code': None,
+                         'stdout': filename.removesuffix('.json')+'.stdout.log',
+                         'stderr': filename.removesuffix('.json')+'.stderr.log', 'timeout_seconds': 180}
+              entry = {'path': filename, 'status': 'OBSERVATION_FAILED_OR_UNAVAILABLE', 'command': command,
+                       'receipt_sha256': None}
+              report['observations'][label] = entry
+              try:
+                  with (out/command['stdout']).open('xb') as stdout, (out/command['stderr']).open('xb') as stderr:
+                      result = subprocess.run(argv, cwd=repo, stdout=stdout, stderr=stderr, timeout=180)
+                      command['exit_code'] = result.returncode
+              except BaseException as exc:
+                  command['error'] = {'type': type(exc).__name__, 'message': str(exc)}
+                  raise
+              finally:
+                  command['finished_unix'] = time.time()
+                  for kind in ('stdout', 'stderr'):
+                      if (out/command[kind]).is_file():
+                          with (out/command[kind]).open('rb') as stream:
+                              command[kind+'_sha256'] = hashlib.file_digest(stream, 'sha256').hexdigest()
+                  if (out/filename).is_file():
+                      with (out/filename).open('rb') as stream:
+                          entry['receipt_sha256'] = hashlib.file_digest(stream, 'sha256').hexdigest()
+              row = observer.read(filename)
+              entry['status'] = row['status']
+              observer.need(command['exit_code'] == 0, 'Observation child failed: '+label)
+              return row
+          
+          
+          def finish_observations():
+              for label, filename, action in (
+                  ('nonlive_after', 'nonlive-source-after.json',
+                   lambda: observer.observe_nonlive('after', list(before['active_generated_before']), baseline)),
+                  ('historical_after', 'historical-storage-after.json',
+                   lambda: child_observation('historical_after', ['history-after'], 'historical-storage-after.json')),
+              ):
+                  if label in report['observations']:
+                      continue
+                  try:
+                      row = action()
+                      if label not in report['observations']:
+                          report['observations'][label] = {'path': filename, 'status': row['status'],
+                              'receipt_sha256': hashlib.sha256((out/filename).read_bytes()).hexdigest()}
+                  except BaseException as exc:
+                      report['observation_errors'].append({'path': filename, 'error': type(exc).__name__ + ': ' + str(exc)})
+          
+          
+          try:
+              observer.need(before['schema'] == 'NATIVE_CANONICAL_BOUNDARY_V2', 'Boundary schema differs')
+              observer.require_observation(baseline, 'PASS_NONLIVE_SOURCE_BYTES_ONLY')
+              observer.require_observation(historical_before, 'PASS_IMMUTABLE_HISTORICAL_17_OBJECTS_ONLY')
+              bootstrap = json.loads((Path(os.environ['OPICA_NATIVE_OUTPUT'])/'bootstrap/result.json').read_text())
+              observer.need((bootstrap.get('status'), bootstrap.get('checked_commit'), bootstrap.get('checked_tree')) ==
+                            ('PASS_NATIVE_PREPARED', before['checked_commit'], before['checked_tree']),
+                            'The exact existing native preparer did not complete successfully')
+              source = json.loads((Path(os.environ['RUNNER_TEMP'])/'opica4-source-before.json').read_text())
+              check_source(source, before, historical_before)
+              report['native_preparation_status'] = bootstrap['status']
+              report['successor_human_review'] = source['successor_human_review']
+              observer.need(not observer.git('status', '--porcelain', '--untracked-files=all'), 'Native source changed during preparation')
+              env = {k: v for k, v in os.environ.items() if not k.startswith(('LEAN_', 'ELAN_'))}
+              env.update(ELAN_TOOLCHAIN=(repo/'lean-toolchain').read_text().strip(),
+                         LEAN_NUM_THREADS='2', GIT_NO_LAZY_FETCH='1', GIT_TERMINAL_PROMPT='0')
+              with CacheWriterLease(repo/'.lake/build'):
+                  written = None
+                  for mode in ('write', 'check'):
+                      argv = [sys.executable, '-B', 'research/RHRC/tools/materialize_derived_state.py', '--'+mode]
+                      row = {'argv': argv, 'started_unix': time.time(), 'exit_code': None,
+                             'stdout': mode+'.stdout.log', 'stderr': mode+'.stderr.log'}
+                      report['commands'].append(row)
+                      with (out/row['stdout']).open('xb') as stdout, (out/row['stderr']).open('xb') as stderr:
+                          row['exit_code'] = subprocess.run(argv, cwd=repo, env=env, stdout=stdout, stderr=stderr).returncode
+                      row['finished_unix'] = time.time()
+                      for kind in ('stdout', 'stderr'):
+                          with (out/row[kind]).open('rb') as stream:
+                              row[kind+'_sha256'] = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      # Persist each completed child phase before any later scope guard.
+                      products = observer.observe_products(mode, list(before['active_generated_before']), command=dict(row))
+                      report['observations'][mode+'_products'] = {'path': 'after-'+mode+'-products.json', 'status': products['status']}
+                      storage = child_observation(mode+'_storage', ['storage', mode], 'after-'+mode+'-storage.json')
+                      observer.need(row['exit_code'] == 0, 'Canonical '+mode+' failed with exit '+str(row['exit_code']))
+                      observer.require_observation(products, 'PASS_COMPLETE_PHASE_HASH_OBSERVATION')
+                      observer.require_observation(storage, 'PASS_CURRENT_STORAGE_COHERENCE_ONLY')
+                      if mode == 'write':
+                          written = products['hashes78']
+                      else:
+                          observer.need(products['hashes78'] == written, 'Canonical --check changed a generated product')
+                  finish_observations()
+                  observer.need(not report['observation_errors'], 'Final observation unavailable')
+                  observer.require_observation(observer.read('nonlive-source-after.json'), 'PASS_NONLIVE_SOURCE_BYTES_ONLY')
+                  historical_after = observer.read('historical-storage-after.json')
+                  observer.require_observation(historical_after, 'PASS_IMMUTABLE_HISTORICAL_17_OBJECTS_ONLY')
+                  observer.need(historical_after['result'] == historical_before['result'], 'Immutable historical storage observation changed')
+                  names = {p.decode() for p in observer.git('diff', '--name-only', '-z', 'HEAD').split(b'\0') if p}
+                  check_delta(names, observer.git('ls-files', '--others', '--exclude-standard'),
+                              before['active_generated_before'], before['protected_historical'],
+                              {p: observer.digest(p) for p in before['protected_historical']})
+                  observer.need(observer.identity() == {'head': before['checked_commit'], 'tree': before['checked_tree']},
+                                'Native checked-out commit/tree changed')
+                  observer.need({p: observer.digest(p) for p in before['active_generated_before']} == written,
+                                'Generated products drifted after the persisted after-check observation')
+                  subprocess.run(['git', 'diff', '--check'], cwd=repo, check=True)
+                  patch = observer.git('diff', '--binary', 'HEAD')
+                  (out/'generated-state.patch').write_bytes(patch)
+                  (out/'generated-stat.txt').write_bytes(observer.git('diff', '--stat', 'HEAD'))
+                  report.update(status='CANONICAL_CANDIDATE_PREPARED', changed_paths=sorted(names),
+                                active_generated_after=written,
+                                protected_historical_after={p: observer.digest(p) for p in before['protected_historical']},
+                                patch_sha256=hashlib.sha256(patch).hexdigest(), successor_human_review='PENDING')
+          except BaseException as exc:
+              report['status'] = 'FAILED'
+              report['error'] = {'type': type(exc).__name__, 'message': str(exc)}
+              raise
+          finally:
+              finish_observations()
+              observer.put('canonical-operation.json', report)
+          PY
+          sudo systemd-run --wait --pipe --collect --unit="opica-canonical-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --uid="$(id -u)" --gid="$(id -g)" \
+            -p MemoryMax=4294967296 -p MemorySwapMax=0 -p TasksMax=64 -p CPUQuota=200% \
+            -p "WorkingDirectory=$PWD" /usr/bin/env \
+            "PATH=$PATH" "HOME=$HOME" PYTHONUTF8=1 PYTHONDONTWRITEBYTECODE=1 LEAN_NUM_THREADS=2 \
+            "RUNNER_TEMP=$RUNNER_TEMP" "CANONICAL_EVIDENCE=$CANONICAL_EVIDENCE" \
+            "OPICA_NATIVE_OUTPUT=$OPICA_NATIVE_OUTPUT" \
+            python -B "$out/run-canonical.py" \
+            > "$out/canonical-coordinator.stdout.log" 2> "$out/canonical-coordinator.stderr.log"
+
+      - name: Preserve raw operation and step dispositions
+        id: disposition
+        if: ${{ always() }}
+        shell: bash
+        env:
+          STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          set -euo pipefail
+          out="${CANONICAL_EVIDENCE:-$RUNNER_TEMP/native-canonical-preparation-v2}"
+          mkdir -p "$out"
+          export CANONICAL_EVIDENCE="$out"
+          python3 -B - <<'PY'
+          import hashlib, json, os, stat, subprocess
+          from pathlib import Path
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          record = {'schema': 'NATIVE_CANONICAL_CONTROLLER_DISPOSITION_V2', 'authority': 'PREPARATION_DIAGNOSTICS_ONLY', 'proof_acceptance': False,
+                    'native_production_acceptance': False, 'RH': 'OPEN', 'Step4': 'OPEN',
+                    'controller_commit': os.environ['GITHUB_SHA'],
+                    'requested_native_commit': os.environ['NATIVE_COMMIT'],
+                    'requested_native_tree': os.environ['NATIVE_TREE'],
+                    'run_id': os.environ['GITHUB_RUN_ID'], 'attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                    'steps': json.loads(os.environ['STEPS_JSON']), 'files': [], 'inventory_errors': []}
+          host = Path(os.environ['GITHUB_WORKSPACE']) / 'host'
+          if (host / '.git').exists():
+              # Raw failure diagnostics are distinct from the validated candidate patch.
+              record['native_final_git'] = []
+              for label, argv in (
+                  ('final-head-tree.txt', ['rev-parse', 'HEAD', 'HEAD^{tree}']),
+                  ('final-status.txt', ['status', '--porcelain', '--untracked-files=all']),
+                  ('raw-unqualified-diff.patch', ['diff', '--binary', 'HEAD']),
+              ):
+                  try:
+                      with (out / label).open('xb') as stream:
+                          result = subprocess.run(['git', '-C', str(host), *argv], stdout=stream,
+                                                  stderr=subprocess.PIPE, timeout=60)
+                      row = {'argv': argv, 'exit_code': result.returncode, 'stdout': label,
+                             'stderr': result.stderr.decode(errors='replace')}
+                  except (OSError, subprocess.TimeoutExpired) as exc:
+                      row = {'argv': argv, 'stdout': label, 'error': type(exc).__name__ + ': ' + str(exc)}
+                  record['native_final_git'].append(row)
+              boundary = out / 'canonical-boundary-before.json'
+              if boundary.is_file():
+                  expected = json.loads(boundary.read_text())['protected_historical']
+                  observed = {}
+                  for path in expected:
+                      try:
+                          target = host / path
+                          if not stat.S_ISREG(target.lstat().st_mode):
+                              raise ValueError('Nonregular historical product')
+                          with target.open('rb') as stream:
+                              observed[path] = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      except (OSError, ValueError) as exc:
+                          observed[path] = {'error': type(exc).__name__ + ': ' + str(exc)}
+                  record['protected_historical_final'] = observed
+                  record['protected_historical_unchanged'] = observed == expected
+          else:
+              record['native_final_git'] = 'NO_NATIVE_CHECKOUT_AVAILABLE'
+          roots = {'canonical': out, 'bootstrap': Path(os.environ['RUNNER_TEMP']) / 'opica4-native/bootstrap'}
+          for label, root in roots.items():
+              if not root.is_dir():
+                  record['inventory_errors'].append({'root': label, 'reason': 'MISSING_ROOT'})
+                  continue
+              for path in sorted(root.rglob('*')):
+                  try:
+                      mode = path.lstat().st_mode
+                      if stat.S_ISDIR(mode):
+                          continue
+                      if not stat.S_ISREG(mode):
+                          raise ValueError('Nonregular diagnostic file')
+                      with path.open('rb') as stream:
+                          sha256 = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      record['files'].append({'root': label, 'path': str(path.relative_to(root)),
+                                              'bytes': path.stat().st_size, 'sha256': sha256})
+                  except (OSError, ValueError) as exc:
+                      record['inventory_errors'].append({'root': label, 'path': str(path.relative_to(root)),
+                                                         'reason': type(exc).__name__ + ': ' + str(exc)})
+          (out / 'workflow-disposition.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - name: Upload the available complete command logs and preparation evidence
+        id: evidence_upload
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-canonical-preparation-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-canonical-preparation-v2/
+            ${{ runner.temp }}/opica4-native/bootstrap/
+            ${{ runner.temp }}/opica4-source-before.json
+          include-hidden-files: true
+          if-no-files-found: error
