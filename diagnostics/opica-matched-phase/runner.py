@@ -19,7 +19,9 @@ HERE = Path(__file__).resolve().parent
 BASE_HEAD = "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d"
 BASE_TREE = "412fec33b3869f438d1c71928cce32be72b636d0"
 BASE_MANIFEST_SHA = "09b5ab945355ffd891b8786978fff43fc64b85eb586f03dfc75bb129cb825aee"
-PROFILE = "ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1"
+PROFILE = "ROUND27_MATCHED_PREFIX_SPLIT3600_DIO1_SINGLE_V1"
+DIAGNOSTIC_SECONDS = 3600
+DIAGNOSTIC_BRANCH = "research/opica-finalize-3600-diagnostic-20261122"
 RESOURCE_PROFILE = "LOOP_RO_DIO1_ORIGINAL64K_V1"
 PROCESS_NAME = "matched_stock_import_split"
 PREFIX = (
@@ -111,8 +113,41 @@ def load(name, path):
     return module
 
 
+def check_profile(profile):
+    require(profile["id"] == profile["committed_selector"] == PROFILE and
+            profile["base_head"] == BASE_HEAD and profile["base_tree"] == BASE_TREE and
+            profile["resource_profile"] == RESOURCE_PROFILE and tuple(profile["prefix"]) == PREFIX,
+            "Diagnostic profile, recorded baseline or exact prefix differs")
+    probe = profile["probe"]
+    require((probe["selection"], probe["mode"], probe["seconds"], probe["rss_plus_swap_limit_mib"],
+             probe["log_limit_bytes"], probe["trust_level"], probe["global_level"],
+             probe["load_extensions"], probe["leak_environment"]) ==
+            ("exact-guard", "split", DIAGNOSTIC_SECONDS, 50000, 64 << 20, 0, "private", False, True),
+            "Diagnostic timing or stock import controls differ")
+    require(probe["source_sha256"] == digest(HERE / "ImportPhaseProbe.lean") and
+            probe["imports"] == [{"module": name, "isMeta": meta} for name, meta in
+                                 (("Init", False), ("Init", True), ("Main", False),
+                                  ("OPICAStep4.NativeValidated", False), ("Lean", False))],
+            "Diagnostic probe source or ordered import array differs")
+    observations = profile["optional_observations"]
+    require((observations["poll_seconds"], observations["smaps_snapshot_indices"],
+             observations["maximum_smaps_reads"]) == (30, [0, 2, 16, 50], 4),
+            "Optional observation schedule differs")
+    require(profile["proof_acceptance"] is False and
+            profile["proof_30_plus_7_contract"] == "UNCHANGED_AND_NOT_EXECUTED_BY_THIS_DIAGNOSTIC" and
+            profile["trigger"] == {"event": "push", "branch": DIAGNOSTIC_BRANCH,
+                                   "manual_dispatch": False, "fallback": False},
+            "Diagnostic authority or single selected trigger differs")
+    signature = load("matched_signature_profile", HERE / "observations.py")
+    require(profile["signature_custody"]["limits"] == signature.SIGNATURE_LIMITS and
+            profile["signature_custody"]["recorded_ir_provider_count"] == 11174 and
+            profile["signature_custody"]["historical_signature_equality"] == "NOT_ESTABLISHED",
+            "Signature custody bounds or recorded scope differ")
+
+
 def check_selection(selection):
     require(selection == PROFILE, "DIAGNOSTIC_NOT_SELECTED: refuse before preparation")
+    check_profile(read_json(HERE / "PROFILE.json"))
 
 
 def reject_overrides(env):
@@ -260,7 +295,7 @@ def compare_identity(actual, expected):
     return {"status": "MATCHED_RECORDED_INPUT_IDENTITIES" if not mismatches else "DIAGNOSTIC_COMPARISON_MISMATCH",
             "mismatched_fields": mismatches, "actual": actual, "expected": expected,
             "proof_rejection": False, "proof_acceptance": False,
-            "scope": "Exact source/object/export/import-path identities; no equality of cache residency, host scheduling or progress"}
+            "scope": "Recorded source/object/export/import-path identities only; original snapshots omit .ir.sig; no equality of uncaptured signatures, cache residency, host scheduling or progress"}
 
 
 def resource_before(work, head, baseline):
@@ -323,6 +358,156 @@ def monitored(monitor, name, command, cwd, env, output, timeout):
     row, text = monitor.run(name, command, cwd=cwd, env=env, output=output,
                             timeout=timeout, memory_mib=50000, expected=0, log_limit=64 << 20)
     return row, text
+
+
+def observe_import(monitor, command, cwd, env, output):
+    return monitored(monitor, PROCESS_NAME, command, cwd, env, output, DIAGNOSTIC_SECONDS)
+
+
+def signature_basis(gate, baseline, observations):
+    roots = gate.env["LEAN_PATH"].split(os.pathsep)
+    require(roots == gate.receipt["environment"]["import_roots"] ==
+            baseline["identity_projection"]["environment"]["import_roots"] and len(roots) == 13,
+            "Signature basis requires the exact13 recorded ordered import roots")
+    require(roots[0] == str(gate.lib.resolve()) and set(gate.object_root_inventories) == set(roots[1:]),
+            "Signature snapshot/promoted-root roles differ")
+    details = {row["name"]: row.get("details", {}) for row in gate.receipt["stages"]}
+    snapshot = details["complete_object_snapshot"]
+    require(digest(regular(Path(snapshot["inventory"]))) == snapshot["inventory_sha256"],
+            "Original recorded snapshot metadata changed")
+    inventories = dict(gate.object_root_inventories)
+    promoted = {}
+    for row in details["canonical_objects_promotion"]["exact_canonical_artifacts_promoted"]:
+        path = Path(row["path"])
+        require(path.is_relative_to(gate.lib) and gate.input_hashes[str(path)] == row["sha256"],
+                "Promoted signature-provider context is unbound")
+        promoted[path.relative_to(gate.lib).as_posix()] = row["sha256"]
+    inventories[roots[0]] = promoted
+    basis = {"schema": "OPICA_CURRENT_SIGNATURE_PROVIDER_BASIS_V1", "proof_acceptance": False,
+             "actual_import_roots": roots, "recorded_snapshot_sha256": snapshot["inventory_sha256"],
+             "recorded_snapshot_entries": snapshot["object_count"], "recorded_ir_provider_count": 0,
+             "limits": dict(observations.SIGNATURE_LIMITS), "roots": [],
+             "scope": "Current signatures paired to recorded original .ir/.olean providers; no historical signature capture or exhaustive executable-input claim"}
+    for index, root in enumerate(roots):
+        inventory = inventories[root]
+        providers = {}
+        for relative, expected in sorted(inventory.items()):
+            if not relative.endswith(".ir"):
+                continue
+            module = relative[:-3]
+            other = module + ".olean"
+            require(other in inventory, "Recorded IR has no same-root object provider")
+            require(gate.input_hashes[str(Path(root) / relative)] == expected and
+                    gate.input_hashes[str(Path(root) / other)] == inventory[other],
+                    "Signature provider is absent from original bound inputs")
+            providers[module] = {"ir": {"relative": relative, "sha256": expected},
+                                 "olean": {"relative": other, "sha256": inventory[other]}}
+        basis["roots"].append({"index": index, "path": root, "recorded_inventory_entries": len(inventory),
+                               "recorded_olean_count": sum(p.endswith(".olean") for p in inventory),
+                               "providers": providers})
+        basis["recorded_ir_provider_count"] += len(providers)
+    require(basis["recorded_ir_provider_count"] == 11174, "Recorded Round25 IR-provider count differs")
+    observations.validate_signature_basis(basis)
+    return basis
+
+
+def capture_signature_process(monitor, observations, gate, basis_path, phase):
+    limits = observations.SIGNATURE_LIMITS
+    command = [sys.executable, "-I", str(HERE / "observations.py"), "signature-capture",
+               "--basis", str(basis_path), "--basis-sha256", digest(basis_path),
+               "--output", str(basis_path.parent / phase), "--phase", phase]
+    row, _ = monitor.run("signature_custody_" + phase, command, cwd=gate.sources, env=gate.env,
+                         output=basis_path.parent, timeout=limits["seconds"],
+                         memory_mib=limits["rss_plus_swap_mib"], expected=0, log_limit=limits["log_bytes"])
+    path = basis_path.parent / phase / "CAPTURE.json"
+    summary = {"process": row, "receipt_path": str(path), "status": "NO_COMPLETE_SIGNATURE_CAPTURE"}
+    try:
+        captured = observations.signature_read_json(path)
+        summary.update(receipt_sha256=digest(regular(path)), status=captured["status"],
+                       basis_sha256=captured["basis_sha256"], phase=captured["phase"],
+                       address_space_limits_bytes=captured["address_space_limits_bytes"],
+                       signature_count=captured["signature_count"], signature_bytes=captured["signature_bytes"])
+        require(captured["basis_sha256"] == digest(basis_path) and captured["phase"] == phase,
+                "Signature subprocess receipt belongs to another capture")
+        require(captured["address_space_limits_bytes"] == [limits["address_space_bytes"]] * 2,
+                "Signature subprocess address-space bound was not established")
+    except BaseException as exc:
+        summary.update(status="SIGNATURE_CAPTURE_RECEIPT_FAILED_OR_UNAVAILABLE",
+                       error_type=type(exc).__name__, error=str(exc))
+    return summary
+
+
+def secondary_failure(result, context, exc):
+    result.setdefault("auxiliary_failures", []).append(
+        {"context": context, "error_type": type(exc).__name__, "error": str(exc)})
+
+
+def observe_with_signature_custody(monitor, observations, gate, command, basis_path, result, observer_state):
+    """A mandatory before capture; an unconditional after attempt for every child launch attempt."""
+    custody = result["signature_custody"]
+    custody["before"] = capture_signature_process(monitor, observations, gate, basis_path, "before")
+    write_json(gate.output / "MATCHED_PHASE_RESULT.json", result)
+    require(custody["before"]["process"]["status"] == "PASS" and
+            custody["before"]["status"] == "CAPTURED_CURRENT_SIGNATURE_BYTES_ONLY",
+            "Incomplete before-signature custody prevents the diagnostic child launch")
+    write_json(gate.output / "HOST_BEFORE.json", observations.host_details())
+    sampler = observations.SupplementalSampler(gate.output, PROCESS_NAME)
+    observer_state["sampler"] = sampler
+    sampler.thread.start()
+    result["status"] = "OBSERVING_NONACCEPTING_IMPORT"
+    try:
+        write_json(gate.output / "MATCHED_PHASE_RESULT.json", result)
+        result["probe_launch_attempted"] = True
+        row, text = observe_import(monitor, command, gate.sources, gate.env, gate.output)
+        result["observation"] = row
+        # The literal child receipt is durable before post-capture or parsing can fail.
+        write_json(gate.output / "MATCHED_PHASE_RESULT.json", result)
+        return row, text
+    finally:
+        custody["after_attempted"] = True
+        try:
+            custody["after"] = capture_signature_process(monitor, observations, gate, basis_path, "after")
+            require(custody["after"]["process"]["status"] == "PASS" and
+                    custody["after"]["status"] == "CAPTURED_CURRENT_SIGNATURE_BYTES_ONLY",
+                    "After-signature custody is incomplete")
+            before = observations.signature_read_json(Path(custody["before"]["receipt_path"]),
+                                                      custody["before"]["receipt_sha256"])
+            after = observations.signature_read_json(Path(custody["after"]["receipt_path"]),
+                                                     custody["after"]["receipt_sha256"])
+            custody["comparison"] = observations.compare_signature_captures(before, after)
+        except BaseException as exc:
+            custody["comparison"] = {"status": "SIGNATURE_COMPARISON_FAILED_OR_INCOMPLETE",
+                                      "error_type": type(exc).__name__, "error": str(exc)}
+            secondary_failure(result, "after_signature_capture_or_comparison", exc)
+        try:
+            write_json(gate.output / "MATCHED_PHASE_RESULT.json", result)
+        except BaseException as exc:
+            secondary_failure(result, "post_signature_result_preservation", exc)
+
+
+def finish_observers_and_rehash(gate, observations, sampler, result, prefix_complete):
+    # Every operation has its own failure boundary. Optional observation failure
+    # cannot skip the original final rehash after a completed prefix.
+    try:
+        if sampler is not None:
+            try:
+                result["optional_observer"] = sampler.finish()
+            except BaseException as exc:
+                secondary_failure(result, "optional_sampler_finish", exc)
+        try:
+            write_json(gate.output / "HOST_AFTER.json", observations.host_details())
+        except BaseException as exc:
+            secondary_failure(result, "host_after_preservation", exc)
+    finally:
+        if prefix_complete:
+            result["post_integrity_attempted"] = True
+            try:
+                result["post_integrity"] = {"status": "DIAGNOSTIC_INPUT_REHASH_PASSED", "production_stage30": "NOT_RUN",
+                                            "details": gate.final_integrity()}
+            except BaseException as exc:
+                result["post_integrity"] = {"status": "DIAGNOSTIC_REHASH_FAILED_OR_UNAVAILABLE",
+                                            "error_type": type(exc).__name__, "error": str(exc)}
+                secondary_failure(result, "original_final_rehash", exc)
 
 
 def retain_probe_products(build, output):
@@ -428,9 +613,12 @@ def run(args, source):
               "production_modular_gate": "NOT_RUN", "independent_proof_gate": "NOT_RUN",
               "source_binding": source, "production_arguments": production_argv(args.supplier, args.head, args.work),
               "probe_build_receipt_sha256": digest(build / "PROBE_BUILD.json"), "prefix_order": list(PREFIX),
-              "comparison": "NOT_RUN", "observation": "NOT_RUN", "post_integrity": "NOT_RUN"}
+              "comparison": "NOT_RUN", "observation": "NOT_RUN", "post_integrity": "NOT_RUN",
+              "signature_custody": {"before": "NOT_RUN", "after": "NOT_RUN", "comparison": "NOT_RUN",
+                                     "after_attempted": False, "historical_signature_equality": "NOT_ESTABLISHED"},
+              "probe_launch_attempted": False, "auxiliary_failures": []}
     baseline = read_json(HERE / "ROUND25_BASELINE.json")
-    code, prefix_complete, sampler = 2, False, None
+    code, prefix_complete, observer_state = 2, False, {"sampler": None}
     try:
         result["resource_before"] = resource_before(args.work, args.head, baseline)
         write_json(gate.output / "PROBE_BUILD.json", prepared)
@@ -446,18 +634,21 @@ def run(args, source):
         require(gate.receipt["environment"]["import_roots"][0] == str(gate.lib.resolve()), "Promoted root is not first")
         result["launch"] = {"command": [str(build / "import_phase_probe"), "exact-guard", "split"],
                             "cwd": str(gate.sources), "environment": {key: gate.env.get(key) for key in RESOURCE_KEYS},
-                            "timeout_seconds": 1800, "rss_plus_swap_limit_mib": 50000, "log_limit_bytes": 64 << 20,
+                            "timeout_seconds": DIAGNOSTIC_SECONDS, "rss_plus_swap_limit_mib": 50000, "log_limit_bytes": 64 << 20,
                             "probe_sha256": prepared["files"]["import_phase_probe"]["sha256"]}
-        write_json(gate.output / "HOST_BEFORE.json", observations.host_details())
-        result["status"] = "OBSERVING_NONACCEPTING_IMPORT"
-        write_json(gate.output / "MATCHED_PHASE_RESULT.json", result)
-        sampler = observations.SupplementalSampler(gate.output, PROCESS_NAME)
-        sampler.thread.start()
-        row, text = monitored(monitor, PROCESS_NAME, result["launch"]["command"], gate.sources, gate.env,
-                              gate.output, 1800)
-        result["observation"] = row
+        signature_output = gate.output / "signature-custody"
+        require(not signature_output.exists() and not signature_output.is_symlink(), "Signature evidence directory must be fresh")
+        signature_output.mkdir(mode=0o700)
+        basis_path = signature_output / "PROVIDER_BASIS.json"
+        observations.signature_write_json(basis_path, signature_basis(gate, baseline, observations))
+        result["signature_custody"]["provider_basis"] = {"path": str(basis_path), "sha256": digest(basis_path)}
+        result["signature_custody"]["comparability_limit"] = "Additional directory/signature reads and metadata/custody work occur before the timed child; no controlled causal speedup claim"
+        row, text = observe_with_signature_custody(monitor, observations, gate, result["launch"]["command"],
+                                                  basis_path, result, observer_state)
         result["phases"] = phase_markers(text)
-        if row["status"] == "PASS" and row["exit_code"] == 0:
+        if result["signature_custody"]["comparison"].get("status") != "CURRENT_SIGNATURE_BYTES_AND_PROVIDER_IDENTITIES_STABLE":
+            result["status"] = "DIAGNOSTIC_SIGNATURE_CUSTODY_FAILED_OR_INCOMPLETE"
+        elif row["status"] == "PASS" and row["exit_code"] == 0:
             require(result["phases"]["header_and_completion_observed"], "Observer exit zero lacks exact completion/header markers")
             result["status"] = "DIAGNOSTIC_IMPORT_COMPLETED_NO_PROOF_ACCEPTANCE"
             code = 0
@@ -469,25 +660,19 @@ def run(args, source):
         if isinstance(result["comparison"], dict) and result["comparison"]["mismatched_fields"]:
             result["status"] = "DIAGNOSTIC_COMPARISON_MISMATCH"
     finally:
-        if sampler is not None:
-            result["optional_observer"] = sampler.finish()
-        write_json(gate.output / "HOST_AFTER.json", observations.host_details())
+        finish_observers_and_rehash(gate, observations, observer_state["sampler"], result, prefix_complete)
         if prefix_complete:
-            # This is an independently labelled rehash, not execution or acceptance of production stage30.
             try:
-                result["post_integrity"] = {"status": "DIAGNOSTIC_INPUT_REHASH_PASSED", "production_stage30": "NOT_RUN",
-                                            "details": gate.final_integrity()}
                 require(digest(build / "import_phase_probe") == prepared["files"]["import_phase_probe"]["sha256"],
                         "Probe executable drifted")
                 require(authenticate(args.supplier, args.head) == source, "Diagnostic source drifted")
                 require(digest(args.work / "loop-dio-resource/INITIAL.json") == result["resource_before"]["initial_sha256"],
                         "Initial resource receipt drifted")
             except BaseException as exc:
-                result["post_integrity"] = {"status": "DIAGNOSTIC_REHASH_FAILED_OR_UNAVAILABLE",
-                                            "error_type": type(exc).__name__, "error": str(exc)}
-                result["observation_disposition_before_integrity_failure"] = result["status"]
-                result["status"] = "DIAGNOSTIC_COMPARISON_INVALID_AFTER_OBSERVATION"
-                code = 2
+                secondary_failure(result, "post_source_probe_or_resource_identity", exc)
+        if result["auxiliary_failures"]:
+            result["observation_disposition_before_auxiliary_failure"] = result["status"]
+            result["status"], code = "DIAGNOSTIC_COMPARISON_INVALID_AFTER_OBSERVATION", 2
         forbidden = [name for name in FORBIDDEN_RECEIPTS if (gate.output / name).exists()]
         theorem_objects = [str(path) for root in (gate.lib, gate.canonical_lib) for name in ("ImportGuard", "MainClosedBridge")
                            for path in (root / "OPICAStep4").glob(name + ".*")]

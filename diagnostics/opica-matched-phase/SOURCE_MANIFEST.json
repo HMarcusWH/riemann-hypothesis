@@ -7,8 +7,8 @@
   "files": [
     {
       "path": ".github/workflows/opica-matched-phase-diagnostic.yml",
-      "bytes": 13728,
-      "sha256": "ccbdce92aac9df2d5b08ce818c4c451e4f67d94f09167d0be6593e7b17c6a45d"
+      "bytes": 13907,
+      "sha256": "17f142f6f8499c47e600cddf3482753cf5b3a0d1b92704557916906416822911"
     },
     {
       "path": "diagnostics/opica-matched-phase/ImportPhaseProbe.lean",
@@ -17,8 +17,8 @@
     },
     {
       "path": "diagnostics/opica-matched-phase/PROFILE.json",
-      "bytes": 2510,
-      "sha256": "af4332a1fb0616b8764d1e85f511ca229e6c065f9945146108b4c1ef90cef2c4"
+      "bytes": 5204,
+      "sha256": "1a56c4ca35390e8382f0e26c7d626463f5c4c9d8ebc64bb54193294ce72221c0"
     },
     {
       "path": "diagnostics/opica-matched-phase/ROUND25_BASELINE.json",
@@ -27,20 +27,20 @@
     },
     {
       "path": "diagnostics/opica-matched-phase/observations.py",
-      "bytes": 10057,
-      "sha256": "8e9b8cf5ebe78dad3d9c9fd59ef6a230269378c7620b1b2e193d0f58c1864dd9"
+      "bytes": 31576,
+      "sha256": "ddfc1e3652a4b39f5aeb4890fc2fc018521b80bcc62bdd33cd7b9b59134668c2"
     },
     {
       "path": "diagnostics/opica-matched-phase/runner.py",
-      "bytes": 32084,
-      "sha256": "36944968edc9dad49ee7cd8c199d4cb76dd0674c685ece01e215b9bb3cb33985"
+      "bytes": 44339,
+      "sha256": "5463516e7b7ce545272f77a3548621192cdf5ba95d827d5ac85b5f9051f17b5b"
     },
     {
       "path": "diagnostics/opica-matched-phase/test_runner.py",
-      "bytes": 17881,
-      "sha256": "af54185345715e737d3c74c47672970acc9443a108ed25ce6fd358e4567aa96c"
+      "bytes": 37077,
+      "sha256": "da6f062dd3b603af13ce48123164f850f58ef32da4423c0ec7f812368dbe7e03"
     }
   ],
-  "scope": "Additive unpublished diagnostic only; all original source, proof contracts and budgets unchanged",
+  "scope": "Additive nonaccepting Round27 successor with3600-second diagnostic observation and separately bounded current signature custody; original source, proof contracts and production budgets unchanged",
   "proof_acceptance": false
 }

@@ -1,6 +1,6 @@
 {
-  "id": "ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1",
-  "committed_selector": "ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1",
+  "id": "ROUND27_MATCHED_PREFIX_SPLIT3600_DIO1_SINGLE_V1",
+  "committed_selector": "ROUND27_MATCHED_PREFIX_SPLIT3600_DIO1_SINGLE_V1",
   "selection_status": "SELECTED_BY_ROOT_PENDING_FINAL_REVIEW_AND_PUBLICATION",
   "hosted_execution": "NOT_RUN_BY_THIS_PREPARATION",
   "base_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
@@ -30,7 +30,7 @@
   "probe": {
     "selection": "exact-guard",
     "mode": "split",
-    "seconds": 1800,
+    "seconds": 3600,
     "rss_plus_swap_limit_mib": 50000,
     "log_limit_bytes": 67108864,
     "source_sha256": "4e760679e151cd67287a5f3d8a97818aeeda4da9ae77295bfa8d1bc0bcc87526",
@@ -83,5 +83,47 @@
     "scope": "Generated observer evidence only; no proof acceptance"
   },
   "proof_acceptance": false,
-  "proof_30_plus_7_contract": "UNCHANGED_AND_NOT_EXECUTED_BY_THIS_DIAGNOSTIC"
+  "proof_30_plus_7_contract": "UNCHANGED_AND_NOT_EXECUTED_BY_THIS_DIAGNOSTIC",
+  "preparation_base_head": "4fbabb316f9b2858e48059f1961b9266a14d7d9f",
+  "trigger": {
+    "event": "push",
+    "branch": "research/opica-finalize-3600-diagnostic-20261122",
+    "manual_dispatch": false,
+    "fallback": false
+  },
+  "recorded_baseline_scope": "The recorded source/object/export identities remain required. Original object snapshots omit .ir.sig; no historical signature equality or exhaustive executable-sidecar coverage is claimed.",
+  "comparability_limits": [
+    "Different host scheduling, memory and swap context, cache residency and module loading progress are not controlled by the recorded identity match.",
+    "A diagnostic completion would not establish the original production guard completion within its unchanged1800-second budget; the production guard performs additional post-import proof construction and object work.",
+    "Signature inventory, byte reads, archive writes and metadata checks add preparation/cache activity; this completion diagnostic is not a controlled causal speedup benchmark."
+  ],
+  "signature_custody": {
+    "status": "SELECTED_ADDITIONAL_DIAGNOSTIC_OBSERVATION_PENDING_SOURCE_REVIEW",
+    "recorded_ir_provider_count": 11174,
+    "exact_ordered_import_roots": 13,
+    "limits": {
+      "exact_roots": 13,
+      "providers_and_signatures": 12000,
+      "directory_entries": 1000000,
+      "path_depth": 64,
+      "relative_path_bytes": 1024,
+      "signature_bytes": 1048576,
+      "total_signature_bytes": 67108864,
+      "metadata_bytes": 33554432,
+      "archive_bytes": 100663296,
+      "seconds": 300,
+      "rss_plus_swap_mib": 1024,
+      "address_space_bytes": 1073741824,
+      "log_bytes": 8388608
+    },
+    "placement": [
+      "After unchanged first19 and exact recorded baseline comparison, before the timed child",
+      "After every timed-child launch attempt and original monitor cleanup, before the separately labelled original final rehash"
+    ],
+    "historical_signature_equality": "NOT_ESTABLISHED",
+    "provider_hash_policy": "Reuse same-root original recorded .ir/.olean hashes with current safe file identities; require original final byte rehash separately",
+    "failure_policy": "No child launch after incomplete before capture; attempt after capture for every child launch attempt; preserve literal child row before later capture/parser failures; original final rehash attempted whenever prefix completed",
+    "retained_outputs": "Only bounded raw-signature ZIPs, provider basis, capture manifests and monitor evidence; no raw temporary signature trees",
+    "scope": "Current signatures only, not exhaustive executable-sidecar coverage, original proof acceptance or historical signature equality"
+  }
 }

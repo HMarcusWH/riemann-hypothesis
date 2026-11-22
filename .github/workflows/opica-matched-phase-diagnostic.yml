@@ -1,12 +1,11 @@
-name: OPICA matched-prefix stock import phase diagnostic
-run-name: OPICA nonaccepting matched-prefix diagnostic at ${{ github.sha }}
+name: OPICA 3600-second matched-prefix stock import diagnostic
+run-name: OPICA nonaccepting 3600-second diagnostic at ${{ github.sha }}
 on:
   push:
-    branches: [research/opica-matched-phase-diagnostic-20261122]
+    branches: [research/opica-finalize-3600-diagnostic-20261122]
     paths:
       - .github/workflows/opica-matched-phase-diagnostic.yml
       - diagnostics/opica-matched-phase/**
-  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
@@ -20,7 +19,7 @@ jobs:
       LEAN_ABORT_ON_PANIC: '1'
       LEAN_NUM_THREADS: '2'
       OPICA_RESOURCE_PROFILE: 'LOOP_RO_DIO1_ORIGINAL64K_V1'
-      OPICA_DIAGNOSTIC_PROFILE: 'ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1'
+      OPICA_DIAGNOSTIC_PROFILE: 'ROUND27_MATCHED_PREFIX_SPLIT3600_DIO1_SINGLE_V1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -131,7 +130,7 @@ jobs:
           sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" bind \
             --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
             --head "${{ github.sha }}" --work "$OPICA_WORK"
-      - name: Execute unchanged first19 and nonaccepting1800-second split observer
+      - name: Execute unchanged first19, bounded signature custody and nonaccepting3600-second split observer
         id: prefix_phase
         run: |
           set -euo pipefail
@@ -187,6 +186,8 @@ jobs:
                       ['RAW_PREFIX_PHASE_OUTCOME','RAW_OBSERVER_PREPARATION_OUTCOME','RAW_RESOURCE_FINAL_OUTCOME']},
                   'receipts':{k:read(p) for k,p in {
                       'diagnostic':out/'MATCHED_PHASE_RESULT.json','prelude':out/'DIAGNOSTIC_PRELUDE_STATE.json',
+                      'signature_before':out/'signature-custody/before/CAPTURE.json',
+                      'signature_after':out/'signature-custody/after/CAPTURE.json',
                       'preparation':work/'phase-probe-build/PROBE_BUILD.json','resource_final':work/'loop-dio-resource/FINAL.json',
                       'production_modular':out/'MODULAR_GATE_RECEIPT.json',
                       'production_independent':work/'independent-verification/INDEPENDENT_RECEIPT.json'}.items()},
