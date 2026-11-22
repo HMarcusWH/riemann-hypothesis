@@ -1,0 +1,89 @@
+{
+  "schema": "OPICA_GOVERNED_RESEARCH_CAMPAIGN_V1",
+  "campaign": "COMMUNITY_4_36_NATIVE_4_33_SEPARATE_WORLDS",
+  "status": "PENDING_ACTUAL_TYPED_RETRIEVAL_AND_NATIVE_KERNEL_RUNS",
+  "controller_repository": "HMarcusWH/riemann-hypothesis",
+  "supplier_commit": "1b894f7511841e6607bc0398cf2657526bbb29d9",
+  "supplier_source_tree": "69b331ce0e429c7632dac6aa642e5875a50b1218",
+  "supplier_lean": "leanprover/lean4:v4.36.0",
+  "supplier_mathlib": "fc4f59e577feb1a4956671bc04ac18aaaf8cd842",
+  "native_repository": "HMarcusWH/zeta-23-lean",
+  "native_commit": "bb7c8184a135b2823c6296917c5ac893bebf2a71",
+  "native_tree": "2b19357e1b65cc500f3e3a5b5d4df14601b02062",
+  "native_search_source": {
+    "research/RHRC/integration/opica_composition/SEARCH_CONTRACTS.json": "7e73eb2ed5e3489e2930d20316f46f3fe56e693a",
+    "research/RHRC/integration/opica_composition/PUBLIC_TARGETS.json": "e2ef28fb9b8954efa5c4a600184631f54ace3497",
+    "research/RHRC/integration/opica_composition/composition_search.py": "de434bac9bd9c60279bc99c4f3e2ca27036c3465",
+    "research/RHRC/integration/opica_composition/proposals.py": "778e1725b5658094a889c631ef9b3f9eeefcc74c",
+    "research/RHRC/integration/opica_composition/qualification.py": "0b35ccde04197f62cba3a9c2be9b97508861d785"
+  },
+  "frozen_native_typed_targets": [
+    "INTEGRATION_CLOSURE",
+    "INTEGRATION_SOURCE",
+    "INTEGRATION_INDEX"
+  ],
+  "target_c1": {
+    "target_id": "C1_INDEPENDENT_NATIVE_ARITHMETIC",
+    "declaration": "Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds",
+    "module": "Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices",
+    "type_kind": "value",
+    "exact_source": "Zeta23/OPICARound4/ArithmeticFrontier/MomentSlices.lean",
+    "original_cutoff": "originalDetectorQuarticCutoff L",
+    "parity": "EvenMomentSliceLowerBound OR OddMomentSliceLowerBound",
+    "quantifiers": "forall natural n >= 1 exists L >= n+2",
+    "tolerance": "1 / n",
+    "allowed_lemmas": [
+      {
+        "declaration": "Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_even",
+        "module": "Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure"
+      },
+      {
+        "declaration": "Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_odd",
+        "module": "Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure"
+      },
+      {
+        "declaration": "Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_tendsto",
+        "module": "Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure"
+      }
+    ],
+    "forbidden_lemmas": [
+      "riemannHypothesis",
+      "_root_.riemannHypothesis",
+      "Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_riemannHypothesis",
+      "Zeta23.OPICARound4.ArithmeticFrontier.riemannHypothesis_iff_cofinal_moment_slice_bounds"
+    ],
+    "no_raw_rh_axiom": true,
+    "no_direct_rh_certificate": true,
+    "expected_candidate_kind": "NATIVE_TYPED_SEARCH_NOT_RH_PROOF"
+  },
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "proof_gates": [
+    "SOURCE",
+    "KERNEL",
+    "AXIOMS",
+    "INDEPENDENT_EXPECTED_TYPE"
+  ],
+  "preserved_existing_native_framework": "ROUND4_GOVERNED_DEDUCTION_V1",
+  "native_research_status": "OPEN",
+  "supplier_compatibility": "NOT_VERIFIED_WRAPPED_LEAN4_36",
+  "output_authority": {
+    "typed_preflight": "RESEARCH_PRODUCING_CHECK_ONLY",
+    "full_native_tests": "NATIVE_TEST_GATES_ONLY_NOT_11_LANE_ACCEPTANCE",
+    "c1_search": "OPEN_UNLESS_EXACT_PROOF_KERNEL_INDEPENDENTLY_ACCEPTED",
+    "cross_version_proof": "NOT_RUN",
+    "rh": "OPEN"
+  },
+  "falsifiers": [
+    "Native compiler source and C1 Prop must be exported verbatim from exact pinned native Lean environment",
+    "No RH-derived proof constant may enter C1 approved theorem list",
+    "A bounded empty search does not prove unprovability",
+    "A candidate term plan is not a Lean theorem",
+    "Native 4.33 objects cannot be loaded into community 4.36 environment",
+    "Hidden extra axioms, sorryAx, mismatched source states, and weakened parity/cutoff reject",
+    "The old 30+7 verification cannot authenticate the shortened external supplier"
+  ]
+}
