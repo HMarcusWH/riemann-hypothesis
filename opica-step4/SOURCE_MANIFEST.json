@@ -1,12 +1,12 @@
 {
-  "version": "OPICA24_SOURCE_BUNDLE_V1",
+  "version": "OPICA25_CUSTODY_DIO_SELECTED_SOURCE_BUNDLE_V1",
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
   "gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
-  "scope": "Source identity only. Fixed 64 KiB supplier storage experiment; modular and independent proof gates unchanged. No completed combined verification is asserted.",
+  "scope": "Selected single bounded full-contract attempt with explicit read-only loop DIO. Original supplier image and full mounted-file verification, proof commands, all30modular+7independent gates and proof budgets remain required. Resource setup, observation and custody do not grant theorem acceptance.",
   "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
-  "workflow_sha256": "98f2869cf29f6ac34cbff7e52d1fbfeb007c1ae151ce434a140c2ac3ea4ac1df",
-  "prior_execution_head": "780928f57bda7773971dcb7fc080a52ded6b2b32",
+  "workflow_sha256": "4a3e8684185cc7949e067712692afe015e122a24ddd1128acfcb467202d8e8c1",
+  "prior_execution_head": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
   "prior_execution_disposition": "INCOMPLETE_GUARDED_KERNEL_IMPORT_TIMEOUT; 19PASS_1INCOMPLETE_10NOT_RUN; NO_GUARD_OR_CLOSED_OBJECT; INDEPENDENT_SKIPPED",
   "files": [
     {
@@ -23,6 +23,21 @@
       "path": "collect_evidence.py",
       "bytes": 2475,
       "sha256": "2b899919f2325393098b781e36ad90617a8a3967579d5d04c3696de4d0ed583b"
+    },
+    {
+      "path": "custody/CAPSULE_SPEC.md",
+      "bytes": 12679,
+      "sha256": "2b32d56322ee2bf15a998aa161dd09fd4bcb4434cfb13e34a87d2b9cec34948d"
+    },
+    {
+      "path": "custody/collect_native_capsule.py",
+      "bytes": 26849,
+      "sha256": "c2140c0070e846143b5ae4c15651baf61c2499a9a6a703ac95a4c0b184ff4061"
+    },
+    {
+      "path": "custody/test_collect_native_capsule.py",
+      "bytes": 12662,
+      "sha256": "feb2a49f8f749f34ea57a134fc1d7297c5f7d8c39299a923c82196b8acad5b2c"
     },
     {
       "path": "independent/SPEC.md",
@@ -365,6 +380,21 @@
       "sha256": "341c081e9f19318d23fc71e758d1e283130b1eed4dfca748a30f7b3c938d0562"
     },
     {
+      "path": "resource_profiles/loop_ro_dio1_64k.json",
+      "bytes": 1259,
+      "sha256": "67fe5fd85db2938a40ae51181b2d84f4b8494c8b7fefcf9be0de6fb8cba9c1ba"
+    },
+    {
+      "path": "resource_profiles/loop_ro_dio1_64k.py",
+      "bytes": 29155,
+      "sha256": "d8835808472cc92b6f70c74311b290f8b6ea6304ff1a91cebb79b9188924d5d6"
+    },
+    {
+      "path": "resource_profiles/test_loop_ro_dio1_64k.py",
+      "bytes": 14384,
+      "sha256": "bb536b97de4e10ca81fcbb594791d9251bfbd995e25abddb81c137b93f22b90b"
+    },
+    {
       "path": "transport/export_stream_store.py",
       "bytes": 8913,
       "sha256": "461caaa8bfc52ef12ca1e39dd22ca0dce219a10ef49efda2d9cc7537ca24b012"
@@ -389,5 +419,31 @@
       "bytes": 17260,
       "sha256": "36e330ddc0a9baae25de15d489dfbcf0c5ce8049cc472db031be58eaa1174d49"
     }
-  ]
+  ],
+  "custody_hook": {
+    "preparation_parent": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
+    "original_source_manifest_sha256": "e3ff36592a00881dd5c5e8c82913992dd6b88f2f137c5a413d7d5cd61f4bc204",
+    "native_dependency_files": 1147,
+    "authored_audit_files": 8,
+    "member_cap_mib": 512,
+    "total_cap_mib": 4096,
+    "caps_are_bounds_not_measured_sufficiency": true,
+    "hosted_execution": "Complete custody must be established from the actual same-run manifest, archive and authenticated artifact provenance"
+  },
+  "resource_profile_candidate": {
+    "profile_id": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+    "committed_selector": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+    "activation": "Explicitly selected after diagnostic45022141225; exact commit and workflow digest bind the selection",
+    "custody_parent_patch_sha256": "6837059214bf5ed3c96e0ba80fb1fc9a0269474288a8b6ba8debd42b573c6c9d",
+    "host_support": "Must be observed and accepted by the adapter before proof and checked after the attempt",
+    "execution": "Results must be read from authenticated workflow and process receipts; no completion or proof acceptance asserted here"
+  },
+  "historical_prior_execution_head": "780928f57bda7773971dcb7fc080a52ded6b2b32",
+  "diagnostic_basis": {
+    "head": "ff9e53b457168b4cc51b6be570fd7e356675e6b5",
+    "run_id": 45022141225,
+    "artifact_id": 14756786853,
+    "disposition": "CORE_COMPLETED_553_034S_FINALIZATION_INCOMPLETE_AT_600S_TIMEOUT",
+    "selection_scope": "File-cache-pressure hypothesis; baseline effective DIO and image-specific residency unobserved; no causal speedup claim"
+  }
 }

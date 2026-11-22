@@ -19,6 +19,7 @@ jobs:
     env:
       LEAN_ABORT_ON_PANIC: '1'
       LEAN_NUM_THREADS: '2'
+      OPICA_RESOURCE_PROFILE: 'LOOP_RO_DIO1_ORIGINAL64K_V1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -26,6 +27,14 @@ jobs:
           path: supplier
           persist-credentials: false
           fetch-depth: 0
+      - name: Require an explicitly selected resource profile
+        id: resource_selection
+        run: |
+          set -euo pipefail
+          python3 supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py selection \
+            --selection "$OPICA_RESOURCE_PROFILE"
+          python3 -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
+          python3 -O -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
       - name: Prepare bounded standard runner
         run: |
           set -euo pipefail
@@ -66,7 +75,9 @@ jobs:
             --output "$OPICA_WORK/proof-store.sqfs" \
             --max-image-gib 40 --min-free-gib 45 --processors 2 --memory-mb 512
           mkdir "$OPICA_WORK/proof-store"
-          sudo mount -t squashfs -o loop,ro "$OPICA_WORK/proof-store.sqfs" "$OPICA_WORK/proof-store"
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" setup \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
           cd "$OPICA_WORK/proof-store"
           sha256sum --quiet --check "$OPICA_WORK/proof-store.sqfs.files.sha256"
           python - <<'PY'
@@ -98,7 +109,15 @@ jobs:
           python supplier/opica-step4/independent/bootstrap_checker.py \
             --work "$OPICA_WORK/independent-checker" \
             --timeout 2400 --memory-mib 10000 --min-free-gib 6
+      - name: Bind the selected loop resource identity before proof
+        id: resource_binding
+        run: |
+          set -euo pipefail
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" bind \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
       - name: Execute exact kernel-object proof and claim gates
+        id: modular_proof
         run: |
           set -euo pipefail
           ulimit -S -n "$(ulimit -H -n)"
@@ -116,6 +135,7 @@ jobs:
             --output "$OPICA_WORK/verification" \
             --jobs 2 --compile-timeout 1800 --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
       - name: Independently check the complete combined proof
+        id: independent_proof
         run: |
           set -euo pipefail
           ulimit -S -n "$(ulimit -H -n)"
@@ -125,17 +145,143 @@ jobs:
             --external-head "${{ github.sha }}" \
             --output "$OPICA_WORK/independent-verification" \
             --timeout 9000 --memory-mib 50000
+      - name: Observe final loop resource identity independently of proof result
+        id: resource_final_observation
+        if: always()
+        run: |
+          set -euo pipefail
+          work="${OPICA_WORK:-$RUNNER_TEMP/opica-step4-round24}"
+          mkdir -p "$work"
+          printf 'OPICA_RESOURCE_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" final \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$work" \
+            --modular-outcome "${{ steps.modular_proof.outcome }}" \
+            --independent-outcome "${{ steps.independent_proof.outcome }}"
       - name: Collect exact results and limitations
+        id: original_evidence_collection
         if: always()
         run: |
           set -euo pipefail
           python3 supplier/opica-step4/collect_evidence.py --work "$OPICA_WORK" --head "${{ github.sha }}"
       - name: Preserve proof receipts
+        id: original_evidence_upload
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-step4-evidence-${{ github.sha }}
           path: ${{ env.OPICA_WORK }}/evidence.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Collect the exact native bootstrap object capsule
+        id: native_custody_collection
+        if: always()
+        env:
+          EXACT_CHECKED_HEAD: ${{ github.sha }}
+          RAW_MODULAR_OUTCOME: ${{ steps.modular_proof.outcome }}
+          RAW_INDEPENDENT_OUTCOME: ${{ steps.independent_proof.outcome }}
+          RAW_EVIDENCE_COLLECTION_OUTCOME: ${{ steps.original_evidence_collection.outcome }}
+          RAW_EVIDENCE_UPLOAD_OUTCOME: ${{ steps.original_evidence_upload.outcome }}
+        run: |
+          set -euo pipefail
+          work="${OPICA_WORK:-$RUNNER_TEMP/opica-step4-round24}"
+          printf 'OPICA_CUSTODY_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          export OPICA_CUSTODY_WORK="$work"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, sys
+          from datetime import datetime, timezone
+          work = pathlib.Path(os.environ['OPICA_CUSTODY_WORK'])
+          work.mkdir(parents=True, exist_ok=True)
+          supplier = pathlib.Path(os.environ['GITHUB_WORKSPACE']) / 'supplier'
+          output = work / 'native-object-capsule'
+          record_path = work / 'NATIVE_CUSTODY_OPERATION.json'
+          def receipt(path):
+              try:
+                  raw = path.read_bytes()
+                  data = json.loads(raw)
+                  return {'path': str(path), 'sha256': hashlib.sha256(raw).hexdigest(),
+                          'status': data.get('status', 'UNKNOWN'),
+                          'custody_complete': data.get('custody_complete')}
+              except FileNotFoundError:
+                  return {'path': str(path), 'status': 'NOT_PRESENT'}
+              except (OSError, ValueError, AttributeError) as exc:
+                  return {'path': str(path), 'status': 'UNREADABLE_OR_INVALID',
+                          'error_type': type(exc).__name__}
+          def save(record):
+              pending = record_path.with_suffix('.json.tmp')
+              pending.write_text(json.dumps(record, indent=2) + '\n')
+              pending.replace(record_path)
+          command = [sys.executable, str(supplier / 'opica-step4/custody/collect_native_capsule.py'),
+              '--work', str(work), '--supplier', str(supplier),
+              '--head', os.environ['EXACT_CHECKED_HEAD'], '--output', str(output),
+              '--max-member-mib', '512', '--max-total-mib', '4096']
+          record = {
+              'schema': 'OPICA_NATIVE_CUSTODY_WORKFLOW_OPERATION_V1',
+              'started_utc': datetime.now(timezone.utc).isoformat(),
+              'requested_head': os.environ['EXACT_CHECKED_HEAD'],
+              'platform_context': {key: os.environ.get(key) for key in
+                  ['GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                   'GITHUB_WORKFLOW_REF', 'GITHUB_WORKFLOW_SHA']},
+              'raw_step_outcomes_before_custody': {label: os.environ.get(key, 'NOT_AVAILABLE')
+                  for label, key in [('modular', 'RAW_MODULAR_OUTCOME'),
+                      ('independent', 'RAW_INDEPENDENT_OUTCOME'),
+                      ('original_collection', 'RAW_EVIDENCE_COLLECTION_OUTCOME'),
+                      ('original_upload', 'RAW_EVIDENCE_UPLOAD_OUTCOME')]},
+              'raw_proof_receipts_before_custody': {
+                  'modular': receipt(work / 'verification/MODULAR_GATE_RECEIPT.json'),
+                  'independent': receipt(work / 'independent-verification/INDEPENDENT_RECEIPT.json')},
+              'custody_command': command, 'custody_status': 'NOT_STARTED',
+              'member_cap_mib': 512, 'total_cap_mib': 4096,
+              'caps_are_bounds_not_measured_sufficiency': True,
+              'proof_acceptance_established_by_this_hook': False,
+              'scope': 'Operational custody disposition, separate from unchanged raw mathematical proof receipts; platform fields require authenticated workflow/artifact provenance'}
+          save(record)
+          try:
+              code = subprocess.run(command, check=False).returncode
+              record['custody_exit_code'] = code
+              record['custody_receipt'] = receipt(output / 'CUSTODY_MANIFEST.json')
+              record['custody_status'] = record['custody_receipt']['status']
+              if code == 0 and not (record['custody_status'] == 'COMPLETE_BUILD_RECEIPT_CUSTODY_ONLY'
+                                   and record['custody_receipt']['custody_complete'] is True):
+                  code = 2
+                  record['hook_error'] = 'Collector exit zero lacked its complete custody receipt'
+          except OSError as exc:
+              code = 2
+              record.update(custody_status='COLLECTOR_COULD_NOT_START', error_type=type(exc).__name__)
+          record['operation_exit_code'] = code
+          record['completed_utc'] = datetime.now(timezone.utc).isoformat()
+          save(record)
+          print(json.dumps(record, sort_keys=True), flush=True)
+          sys.exit(code if code >= 0 else 128 - code)
+          PY
+      - name: Preserve native custody and operation evidence
+        id: native_custody_upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-native-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.OPICA_CUSTODY_WORK }}/NATIVE_CUSTODY_OPERATION.json
+            ${{ env.OPICA_CUSTODY_WORK }}/native-object-capsule/CUSTODY_MANIFEST.json
+            ${{ env.OPICA_CUSTODY_WORK }}/native-object-capsule/native-objects.zip
+            ${{ env.OPICA_CUSTODY_WORK }}/native-object-capsule/native-objects.partial.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve separate loop resource observations
+        id: resource_evidence_upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-loop-resource-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_STARTED.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/OWNED_LOOP.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_RESULT.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/INITIAL.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/BIND_FAILURE.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/FINAL.json
           compression-level: 0
           if-no-files-found: error
           retention-days: 14
