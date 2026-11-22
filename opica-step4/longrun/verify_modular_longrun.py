@@ -17,7 +17,7 @@ from pathlib import Path
 import sys
 from types import SimpleNamespace
 
-from policy import PolicyError, profile, source_identity, sha256, git, require, EXPECTED_BASE, EXPECTED_PROFILE
+from policy import PolicyError, profile, source_identity, sha256, git, require, read_json, EXPECTED_BASE, EXPECTED_PROFILE
 
 HERE = Path(__file__).resolve().parent
 ORIGINAL = HERE.parent / "modular" / "verify_modular.py"
@@ -25,6 +25,8 @@ PROFILE = HERE / "PROFILE.json"
 LONGRUN_STAGES = frozenset(("guarded_kernel_import", "fresh_closed_kernel_construction"))
 MODULAR_COUNT = 30
 INDEPENDENT_COUNT = 7
+PILOT_INTEGRITY_FILE = "PILOT_POST_INTEGRITY.json"
+PILOT_INTEGRITY_SCHEMA = "OPICA_LONGRUN_PILOT_POST_INTEGRITY_V1"
 
 def _load_original():
     require(git("rev-parse", "HEAD:opica-step4/modular/verify_modular.py") ==
@@ -61,13 +63,26 @@ def controller_receipt(path: Path, *, mode: str, head: str, p: dict, result: int
     rows = modular.get("stages", [])
     require(len(rows) == MODULAR_COUNT, "Original modular receipt stage count differs")
     statuses = [row.get("status") for row in rows]
+    post_path = gate.output / PILOT_INTEGRITY_FILE
+    post_hash = None
+    post_pass = False
+    if mode == "pilot_stage20" and post_path.is_file() and not post_path.is_symlink():
+        post = read_json(post_path)
+        post_hash = sha256(post_path)
+        post_pass = (post == modular.get("pilot_post_integrity")
+                     and post.get("schema") == PILOT_INTEGRITY_SCHEMA
+                     and post.get("status") == "PASS"
+                     and post.get("proof_acceptance") is False
+                     and post.get("production_stage30_status") == "NOT_RUN"
+                     and post_hash == modular.get("pilot_post_integrity_sha256"))
     if mode == "full":
         valid = (result == 0 and modular.get("status") == "PASS"
                  and statuses == ["PASS"] * MODULAR_COUNT)
         disposition = "MODULAR_30_PASS_REQUIRES_INDEPENDENT" if valid else "MODULAR_NOT_ESTABLISHED"
     else:
         valid = (result == 0 and modular.get("status") == "PILOT_STAGE20_COMPLETE"
-                 and statuses[:20] == ["PASS"] * 20 and statuses[20:] == ["NOT_RUN"] * 10)
+                 and statuses[:20] == ["PASS"] * 20 and statuses[20:] == ["NOT_RUN"] * 10
+                 and post_pass)
         disposition = "PILOT_STAGE20_COMPLETE_NOT_MODULAR_PASS" if valid else "PILOT_INCOMPLETE"
     r = {
         "schema": "OPICA_LONGRUN_CONTROLLER_RECEIPT_V1",
@@ -84,6 +99,8 @@ def controller_receipt(path: Path, *, mode: str, head: str, p: dict, result: int
         "original_stage_statuses": statuses,
         "exit_code": result,
         "pilot_completed": valid if mode == "pilot_stage20" else False,
+        "pilot_post_integrity_sha256": post_hash,
+        "pilot_post_integrity_pass": post_pass,
         "modular_pass": valid if mode == "full" else False,
         "independent_pass": False,
         "proof_acceptance": False,
@@ -128,9 +145,9 @@ def make_gate_class(mod, p):
                 return super().execute()
             # Diagnostic-only pilot runs the original first twenty stage methods.
             # It cannot produce MODULAR PASS or run the independent checker.
-            actions = {name: getattr(self, name) for name in mod.STAGES if hasattr(self, name)}
             code = 2
             try:
+                actions = {name: getattr(self, name) for name in mod.STAGES if hasattr(self, name)}
                 for name in mod.STAGES[:20]:
                     self.stage(name, actions[name])
                 require(all(row["status"] == "PASS" for row in self.receipt["stages"][:20]),
@@ -142,13 +159,61 @@ def make_gate_class(mod, p):
                                     claim="Actual guarded kernel import and its audit completed; no full modular or independent proof authority")
                 code = 0
             except (mod.GateBlocked, mod.GateIncomplete) as err:
-                self.receipt.update(status="INCOMPLETE", failure=str(err))
+                self.receipt.update(status="BLOCKED" if isinstance(err, mod.GateBlocked) else "INCOMPLETE",
+                                    failure=str(err), exception_type=type(err).__name__)
             except KeyboardInterrupt:
                 self.receipt.update(status="INTERRUPTED", failure="Operator interrupt")
                 code = 130
             except Exception as err:
                 self.receipt.update(status="FAIL", failure=str(err), exception_type=type(err).__name__)
             finally:
+                # Preserve the actual prefix disposition before the separate rehash.
+                # Calling the original method here does NOT execute/mark stage30.
+                primary = {key: self.receipt[key] for key in
+                           ("status", "failure", "exception_type") if key in self.receipt}
+                primary.update(exit_code=code, ended_utc=mod.old.utc_now())
+                self.receipt["pilot_execution_outcome"] = primary
+                self.receipt["pilot_post_integrity"] = {"status": "RUNNING"}
+                try:
+                    self.save()
+                except BaseException as err:
+                    # A receipt-write failure must not skip the integrity attempt.
+                    self.receipt["pilot_prefix_save_error"] = {
+                        "exception_type": type(err).__name__, "failure": str(err)}
+                post = {
+                    "schema": PILOT_INTEGRITY_SCHEMA,
+                    "started_utc": mod.old.utc_now(), "status": "RUNNING",
+                    "primary_execution": primary,
+                    "production_stage30_status": "NOT_RUN", "proof_acceptance": False,
+                    "scope": "Separate pilot rehash by unchanged final_integrity; no downstream stage or theorem acceptance",
+                }
+                try:
+                    details = self.final_integrity()
+                    require(type(details) is dict, "Pilot integrity returned no result object")
+                    post.update(status="PASS", details=details,
+                                original_modular_source_sha256=sha256(ORIGINAL))
+                except BaseException as err:
+                    post.update(status="INTERRUPTED" if isinstance(err, KeyboardInterrupt) else "FAIL",
+                                failure=str(err), exception_type=type(err).__name__)
+                finally:
+                    post["ended_utc"] = mod.old.utc_now()
+                    post_path = self.output / PILOT_INTEGRITY_FILE
+                    try:
+                        with post_path.open("x", encoding="utf-8") as stream:
+                            json.dump(post, stream, indent=2)
+                            stream.write("\n")
+                        self.receipt["pilot_post_integrity_sha256"] = sha256(post_path)
+                    except BaseException as err:
+                        post["receipt_write_error"] = {
+                            "exception_type": type(err).__name__, "failure": str(err)}
+                        self.receipt["pilot_post_integrity_sha256"] = None
+                    self.receipt["pilot_post_integrity"] = post
+                post_ok = (post["status"] == "PASS" and "receipt_write_error" not in post
+                           and "pilot_prefix_save_error" not in self.receipt)
+                if code == 0 and not post_ok:
+                    self.receipt.update(status="PILOT_POST_INTEGRITY_FAILED",
+                                        failure="Pilot execution completed, but separate post-integrity/custody did not pass")
+                    code = 130 if post["status"] == "INTERRUPTED" else 2
                 self.receipt.update(ended_utc=mod.old.utc_now(), exit_code=code)
                 self.save()
                 print("PILOT: " + self.receipt["status"], flush=True)

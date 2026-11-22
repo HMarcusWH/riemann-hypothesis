@@ -31,6 +31,8 @@ jobs:
       OPICA_RESOURCE_PROFILE: 'LOOP_RO_DIO1_ORIGINAL64K_V1'
       OPICA_LONGRUN_SELECTION: 'OPICA_LONGRUN_20H_DIO64K_V1'
       PYTHONUTF8: '1'
+      REQUESTED_VERIFY_HEAD: ${{ inputs.verify_head }}
+      OPICA_EXECUTION_MODE: ${{ inputs.execution_mode }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -42,8 +44,8 @@ jobs:
         id: longrun_preflight
         run: |
           set -euo pipefail
-          test "${{ inputs.verify_head }}" = "${{ github.sha }}"
-          test "${{ inputs.execution_mode }}" = "pilot_stage20" || test "${{ inputs.execution_mode }}" = "full"
+          test "$REQUESTED_VERIFY_HEAD" = "$GITHUB_SHA"
+          test "$OPICA_EXECUTION_MODE" = "pilot_stage20" || test "$OPICA_EXECUTION_MODE" = "full"
           work="$RUNNER_TEMP/opica-step4-longrun-${{ github.run_id }}-${{ github.run_attempt }}"
           printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
           python3 supplier/opica-step4/longrun/prepare_longrun.py \
@@ -145,7 +147,7 @@ jobs:
           ulimit -S -n "$(ulimit -H -n)"
           printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
           python supplier/opica-step4/longrun/verify_modular_longrun.py \
-            --longrun-mode "${{ inputs.execution_mode }}" \
+            --longrun-mode "$OPICA_EXECUTION_MODE" \
             --longrun-selection "$OPICA_LONGRUN_SELECTION" \
             --longrun-checked-head "${{ github.sha }}" \
             --external "$GITHUB_WORKSPACE/supplier" \
@@ -191,8 +193,15 @@ jobs:
           set -euo pipefail
           python3 supplier/opica-step4/longrun/validate_run.py \
             --work "$OPICA_WORK" --head "${{ github.sha }}" \
-            --mode "${{ inputs.execution_mode }}" \
+            --mode "$OPICA_EXECUTION_MODE" \
             --independent-outcome "${{ steps.independent_proof.outcome }}"
+      - name: Refuse evidence traversal while object views remain mounted
+        id: longrun_collection_guard
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python3 supplier/opica-step4/longrun/validate_run.py \
+            --work "$OPICA_WORK" --collection-mount-guard
       - name: Preserve the selected long-run receipts even after failure
         if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -201,14 +210,17 @@ jobs:
           path: |
             ${{ env.OPICA_WORK }}/LONGRUN_PREFLIGHT.json
             ${{ env.OPICA_WORK }}/LONGRUN_WORKFLOW_DISPOSITION.json
-            ${{ env.OPICA_WORK }}/verification/
-            ${{ env.OPICA_WORK }}/independent-verification/
+            ${{ env.OPICA_WORK }}/verification/MODULAR_GATE_RECEIPT.json
+            ${{ env.OPICA_WORK }}/verification/LONGRUN_CONTROLLER_RECEIPT.json
+            ${{ env.OPICA_WORK }}/verification/PILOT_POST_INTEGRITY.json
+            ${{ env.OPICA_WORK }}/independent-verification/INDEPENDENT_RECEIPT.json
+            ${{ env.OPICA_WORK }}/LONGRUN_COLLECTION_GUARD.json
           compression-level: 0
           retention-days: 90
           if-no-files-found: warn
       - name: Collect exact results and limitations
         id: original_evidence_collection
-        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' && steps.longrun_collection_guard.outcome == 'success' }}
         run: |
           set -euo pipefail
           python3 supplier/opica-step4/collect_evidence.py --work "$OPICA_WORK" --head "${{ github.sha }}"
