@@ -1,0 +1,87 @@
+{
+  "id": "ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1",
+  "committed_selector": "ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1",
+  "selection_status": "SELECTED_BY_ROOT_PENDING_FINAL_REVIEW_AND_PUBLICATION",
+  "hosted_execution": "NOT_RUN_BY_THIS_PREPARATION",
+  "base_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "base_tree": "412fec33b3869f438d1c71928cce32be72b636d0",
+  "resource_profile": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+  "prefix": [
+    "source_identity",
+    "external_validation_evidence",
+    "external_endpoint_presence",
+    "immutable_supplier_store",
+    "canonical_environment",
+    "verification_tools",
+    "native_build_receipt",
+    "native_source_policy",
+    "canonical_dependency_snapshot",
+    "canonical_modules_compile",
+    "canonical_type_and_axiom_audit",
+    "canonical_fingerprint_export",
+    "canonical_native_proof_export",
+    "complete_native_fresh_kernel_replay",
+    "comparison_controls",
+    "compatible_environment",
+    "shared_dependency_comparison",
+    "complete_object_snapshot",
+    "canonical_objects_promotion"
+  ],
+  "probe": {
+    "selection": "exact-guard",
+    "mode": "split",
+    "seconds": 1800,
+    "rss_plus_swap_limit_mib": 50000,
+    "log_limit_bytes": 67108864,
+    "source_sha256": "4e760679e151cd67287a5f3d8a97818aeeda4da9ae77295bfa8d1bc0bcc87526",
+    "imports": [
+      {
+        "module": "Init",
+        "isMeta": false
+      },
+      {
+        "module": "Init",
+        "isMeta": true
+      },
+      {
+        "module": "Main",
+        "isMeta": false
+      },
+      {
+        "module": "OPICAStep4.NativeValidated",
+        "isMeta": false
+      },
+      {
+        "module": "Lean",
+        "isMeta": false
+      }
+    ],
+    "trust_level": 0,
+    "global_level": "private",
+    "load_extensions": false,
+    "leak_environment": true,
+    "outputs": "No guard or closed theorem object"
+  },
+  "optional_observations": {
+    "poll_seconds": 30,
+    "smaps_snapshot_indices": [
+      0,
+      2,
+      16,
+      50
+    ],
+    "maximum_smaps_reads": 4,
+    "source_sha256_before_extraction": "f7c473d3268f084e872e924218393d7ad819de571e6ff10804b0bed5cf4cfe7c"
+  },
+  "generated_probe_custody": {
+    "files": [
+      "import_phase_probe",
+      "ImportPhaseProbe.olean"
+    ],
+    "member_limit_bytes": 157286400,
+    "total_limit_bytes": 314572800,
+    "scope": "Generated observer evidence only; no proof acceptance"
+  },
+  "proof_acceptance": false,
+  "proof_30_plus_7_contract": "UNCHANGED_AND_NOT_EXECUTED_BY_THIS_DIAGNOSTIC"
+}
