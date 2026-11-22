@@ -1,0 +1,118 @@
+name: OPICA stock import phase diagnostic
+run-name: OPICA import diagnostic at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-stage20-diagnostic-20261122]
+    paths:
+      - .github/workflows/opica-import-diagnostic.yml
+      - diagnostics/opica-import/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: opica-import-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      LEAN_ABORT_ON_PANIC: '1'
+      LEAN_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: supplier
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Prepare the unchanged bounded standard runner
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/opica-stage20-diagnostic"
+          mkdir -p "$work"
+          printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y squashfs-tools zstd python3-venv
+          python3 -m venv "$work/venv"
+          "$work/venv/bin/python" -m pip install --disable-pip-version-check -r supplier/opica-step4/transport/requirements.txt
+          printf '%s\n' "$work/venv/bin" >> "$GITHUB_PATH"
+          python3 supplier/opica-step4/prepare_runner.py --work "$work"
+      - name: Check the existing controls and diagnostic input guards
+        run: |
+          set -euo pipefail
+          python supplier/diagnostics/opica-import/test_diagnostic_runner.py
+          python -O supplier/diagnostics/opica-import/test_diagnostic_runner.py
+          cd supplier/opica-step4/transport
+          python -m unittest -v test_verified_squashfs_store test_export_stream_store
+          cd ../modular
+          python -m unittest -v test_verify_modular test_monitored_process
+          cd ../independent
+          python -m unittest -v test_independent
+      - name: Rebuild the exact common-pin native dependencies
+        run: |
+          set -euo pipefail
+          ulimit -S -n "$(ulimit -H -n)"
+          python supplier/opica-step4/native_bootstrap/bootstrap_native.py \
+            --work-dir "$OPICA_WORK/native" \
+            --trusted-packages "$OPICA_WORK/trusted-packages" \
+            --external-project "$GITHUB_WORKSPACE/supplier" \
+            --jobs 2 --aggregate-rss-mb 10000 --min-free-gb 46 \
+            --cache-parallel 8 --timeout 9000
+      - name: Recreate and verify every original supplier object
+        run: |
+          set -euo pipefail
+          python supplier/opica-step4/transport/verified_squashfs_store.py \
+            --output "$OPICA_WORK/proof-store.sqfs" \
+            --max-image-gib 40 --min-free-gib 45 --processors 2 --memory-mb 512
+          mkdir "$OPICA_WORK/proof-store"
+          sudo mount -t squashfs -o loop,ro "$OPICA_WORK/proof-store.sqfs" "$OPICA_WORK/proof-store"
+          cd "$OPICA_WORK/proof-store"
+          sha256sum --quiet --check "$OPICA_WORK/proof-store.sqfs.files.sha256"
+          python - <<'PY'
+          import hashlib, json, os, pathlib
+          work = pathlib.Path(os.environ['OPICA_WORK'])
+          manifest = work / 'proof-store.sqfs.files.sha256'
+          (work / 'mounted-store-verified.json').write_text(json.dumps({
+              'status': 'PASS',
+              'scope': 'All mounted original bytes verified; no proof acceptance',
+              'files': 350374,
+              'manifest_sha256': hashlib.sha256(manifest.read_bytes()).hexdigest()
+          }, indent=2) + '\n')
+          PY
+      - name: Bind the original import roots
+        run: |
+          set -euo pipefail
+          mkdir -p supplier/.lake/build/lib
+          test ! -e supplier/.lake/packages
+          test ! -e supplier/.lake/build/lib/lean
+          ln -s "$OPICA_WORK/trusted-packages" supplier/.lake/packages
+          ln -s "$OPICA_WORK/proof-store" supplier/.lake/build/lib/lean
+      - name: Locate the stock import phase with a 600-second diagnostic
+        run: |
+          set -euo pipefail
+          ulimit -S -n "$(ulimit -H -n)"
+          python supplier/diagnostics/opica-import/diagnostic_runner.py \
+            --supplier "$GITHUB_WORKSPACE/supplier" \
+            --native-work "$OPICA_WORK/native" \
+            --trusted-packages "$OPICA_WORK/trusted-packages" \
+            --mounted-store "$OPICA_WORK/proof-store" \
+            --mounted-receipt "$OPICA_WORK/mounted-store-verified.json" \
+            --store-receipt "$OPICA_WORK/proof-store.sqfs.receipt.json" \
+            --probe-source "$GITHUB_WORKSPACE/supplier/diagnostics/opica-import/ImportPhaseProbe.lean" \
+            --output "$OPICA_WORK/import-diagnostic" --mode split
+      - name: Preserve diagnostic observations and actual limitations
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 supplier/diagnostics/opica-import/collect_diagnostic.py \
+            --work "$OPICA_WORK" --head "${{ github.sha }}"
+      - name: Upload diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-import-diagnostic-${{ github.sha }}
+          path: ${{ env.OPICA_WORK }}/import-diagnostic-evidence.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
