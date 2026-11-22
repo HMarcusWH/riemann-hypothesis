@@ -187,7 +187,7 @@ class MatchedDiagnosticControls(unittest.TestCase):
 
     def log(self, complete=True):
         messages = [
-            "DIAGNOSTIC_ONLY selection=exact-guard mode=split imports=#[Init, Init, Main, OPICAStep4.NativeValidated, Lean]",
+            "DIAGNOSTIC_ONLY selection=exact-guard mode=split imports=#[public import Init, public meta import Init, public import Main, public import OPICAStep4.NativeValidated, public import Lean]",
             "NO_THEOREM_ACCEPTANCE no_object_output no_kernel_replay no_axiom_audit",
             "CORE_BEGIN", "CORE_END", "FINALIZE_BEGIN leakEnv=true loadExts=false level=private trustLevel=0"]
         if complete:
@@ -210,11 +210,32 @@ class MatchedDiagnosticControls(unittest.TestCase):
         self.assertIsNone(empty["finalize_seconds"])
 
     def test_changed_import_order_duplicate_and_unknown_markers_rejected(self):
-        for text in (self.log().replace("Init, Init, Main", "Init, Main"),
+        for text in (self.log().replace("public import Init, public meta import Init, public import Main", "public import Init, public import Main"),
                      self.log() + "IMPORT_DIAGNOSTIC mono_ms=8000 CORE_END\n",
                      self.log().replace("trustLevel=0", "trustLevel=1")):
             with self.assertRaises(r.Refusal):
                 r.phase_markers(text)
+
+    def test_literal_historical_probe_rendering_and_censored_interval(self):
+        # Exact retained five-line log from run45022141225, stock_import_split.log,
+        # SHA256 41147c8b311b7b2719c55320048083913f8883657aeff626a1684c9fbdda4cb5.
+        # This is a historical parser regression, not a new supplier import.
+        text = "\n".join([
+            "IMPORT_DIAGNOSTIC mono_ms=3981457 DIAGNOSTIC_ONLY selection=exact-guard mode=split imports=#[public import Init, public meta import Init, public import Main, public import OPICAStep4.NativeValidated, public import Lean]",
+            "IMPORT_DIAGNOSTIC mono_ms=3981457 NO_THEOREM_ACCEPTANCE no_object_output no_kernel_replay no_axiom_audit",
+            "IMPORT_DIAGNOSTIC mono_ms=3981457 CORE_BEGIN",
+            "IMPORT_DIAGNOSTIC mono_ms=4534491 CORE_END",
+            "IMPORT_DIAGNOSTIC mono_ms=4534492 FINALIZE_BEGIN leakEnv=true loadExts=false level=private trustLevel=0",
+        ]) + "\n"
+        result = r.phase_markers(text)
+        self.assertEqual(result["core_seconds"], 553.034)
+        self.assertIsNone(result["finalize_seconds"])
+        self.assertFalse(result["header_and_completion_observed"])
+        compact = text.replace(
+            "#[public import Init, public meta import Init, public import Main, public import OPICAStep4.NativeValidated, public import Lean]",
+            "#[Init, Init, Main, OPICAStep4.NativeValidated, Lean]")
+        with self.assertRaises(r.Refusal):
+            r.phase_markers(compact)
 
     def test_changed_original_route_rejected(self):
         changed = SimpleNamespace(ModularGate=TinyOriginal, STAGES=("different", *mod.STAGES[1:]))
