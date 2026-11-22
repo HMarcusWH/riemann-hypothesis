@@ -1,0 +1,36 @@
+name: Fork PR source/authority boundary
+on:
+  push:
+    branches: [repair/fork-pr-ci-boundary-20261123]
+    paths:
+      - .github/workflows/build-pr.yml
+      - .github/workflows/fork-pr-boundary.yml
+      - scripts/fork_ci_identity.py
+      - scripts/test_fork_ci_identity.py
+      - scripts/FORK_CI_BOUNDARY.md
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Regress repository and PR identity refusals
+        run: |
+          set -euo pipefail
+          (cd scripts && python3 -m unittest -v test_fork_ci_identity)
+          (cd scripts && python3 -O -m unittest -v test_fork_ci_identity)
+          python3 - <<'PY'
+          from pathlib import Path
+          x=Path(".github/workflows/build-pr.yml").read_text()
+          assert "  pull_request_target:" not in x
+          assert "github.repository == 'leanprover-community/riemann-hypothesis'" in x
+          assert x.count("github.repository == 'leanprover-community/riemann-hypothesis'")==4
+          assert "on:\n  workflow_dispatch:" in x
+          print("FORK_UPSTREAM_BUILDER_CONTAINED; NOT A LEAN PROOF")
+          PY
