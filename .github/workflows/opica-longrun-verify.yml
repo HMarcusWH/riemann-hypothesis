@@ -173,7 +173,7 @@ jobs:
             --timeout 9000 --memory-mib 50000
       - name: Observe final loop resource identity independently of proof result
         id: resource_final_observation
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         run: |
           set -euo pipefail
           work="${OPICA_WORK:-$RUNNER_TEMP/opica-step4-longrun-${{ github.run_id }}-${{ github.run_attempt }}}"
@@ -186,7 +186,7 @@ jobs:
             --independent-outcome "${{ steps.independent_proof.outcome }}"
       - name: Classify full or pilot completion without claim promotion
         id: longrun_disposition
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         run: |
           set -euo pipefail
           python3 supplier/opica-step4/longrun/validate_run.py \
@@ -194,7 +194,7 @@ jobs:
             --mode "${{ inputs.execution_mode }}" \
             --independent-outcome "${{ steps.independent_proof.outcome }}"
       - name: Preserve the selected long-run receipts even after failure
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-longrun-receipts-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -208,13 +208,13 @@ jobs:
           if-no-files-found: warn
       - name: Collect exact results and limitations
         id: original_evidence_collection
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         run: |
           set -euo pipefail
           python3 supplier/opica-step4/collect_evidence.py --work "$OPICA_WORK" --head "${{ github.sha }}"
       - name: Preserve proof receipts
         id: original_evidence_upload
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-step4-evidence-${{ github.sha }}
@@ -224,7 +224,7 @@ jobs:
           retention-days: 90
       - name: Collect the exact native bootstrap object capsule
         id: native_custody_collection
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         env:
           EXACT_CHECKED_HEAD: ${{ github.sha }}
           RAW_MODULAR_OUTCOME: ${{ steps.modular_proof.outcome }}
@@ -305,7 +305,7 @@ jobs:
           PY
       - name: Preserve native custody and operation evidence
         id: native_custody_upload
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-native-custody-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -319,7 +319,7 @@ jobs:
           retention-days: 90
       - name: Preserve separate loop resource observations
         id: resource_evidence_upload
-        if: always()
+        if: ${{ always() && steps.longrun_preflight.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-loop-resource-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}

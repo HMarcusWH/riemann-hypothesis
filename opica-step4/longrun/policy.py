@@ -116,6 +116,25 @@ def source_identity(expected_head: str, *, check_worktree: bool = False) -> dict
         expected = git("rev-parse", "HEAD:" + rel)
         current = git("hash-object", str(path))
         require(expected == current, "Source byte drift: " + rel)
+    scope_path = HERE / "SOURCE_MANIFEST.json"
+    scope = read_json(scope_path)
+    require(scope.get("schema") == "OPICA_LONGRUN_ADDITIVE_SOURCE_SCOPE_V1"
+            and scope.get("original_parent") == EXPECTED_BASE,
+            "Wrong additive source scope identity")
+    listed = scope.get("files")
+    require(type(listed) is list and listed == sorted(set(listed)), "Unsorted/duplicated source inventory")
+    changed = [row.split("\t") for row in
+               git("diff", "--name-status", EXPECTED_BASE, "HEAD").splitlines()]
+    require(all(len(row) == 2 and row[0] == "A" for row in changed),
+            "Original tracked source was edited or removed")
+    require(sorted(row[1] for row in changed) == listed,
+            "Unexpected or missing additive source file")
+    for relative in listed:
+        path = REPO / relative
+        require(path.is_file() and not path.is_symlink(),
+                "Additive source file is absent/linked: " + relative)
+        require(git("rev-parse", "HEAD:" + relative) == git("hash-object", str(path)),
+                "Additive checked source bytes differ: " + relative)
     parent_manifest = read_json(REPO / "opica-step4/SOURCE_MANIFEST.json")
     require(parent_manifest.get("supplier_source_tree") == EXPECTED_SUPPLIER,
             "Original supplier mathematical source claim changed")
