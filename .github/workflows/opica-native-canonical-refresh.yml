@@ -1,0 +1,369 @@
+name: Native common-pin canonical refresh preparation
+run-name: Native canonical preparation controlled by ${{ github.sha }}
+
+on:
+  push:
+    branches: [research/opica-native-canonical-refresh-20261122]
+    paths: [.github/workflows/opica-native-canonical-refresh.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-canonical-preparation-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Explicitly selected preparation for the published reviewed native commit/tree.
+  # Preparation outputs remain candidates until full native qualification.
+  CANONICAL_REFRESH_SELECTION: 'native-common-pin-canonical-v1'
+  NATIVE_COMMIT: 'bf75a3a698c42852beda5c95669b06997559c4c0'
+  NATIVE_TREE: '3d8200c0d972d313d70532c12a2a2909a5123cbc'
+  CONTROLLER_PARENT: '2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf'
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
+  LEAN_NUM_THREADS: '2'
+
+jobs:
+  canonical-candidate:
+    name: Authenticated native preparation and canonical candidate only
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - name: Require the explicit reviewed selection
+        id: selection
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/native-canonical-preparation"
+          mkdir "$out"
+          printf 'CANONICAL_EVIDENCE=%s\n' "$out" >> "$GITHUB_ENV"
+          python3 -B - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          out = Path(os.environ['RUNNER_TEMP']) / 'native-canonical-preparation'
+          fields = ('GITHUB_REPOSITORY', 'GITHUB_SHA', 'GITHUB_REF', 'GITHUB_WORKFLOW_REF',
+                    'GITHUB_WORKFLOW_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT',
+                    'GITHUB_EVENT_NAME', 'CANONICAL_REFRESH_SELECTION', 'NATIVE_COMMIT',
+                    'NATIVE_TREE', 'CONTROLLER_PARENT')
+          context = {name: os.environ.get(name) for name in fields}
+          context.update(authority='PREPARATION_ONLY', proof_acceptance=False,
+                         native_production_acceptance=False, RH='OPEN', Step4='OPEN')
+          (out / 'requested-context.json').write_text(json.dumps(context, indent=2) + '\n')
+          if os.environ['GITHUB_REPOSITORY'] != 'HMarcusWH/riemann-hypothesis':
+              raise SystemExit('Controller repository differs')
+          if os.environ['GITHUB_REF'] != 'refs/heads/research/opica-native-canonical-refresh-20261122':
+              raise SystemExit('Controller branch differs')
+          if os.environ['GITHUB_EVENT_NAME'] not in {'push', 'workflow_dispatch'}:
+              raise SystemExit('Controller event differs')
+          for name in ('NATIVE_COMMIT', 'NATIVE_TREE', 'CONTROLLER_PARENT'):
+              if re.fullmatch(r'[0-9a-f]{40}', os.environ[name]) is None:
+                  raise SystemExit('An exact source identity is required: ' + name)
+          if os.environ['CANONICAL_REFRESH_SELECTION'] != 'native-common-pin-canonical-v1':
+              raise SystemExit('NOT_SELECTED: no native checkout, preparation or canonical writer started')
+          PY
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        id: controller_checkout
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 2
+          sparse-checkout: .github/workflows/opica-native-canonical-refresh.yml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Bind the one-file controller delta
+        id: controller_source
+        working-directory: controller
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          def git(*args):
+              return subprocess.check_output(['git', *args])
+          head = git('rev-parse', 'HEAD').decode().strip()
+          parent = git('rev-parse', 'HEAD^').decode().strip()
+          if head != os.environ['GITHUB_SHA'] or parent != os.environ['CONTROLLER_PARENT']:
+              raise SystemExit('Controller must be the reviewed single commit on the exact parent')
+          if len(git('show', '-s', '--format=%P', 'HEAD').split()) != 1:
+              raise SystemExit('A merge controller is not the reviewed source delta')
+          path = '.github/workflows/opica-native-canonical-refresh.yml'
+          delta = git('diff', '--name-status', '-z', 'HEAD^', 'HEAD').split(b'\0')
+          if delta != [b'A', path.encode(), b'']:
+              raise SystemExit('Controller changes a path outside the single added workflow')
+          raw = Path(path).read_bytes()
+          if raw != git('show', 'HEAD:' + path) or git('status', '--porcelain', '--untracked-files=all'):
+              raise SystemExit('Controller workflow is not the exact clean checked-out blob')
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          (out / 'controller-workflow.yml').write_bytes(raw)
+          record = {'head': head, 'tree': git('rev-parse', 'HEAD^{tree}').decode().strip(),
+                    'parent': parent, 'path': path, 'sha256': hashlib.sha256(raw).hexdigest(),
+                    'scope': 'ONE_ADDED_SUPPLIER_WORKFLOW_ONLY', 'proof_acceptance': False}
+          (out / 'controller-source.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        id: native_checkout
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: ${{ env.NATIVE_COMMIT }}
+          path: host
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.13.5'
+
+      - name: Bind the clean native source and immutable canonical boundary
+        id: native_source
+        working-directory: host
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B - <<'PY'
+          import hashlib, json, os, stat, subprocess
+          from pathlib import Path
+          def git(*args):
+              return subprocess.check_output(['git', *args])
+          def digest(path):
+              p = Path(path)
+              mode = p.lstat().st_mode
+              if not stat.S_ISREG(mode) or mode & 0o111:
+                  raise ValueError('Expected a regular non-executable product: ' + str(path))
+              return hashlib.sha256(p.read_bytes()).hexdigest()
+          if git('rev-parse', 'HEAD').decode().strip() != os.environ['NATIVE_COMMIT']:
+              raise SystemExit('Native commit differs')
+          if git('rev-parse', 'HEAD^{tree}').decode().strip() != os.environ['NATIVE_TREE']:
+              raise SystemExit('Native tree differs')
+          if git('status', '--porcelain', '--untracked-files=all'):
+              raise SystemExit('Native checkout is not clean')
+          policy_path = 'research/RHRC/integration/opica_step4_production/SOURCE_SCOPE.json'
+          policy_sha = 'dcd252d87881b6f8c960ac0a5068c41592c2e4ac0dc23802712d19f8cff60f53'
+          if digest(policy_path) != policy_sha:
+              raise SystemExit('Reviewed native source policy differs')
+          policy = json.loads(Path(policy_path).read_text())
+          allowed = policy['generated']
+          if len(allowed) != 77 or allowed != sorted(set(allowed)):
+              raise SystemExit('Expected the exact sealed 77-path inventory')
+          protected = {
+              'research/RHRC/graph/compiler/REGISTERED_DECLARATION_DEPENDENCIES.jsonl': '12cc399f5c5b1154e95619f2da6d7f0df6e64b12d1292bafee67bbc335357917',
+              'research/RHRC/ffbbp/generated/history/RHKG_CANDIDATE_REDUCTION_ASSURANCE_v1_PR265.json': '226b2d12e6fa5551df31972591fbdce7d23187d9461e0ec01e6114591d903493',
+              'research/RHRC/ool/generated/history/RHKG_OOL_PHASE_ATLAS_v1_PR266.json': '59905fcf4b8ae2e0219ddc006b0e4e39a1b70ad4205547d145312beea654e2ed',
+              'research/RHRC/ool/generated/history/RHKG_OOL_ROUTE_CONTACTS_v1_PR266.jsonl': 'f00b39376c8db5cc85b52593cd9cd1ab31243eb650180426f475df01d85f6791',
+          }
+          if {path: digest(path) for path in protected} != protected:
+              raise SystemExit('A protected historical product differs')
+          record = {'checked_commit': os.environ['NATIVE_COMMIT'], 'checked_tree': os.environ['NATIVE_TREE'],
+                    'policy_path': policy_path, 'policy_sha256': policy_sha,
+                    'active_generated_before': {path: digest(path) for path in allowed},
+                    'protected_historical': protected, 'proof_acceptance': False}
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          (out / 'canonical-boundary-before.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      # Unchanged native composite: cli inspect, exact runtime/package selection,
+      # native isolation probes, then cli prepare with its existing cache lease.
+      - uses: ./host/.github/actions/opica4-runtime
+        id: runtime
+        with:
+          native: 'true'
+          provider: 'false'
+
+      - name: Run the existing canonical writer and checker with one cache owner
+        id: canonical
+        working-directory: host
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$CANONICAL_EVIDENCE"
+          cat > "$out/run-canonical.py" <<'PY'
+          import hashlib, json, os, stat, subprocess, sys, time
+          from pathlib import Path
+          repo = Path.cwd().resolve()
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          sys.path.insert(0, str(repo))
+          from research.RHRC.integration.opica_composition.cache_owner import CacheWriterLease
+          def git(*args):
+              return subprocess.check_output(['git', *args], cwd=repo)
+          def digest(path):
+              p = repo / path
+              mode = p.lstat().st_mode
+              if not stat.S_ISREG(mode) or mode & 0o111:
+                  raise ValueError('Expected a regular non-executable product: ' + str(path))
+              return hashlib.sha256(p.read_bytes()).hexdigest()
+          def check_delta(names, untracked, allowed, protected, observed):
+              if not names <= set(allowed):
+                  raise ValueError('Undeclared changed paths: ' + repr(sorted(names - set(allowed))))
+              if untracked:
+                  raise ValueError('Canonical producer created undeclared files')
+              if observed != protected:
+                  raise ValueError('Protected historical products changed')
+          before = json.loads((out / 'canonical-boundary-before.json').read_text())
+          report = {'authority': 'CANONICAL_REFRESH_PREPARATION_ONLY', 'status': 'INCOMPLETE',
+                    'commands': [], 'checked_commit': before['checked_commit'],
+                    'checked_tree': before['checked_tree'], 'proof_acceptance': False,
+                    'native_production_acceptance': False, 'RH': 'OPEN', 'Step4': 'OPEN'}
+          try:
+              bootstrap = json.loads((Path(os.environ['OPICA_NATIVE_OUTPUT']) / 'bootstrap/result.json').read_text())
+              if (bootstrap.get('status'), bootstrap.get('checked_commit'), bootstrap.get('checked_tree')) != (
+                      'PASS_NATIVE_PREPARED', before['checked_commit'], before['checked_tree']):
+                  raise ValueError('The exact existing native preparer did not complete successfully')
+              source = json.loads((Path(os.environ['RUNNER_TEMP']) / 'opica4-source-before.json').read_text())
+              if source.get('successor_human_review') != 'PENDING':
+                  raise ValueError('Native source-review declaration must remain unchanged and PENDING')
+              report['native_preparation_status'] = bootstrap['status']
+              report['successor_human_review'] = source['successor_human_review']
+              if git('status', '--porcelain', '--untracked-files=all'):
+                  raise ValueError('Native source changed during preparation')
+              env = {k: v for k, v in os.environ.items() if not k.startswith(('LEAN_', 'ELAN_'))}
+              env.update(ELAN_TOOLCHAIN=(repo / 'lean-toolchain').read_text().strip(),
+                         LEAN_NUM_THREADS='2', GIT_NO_LAZY_FETCH='1', GIT_TERMINAL_PROMPT='0')
+              with CacheWriterLease(repo / '.lake/build'):
+                  written = None
+                  for mode in ('write', 'check'):
+                      argv = [sys.executable, '-B', 'research/RHRC/tools/materialize_derived_state.py', '--' + mode]
+                      row = {'argv': argv, 'started_unix': time.time(), 'exit_code': None,
+                             'stdout': mode + '.stdout.log', 'stderr': mode + '.stderr.log'}
+                      report['commands'].append(row)
+                      with (out / row['stdout']).open('xb') as stdout, (out / row['stderr']).open('xb') as stderr:
+                          row['exit_code'] = subprocess.run(argv, cwd=repo, env=env, stdout=stdout, stderr=stderr).returncode
+                      row['finished_unix'] = time.time()
+                      for kind in ('stdout', 'stderr'):
+                          with (out / row[kind]).open('rb') as stream:
+                              row[kind + '_sha256'] = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      if row['exit_code'] != 0:
+                          raise ValueError('Canonical ' + mode + ' failed with exit ' + str(row['exit_code']))
+                      current = {path: digest(path) for path in before['active_generated_before']}
+                      if mode == 'write':
+                          written = current
+                      elif current != written:
+                          raise ValueError('Canonical --check changed a generated product')
+                  names = {p.decode() for p in git('diff', '--name-only', '-z', 'HEAD').split(b'\0') if p}
+                  check_delta(names, git('ls-files', '--others', '--exclude-standard'),
+                              before['active_generated_before'], before['protected_historical'],
+                              {p: digest(p) for p in before['protected_historical']})
+                  if (git('rev-parse', 'HEAD').decode().strip(), git('rev-parse', 'HEAD^{tree}').decode().strip()) != (
+                          before['checked_commit'], before['checked_tree']):
+                      raise ValueError('Native checked-out commit/tree changed')
+                  subprocess.run(['git', 'diff', '--check'], cwd=repo, check=True)
+                  patch = git('diff', '--binary', 'HEAD')
+                  (out / 'generated-state.patch').write_bytes(patch)
+                  (out / 'generated-stat.txt').write_bytes(git('diff', '--stat', 'HEAD'))
+                  report.update(status='CANONICAL_CANDIDATE_PREPARED', changed_paths=sorted(names),
+                                active_generated_after=written,
+                                protected_historical_after={p: digest(p) for p in before['protected_historical']},
+                                patch_sha256=hashlib.sha256(patch).hexdigest(),
+                                successor_human_review='PENDING')
+          except BaseException as exc:
+              report['status'] = 'FAILED'
+              report['error'] = {'type': type(exc).__name__, 'message': str(exc)}
+              raise
+          finally:
+              (out / 'canonical-operation.json').write_text(json.dumps(report, indent=2) + '\n')
+          PY
+          sudo systemd-run --wait --pipe --collect --unit="opica-canonical-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --uid="$(id -u)" --gid="$(id -g)" \
+            -p MemoryMax=4294967296 -p MemorySwapMax=0 -p TasksMax=64 -p CPUQuota=200% \
+            -p "WorkingDirectory=$PWD" /usr/bin/env \
+            "PATH=$PATH" "HOME=$HOME" PYTHONUTF8=1 PYTHONDONTWRITEBYTECODE=1 LEAN_NUM_THREADS=2 \
+            "RUNNER_TEMP=$RUNNER_TEMP" "CANONICAL_EVIDENCE=$CANONICAL_EVIDENCE" \
+            "OPICA_NATIVE_OUTPUT=$OPICA_NATIVE_OUTPUT" \
+            python -B "$out/run-canonical.py" \
+            > "$out/canonical-coordinator.stdout.log" 2> "$out/canonical-coordinator.stderr.log"
+
+      - name: Preserve raw operation and step dispositions
+        id: disposition
+        if: ${{ always() }}
+        shell: bash
+        env:
+          STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          set -euo pipefail
+          out="${CANONICAL_EVIDENCE:-$RUNNER_TEMP/native-canonical-preparation}"
+          mkdir -p "$out"
+          export CANONICAL_EVIDENCE="$out"
+          python3 -B - <<'PY'
+          import hashlib, json, os, stat, subprocess
+          from pathlib import Path
+          out = Path(os.environ['CANONICAL_EVIDENCE'])
+          record = {'authority': 'PREPARATION_DIAGNOSTICS_ONLY', 'proof_acceptance': False,
+                    'native_production_acceptance': False, 'RH': 'OPEN', 'Step4': 'OPEN',
+                    'controller_commit': os.environ['GITHUB_SHA'],
+                    'requested_native_commit': os.environ['NATIVE_COMMIT'],
+                    'requested_native_tree': os.environ['NATIVE_TREE'],
+                    'run_id': os.environ['GITHUB_RUN_ID'], 'attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                    'steps': json.loads(os.environ['STEPS_JSON']), 'files': [], 'inventory_errors': []}
+          host = Path(os.environ['GITHUB_WORKSPACE']) / 'host'
+          if (host / '.git').exists():
+              # Raw failure diagnostics are distinct from the validated candidate patch.
+              record['native_final_git'] = []
+              for label, argv in (
+                  ('final-head-tree.txt', ['rev-parse', 'HEAD', 'HEAD^{tree}']),
+                  ('final-status.txt', ['status', '--porcelain', '--untracked-files=all']),
+                  ('raw-unqualified-diff.patch', ['diff', '--binary', 'HEAD']),
+              ):
+                  try:
+                      with (out / label).open('xb') as stream:
+                          result = subprocess.run(['git', '-C', str(host), *argv], stdout=stream,
+                                                  stderr=subprocess.PIPE, timeout=60)
+                      row = {'argv': argv, 'exit_code': result.returncode, 'stdout': label,
+                             'stderr': result.stderr.decode(errors='replace')}
+                  except (OSError, subprocess.TimeoutExpired) as exc:
+                      row = {'argv': argv, 'stdout': label, 'error': type(exc).__name__ + ': ' + str(exc)}
+                  record['native_final_git'].append(row)
+              boundary = out / 'canonical-boundary-before.json'
+              if boundary.is_file():
+                  expected = json.loads(boundary.read_text())['protected_historical']
+                  observed = {}
+                  for path in expected:
+                      try:
+                          target = host / path
+                          if not stat.S_ISREG(target.lstat().st_mode):
+                              raise ValueError('Nonregular historical product')
+                          with target.open('rb') as stream:
+                              observed[path] = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      except (OSError, ValueError) as exc:
+                          observed[path] = {'error': type(exc).__name__ + ': ' + str(exc)}
+                  record['protected_historical_final'] = observed
+                  record['protected_historical_unchanged'] = observed == expected
+          else:
+              record['native_final_git'] = 'NO_NATIVE_CHECKOUT_AVAILABLE'
+          roots = {'canonical': out, 'bootstrap': Path(os.environ['RUNNER_TEMP']) / 'opica4-native/bootstrap'}
+          for label, root in roots.items():
+              if not root.is_dir():
+                  record['inventory_errors'].append({'root': label, 'reason': 'MISSING_ROOT'})
+                  continue
+              for path in sorted(root.rglob('*')):
+                  try:
+                      mode = path.lstat().st_mode
+                      if stat.S_ISDIR(mode):
+                          continue
+                      if not stat.S_ISREG(mode):
+                          raise ValueError('Nonregular diagnostic file')
+                      with path.open('rb') as stream:
+                          sha256 = hashlib.file_digest(stream, 'sha256').hexdigest()
+                      record['files'].append({'root': label, 'path': str(path.relative_to(root)),
+                                              'bytes': path.stat().st_size, 'sha256': sha256})
+                  except (OSError, ValueError) as exc:
+                      record['inventory_errors'].append({'root': label, 'path': str(path.relative_to(root)),
+                                                         'reason': type(exc).__name__ + ': ' + str(exc)})
+          (out / 'workflow-disposition.json').write_text(json.dumps(record, indent=2) + '\n')
+          PY
+
+      - name: Upload the available complete command logs and preparation evidence
+        id: evidence_upload
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-canonical-preparation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-canonical-preparation/
+            ${{ runner.temp }}/opica4-native/bootstrap/
+            ${{ runner.temp }}/opica4-source-before.json
+          include-hidden-files: true
+          if-no-files-found: error
