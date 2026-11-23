@@ -30,6 +30,7 @@ V2_HISTORICAL_NAME = "native-canonical-preparation-v2/historical-storage-before.
 SOURCE_COVERAGE = "research/RHRC/graph/generated/REPOSITORY_COVERAGE.json"
 EXTRA_INDEX = "research/RHRC/graph/compiler/REGISTERED_DECLARATION_DEPENDENCIES.jsonl"
 PROTECTED = (
+ EXTRA_INDEX,
  "research/RHRC/ffbbp/generated/history/RHKG_CANDIDATE_REDUCTION_ASSURANCE_v1_PR265.json",
  "research/RHRC/ool/generated/history/RHKG_OOL_PHASE_ATLAS_v1_PR266.json",
  "research/RHRC/ool/generated/history/RHKG_OOL_ROUTE_CONTACTS_v1_PR266.jsonl",
@@ -124,7 +125,7 @@ def source_state(controller,native):
           "Controller not based on reviewed CI repair")
     check(git(native,"rev-parse","HEAD")==NATIVE_COMMIT,"Native head is not current reviewed pin")
     check(git(native,"rev-parse","HEAD^{tree}")==NATIVE_TREE,"Native tree differs")
-    check(git(native,"status","--porcelain","--untracked-files=no")=="",
+    check(git(native,"status","--porcelain","--untracked-files=all")=="",
           "Native worktree had modified inputs before canonical writer")
     check((native/"lean-toolchain").read_text().strip()=="leanprover/lean4:v4.33.0-rc2",
           "Native Lean toolchain differs")
@@ -132,8 +133,9 @@ def source_state(controller,native):
     products=coverage.get("declared_generated_products")
     check(type(products) is list and len(products)==77
           and len(set(products))==77,"Expected original 77 generated products missing")
-    authorized=set(products)|{EXTRA_INDEX}
-    check(len(authorized)==78,"Unreviewed current generated inventory")
+    authorized=set(products)
+    check(len(authorized)==77 and not (authorized & set(PROTECTED)),
+          "Unreviewed current generated inventory or frozen-product overlap")
     for path in authorized:
         check(path.startswith("research/RHRC/") and
               ("/generated/" in path or "/compiler/" in path),"Unreviewed generated path")
@@ -141,10 +143,13 @@ def source_state(controller,native):
               "Missing/linked current generated path")
     for path in PROTECTED:
         check(path not in authorized,"Historical source placed in active generated set")
+        obj_file(native/path)
+        check(git(native,"hash-object",path)==git(native,"rev-parse",NATIVE_COMMIT+":"+path),
+              "Frozen current-tree object differs from pinned Git blob: "+path)
     return {"controller_head":git(controller,"rev-parse","HEAD"),
             "controller_tree":git(controller,"rev-parse","HEAD^{tree}"),
             "native_head":NATIVE_COMMIT,"native_tree":NATIVE_TREE,
-            "authorized":sorted(authorized)}
+            "authorized":sorted(authorized),"frozen":sorted(PROTECTED)}
 
 def inventory(native,paths):
     result={}
@@ -152,6 +157,16 @@ def inventory(native,paths):
         raw=obj_file(native/path)
         result[path]={"sha256":sha(raw),"bytes":len(raw)}
     return result
+
+def validate_boundary(native,state,frozen_before):
+    check(git(native,"rev-parse","HEAD")==NATIVE_COMMIT and
+          git(native,"rev-parse","HEAD^{tree}")==NATIVE_TREE,"Native revision changed")
+    check(inventory(native,state["frozen"])==frozen_before,"Protected 4 historical objects changed")
+    check(git(native,"ls-files","--others","--exclude-standard")=="","Untracked source or generated output")
+    changed=[x.split("\t",1) for x in git(native,"diff","--name-status","HEAD").splitlines()]
+    check(all(len(x)==2 and x[0]=="M" and x[1] in state["authorized"] for x in changed),
+          "Canonical edited unexpected source or unapproved generated file")
+    return sorted(x[1] for x in changed)
 
 def launch(native,out,mode):
     argv=[sys.executable,"-B","research/RHRC/tools/materialize_derived_state.py","--"+mode]
@@ -196,20 +211,19 @@ def main():
                          "historical":v2["historical"]})
         report["frozen_historical_git_objects"] = verify_historical_git_objects(native,v2["historical"])
         before=inventory(native,state["authorized"])
-        historical_before=inventory(native,PROTECTED)
+        historical_before=inventory(native,state["frozen"])
         report["historical_before"]=historical_before
         report["authorized_generated_product_count"]=len(before)
+        report["protected_historical_product_count"]=len(historical_before)
         report["commands"].append(launch(native,out,"write"))
         written=inventory(native,state["authorized"])
+        after_write_paths=validate_boundary(native,state,historical_before)
         report["commands"].append(launch(native,out,"check"))
         checked=inventory(native,state["authorized"])
         check(written==checked,"Canonical write/check results differ")
-        report["historical_after"]=inventory(native,PROTECTED)
-        check(historical_before==report["historical_after"],"Protected 3 historical objects changed")
-        changed=[x.split("\t",1) for x in git(native,"diff","--name-status","HEAD").splitlines()]
-        check(all(len(x)==2 and x[0]=="M" and x[1] in state["authorized"]
-                  for x in changed),"Canonical edited unexpected source or unapproved generated file")
-        changed_paths=sorted(x[1] for x in changed)
+        report["historical_after"]=inventory(native,state["frozen"])
+        changed_paths=validate_boundary(native,state,historical_before)
+        check(changed_paths==after_write_paths,"Canonical check changed source-diff inventory")
         check(changed_paths==sorted(x for x in state["authorized"]
                                    if checked[x]!=before[x]),"Changed-byte inventory differs from git diff")
         subprocess.run(["git","-C",str(native),"diff","--check"],check=True,timeout=180)

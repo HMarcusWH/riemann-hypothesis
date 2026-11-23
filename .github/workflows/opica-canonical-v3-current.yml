@@ -84,7 +84,7 @@ jobs:
         with:
           native: 'true'
           provider: 'false'
-      - name: Regenerate CURRENT native 78 outputs and compare against V2
+      - name: Regenerate CURRENT native 77 active outputs; protect four frozen files
         id: canonical
         run: |
           set -euo pipefail
@@ -98,6 +98,9 @@ jobs:
           from pathlib import Path
           d=json.loads((Path(os.environ["RUNNER_TEMP"])/"opica-canonical-v3/V3_CONTROLLER_RECEIPT.json").read_text())
           assert d["status"]=="V3_CURRENT_NATIVE_CANDIDATE_PREPARED_FOR_REVIEW"
+          assert d["authorized_generated_product_count"]==77
+          assert d["protected_historical_product_count"]==4
+          assert d["historical_before"]==d["historical_after"]
           assert d["successor_human_review"]=="PENDING"
           assert d["proof_acceptance"] is False
           assert d["full_11_lanes"]=="NOT_RUN"

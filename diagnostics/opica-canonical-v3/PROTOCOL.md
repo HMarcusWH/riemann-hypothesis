@@ -8,10 +8,11 @@ frozen V2 artifact from workflow 45051273111. The old artifact/candidate
 is immutable, and no old generated patch is automatically transplanted.
 
 The independent native worktree is preflight-checked for cleanliness, source,
-toolchain, the 77 declared generated products and explicitly added legacy
-REGISTERED_DECLARATION_DEPENDENCIES index (78 generated products total).
-Three dated historical generated products are protected across write/check.
-Any modified non-generated tracked file fails. The existing transactional
+toolchain, and exactly the 77 declared active generated products.
+The legacy REGISTERED_DECLARATION_DEPENDENCIES index and three dated
+historical generated products are frozen (four protected current-tree files).
+All four are checked against pinned Git blobs at entry and after BOTH write
+and check. Any modified non-generated tracked file or untracked output fails. The existing transactional
 RHRC materializer runs --write then --check in a single owned native
 environment. Both operation logs and identical generated-product bytes are
 required, and the resulting patch is REVIEW ONLY.
@@ -28,4 +29,4 @@ generated a coherent candidate over current native source. Source promotion
 requires human review, a separately frozen source policy, and fresh
 compiler/type/axiom/independent gates at the promoted native head.
 
-V3 additionally reopens all 17 immutable historical Git blobs (16 shards plus index) at frozen historical commit bf75a3... and verifies their full bytes against Git OIDs. This is distinct from the three dated historical current-tree files. The earlier logical historical index digest is not re-computed here; no new compiler certificate is claimed.
+V3 additionally reopens all 17 immutable historical Git blobs (16 shards plus index) at frozen historical commit bf75a3... and verifies their full bytes against Git OIDs. This is distinct from the four protected current-tree files. The earlier logical historical index digest is not re-computed here; no new compiler certificate is claimed.
