@@ -8,6 +8,11 @@ on:
         description: Exact 40-hex reviewed supplier source revision
         required: true
         type: string
+      include_native_candidate:
+        description: Also attempt fresh native source bridge and independent 50-root candidate at 4.36
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
