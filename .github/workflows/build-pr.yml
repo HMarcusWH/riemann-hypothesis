@@ -2,8 +2,6 @@ name: Build PR
 run-name: "${{ inputs.mode == 'native-proof' && 'Proof shard' || 'Build PR' }} #${{ github.event.pull_request.number || inputs.pr_number }} ${{ github.event.pull_request.head.sha || 'manual' }}"
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       mode:
@@ -42,7 +40,7 @@ concurrency:
 
 jobs:
   resolve:
-    if: ${{ inputs.mode != 'native-proof' && (github.event_name == 'workflow_dispatch' || vars.RH_CI_MANUAL_ONLY != 'true') }}
+    if: ${{ github.repository == 'leanprover-community/riemann-hypothesis' && inputs.mode != 'native-proof' && (github.event_name == 'workflow_dispatch' || vars.RH_CI_MANUAL_ONLY != 'true') }}
     runs-on: ubuntu-latest
     outputs:
       candidate: ${{ steps.resolve.outputs.candidate }}
@@ -79,7 +77,7 @@ jobs:
 
   build:
     needs: resolve
-    if: ${{ needs.resolve.outputs.reuse == '' }}
+    if: ${{ github.repository == 'leanprover-community/riemann-hypothesis' && needs.resolve.outputs.reuse == '' }}
     runs-on:
       group: RiemannHypothesisBuild
       # Automatic PR builds and unspecified dispatches always use the heavy pool.
@@ -201,7 +199,7 @@ jobs:
           exit "$BUILD_EXIT"
 
   proof_plan:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.mode == 'native-proof' }}
+    if: ${{ github.repository == 'leanprover-community/riemann-hypothesis' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.mode == 'native-proof' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -252,7 +250,7 @@ jobs:
 
   proof_worker:
     needs: proof_plan
-    if: ${{ needs.proof_plan.outputs.has_work == 'true' }}
+    if: ${{ github.repository == 'leanprover-community/riemann-hypothesis' && needs.proof_plan.outputs.has_work == 'true' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.proof_plan.outputs.matrix) }}
