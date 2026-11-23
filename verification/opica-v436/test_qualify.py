@@ -53,6 +53,12 @@ class SourceQualifierTests(unittest.TestCase):
       self.assertEqual(set(check_public_axiom_log(q)["roots"]),set(PUBLIC_ROOTS))
       q.write_text(raw.replace("'LFunction_eq_zero_re' depends on axioms: [propext","'LFunction_eq_zero_re' depends on axioms: [bad.axiom"))
       with self.assertRaises(QualifyError):check_public_axiom_log(q)
+  def test_multiline_actual_lean_axiom_reports(self):
+    from qualify import _named_axiom_report
+    text="'riemannHypothesis' depends on axioms: [propext,\n  Classical.choice,\n  Quot.sound]\n"
+    self.assertEqual(_named_axiom_report(text,"riemannHypothesis"),["Classical.choice","Quot.sound","propext"])
+    for bad in (text+text,text.replace("Quot.sound","sorryAx"),text.replace("]","")):
+      with self.assertRaises(QualifyError):_named_axiom_report(bad,"riemannHypothesis")
   def test_dispatch_and_independent_reader_use_same_topic_ref(self):
     topic="refs/heads/research/opica-community-v436-supplier-qualification-20261123"
     workflow=(ROOT.parents[1]/".github/workflows/opica-v436-supplier.yml").read_text()

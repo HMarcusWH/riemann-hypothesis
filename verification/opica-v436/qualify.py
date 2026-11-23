@@ -74,40 +74,33 @@ def source():
             "ingress_sha256":hashlib.sha256((HERE/"Ingress.lean").read_bytes()).hexdigest(),
             "proof_acceptance":False,"RH":"OPEN"}
 
-def check_axiom_log(log:Path):
-    text=log.read_text()
-    # Fail closed if the Lean log contains no actual named axiom report.
-    rows=[x for x in text.splitlines() if
-          "OPICACommunityV436.suppliedRH" in x and "axiom" in x.lower()]
-    need(len(rows)==1,"Exact Lean axiom line missing or ambiguous")
-    row=rows[0]
-    m=re.search(r"\[(.*?)\]",row)
-    need(m is not None,"Lean axiom inventory not structured as a closed list")
-    names={s.strip() for s in m.group(1).split(",") if s.strip()}
-    need(names<=ALLOWED,"Unexpected axiom: "+str(names-ALLOWED))
+def _named_axiom_report(text, name):
     need("sorryAx" not in text and "error:" not in text,
          "Lean error or admitted proof in log")
+    # Lean pretty prints long lists over multiple lines. Keep the exact
+    # declaration boundary and reject duplicate or truncated reports.
+    label=r"(?:'"+re.escape(name)+r"'|"+re.escape(name)+r")"
+    pattern=r"(?m)^"+label+r" (?:depends on axioms:\s*\[([^\]]*)\]|relies on axioms:\s*\[([^\]]*)\]|does not depend on any axioms)[ \t]*(?=\n|$)"
+    matches=list(re.finditer(pattern,text))
+    need(len(matches)==1,"Exact named Lean axiom report missing or ambiguous: "+name)
+    raw=matches[0].group(1) or matches[0].group(2) or ""
+    values=[s.strip() for s in raw.split(",") if s.strip()]
+    need(len(values)==len(set(values)) and set(values)<=ALLOWED,
+         "Unexpected or duplicate axiom: "+name)
+    return sorted(values)
+
+def check_axiom_log(log:Path):
+    names=_named_axiom_report(log.read_text(),"OPICACommunityV436.suppliedRH")
     return {"schema":"OPICA_COMMUNITY_V436_AXIOM_INSPECTION_V1",
             "status":"AXIOM_REPORT_ALLOWED_ONLY",
-            "reported_axioms":sorted(names),
+            "reported_axioms":names,
             "proof_acceptance":False,"complete_supplier_replay":False,
             "full_50_roots":False,"RH":"OPEN"}
 
 def check_public_axiom_log(log:Path):
     text=log.read_text()
     wrapper=check_axiom_log(log)
-    result={}
-    for name in PUBLIC_ROOTS:
-        # Exact declaration boundary: a shorter root name cannot consume
-        # the longer primitive-character theorem's axiom report.
-        pattern=r"(?<![A-Za-z0-9_.])"+re.escape(name)+r"(?![A-Za-z0-9_.])"
-        rows=[x for x in text.splitlines() if re.search(pattern,x) and "axiom" in x.lower()]
-        need(len(rows)==1,"Missing or ambiguous named public axiom report: "+name)
-        m=re.search(r"\[(.*?)\]",rows[0])
-        need(m is not None,"Unstructured public axiom report: "+name)
-        names={s.strip() for s in m.group(1).split(",") if s.strip()}
-        need(names<=ALLOWED,"Unexpected axiom in "+name+": "+str(names-ALLOWED))
-        result[name]=sorted(names)
+    result={name:_named_axiom_report(text,name) for name in PUBLIC_ROOTS}
     return {"schema":"OPICA_COMMUNITY_V436_PUBLIC_AXIOMS_V1","roots":result,
             "wrapper":wrapper,"proof_acceptance":False,"RH":"OPEN"}
 
