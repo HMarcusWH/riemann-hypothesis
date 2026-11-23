@@ -11,6 +11,11 @@ on:
         description: Exact 40-hex reviewed supplier source revision
         required: true
         type: string
+      include_native_candidate:
+        description: Also attempt fresh native source bridge and independent 50-root candidate at 4.36
+        required: false
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -141,6 +146,14 @@ jobs:
             --checker-work "$RUNNER_TEMP/opica-v436-checker" \
             --axiom-log "$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log" \
             --head "$GITHUB_SHA" --output "$RUNNER_TEMP/opica-v436-independent"
+      - name: Optional fresh native source and combined 50-root candidate at the shared 4.36 pin
+        if: ${{ inputs.include_native_candidate }}
+        run: |
+          set -euo pipefail
+          python3 -B verification/opica-v436/combined_50.py \
+            --head "$GITHUB_SHA" --checker-work "$RUNNER_TEMP/opica-v436-checker" \
+            --supplier-receipt "$RUNNER_TEMP/opica-v436-independent" \
+            --output "$RUNNER_TEMP/opica-v436-combined"
       - name: Preserve exact full import outcomes even on failure
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -156,5 +169,7 @@ jobs:
             ${{ runner.temp }}/opica-v436-independent/OBJECT_INVENTORY.json
             ${{ runner.temp }}/opica-v436-independent/*.json
             ${{ runner.temp }}/opica-v436-independent/*.log
+            ${{ runner.temp }}/opica-v436-combined/*.json
+            ${{ runner.temp }}/opica-v436-combined/*.log
           if-no-files-found: warn
           retention-days: 90

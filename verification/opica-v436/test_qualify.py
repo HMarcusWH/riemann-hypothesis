@@ -61,4 +61,14 @@ class SourceQualifierTests(unittest.TestCase):
     self.assertIn('os.environ.get("GITHUB_REF")=="'+topic+'"',reader)
     self.assertIn("inputs.verify_head == github.sha",workflow)
     self.assertNotIn("github.ref == 'refs/heads/main'",workflow)
+  def test_combined_candidate_preserves_exact_original_50_roots(self):
+    from combined_50 import bridge_contract, COMBINED, NATIVE_ROOTS, named_axioms
+    from common import Failure
+    self.assertEqual(len(COMBINED),50)
+    self.assertEqual(len(NATIVE_ROOTS),12)
+    self.assertEqual(len(bridge_contract()["source_blobs"]),6)
+    good="'x' depends on axioms: [propext,\n  Classical.choice,\n  Quot.sound]\n"
+    self.assertEqual(named_axioms(good,["x"])["x"],["Classical.choice","Quot.sound","propext"])
+    for bad in (good+"error: broken",good.replace("Quot.sound","sorryAx"),good+good):
+      with self.assertRaises(Failure):named_axioms(bad,["x"])
 if __name__=="__main__":unittest.main()

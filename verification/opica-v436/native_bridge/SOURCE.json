@@ -1,0 +1,12 @@
+{
+  "historical_gate_commit": "acb5b817a6b174bf0fff35da9957a28b914ab888",
+  "source_blobs": {
+    "ReceiverAudit.lean": "01ff825752c7cb7b0084e6ff28b768ca37efbed1",
+    "ClaimFingerprint.lean": "9445addc92a4ac6c7d3c4b8c7fc46ffe6b33c3ee",
+    "BoundaryFlatCharacterization.lean": "3c7731ebb0e85c89d4afdaa95917476c662d015c",
+    "NativeValidated.lean": "929ab6501900a5a7b2bb0820c2f7781e807d52a4",
+    "ImportGuard.lean": "01e9b2ee3e81f77d60a3c9878e893fa8ce42c4f2",
+    "MainClosedBridge.lean": "751012cb2d87b3aadaeb50901be5e79bc2ca58c3"
+  },
+  "selected_inventory_blob": "6b8a97599f6e3e5498bf2a0bd77d4d41b47062c5"
+}
