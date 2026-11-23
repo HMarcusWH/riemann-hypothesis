@@ -26,6 +26,16 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 0
+      - name: Require the exact reviewed source for any manual run
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          REVIEWED_HEAD: ${{ inputs.verify_head }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = 'refs/heads/research/opica-community-v436-supplier-qualification-20261123'
+          [[ "$REVIEWED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$REVIEWED_HEAD" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$REVIEWED_HEAD"
       - name: Verify exact unchanged community supplier and no false claim
         run: |
           set -euo pipefail
@@ -41,7 +51,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
   full-import-qualification:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'HMarcusWH/riemann-hypothesis' && inputs.verify_head == github.sha }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/research/opica-community-v436-supplier-qualification-20261123' && github.repository == 'HMarcusWH/riemann-hypothesis' && inputs.verify_head == github.sha }}
     needs: source
     runs-on: [self-hosted, Linux, X64, opica-longrun]
     timeout-minutes: 1200

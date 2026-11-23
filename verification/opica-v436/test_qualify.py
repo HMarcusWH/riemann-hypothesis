@@ -53,4 +53,12 @@ class SourceQualifierTests(unittest.TestCase):
       self.assertEqual(set(check_public_axiom_log(q)["roots"]),set(PUBLIC_ROOTS))
       q.write_text(raw.replace("'LFunction_eq_zero_re' depends on axioms: [propext","'LFunction_eq_zero_re' depends on axioms: [bad.axiom"))
       with self.assertRaises(QualifyError):check_public_axiom_log(q)
+  def test_dispatch_and_independent_reader_use_same_topic_ref(self):
+    topic="refs/heads/research/opica-community-v436-supplier-qualification-20261123"
+    workflow=(ROOT.parents[1]/".github/workflows/opica-v436-supplier.yml").read_text()
+    reader=(ROOT/"independent_38.py").read_text()
+    self.assertIn("github.ref == '"+topic+"'",workflow)
+    self.assertIn('os.environ.get("GITHUB_REF")=="'+topic+'"',reader)
+    self.assertIn("inputs.verify_head == github.sha",workflow)
+    self.assertNotIn("github.ref == 'refs/heads/main'",workflow)
 if __name__=="__main__":unittest.main()

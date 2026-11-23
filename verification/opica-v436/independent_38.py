@@ -69,7 +69,7 @@ def verify(args):
     require(os.environ.get("GITHUB_ACTIONS")=="true" and
             os.environ.get("RUNNER_ENVIRONMENT")=="self-hosted" and
             os.environ.get("GITHUB_REPOSITORY")=="HMarcusWH/riemann-hypothesis" and
-            os.environ.get("GITHUB_REF")=="refs/heads/main" and
+            os.environ.get("GITHUB_REF")=="refs/heads/research/opica-community-v436-supplier-qualification-20261123" and
             os.environ.get("GITHUB_EVENT_NAME")=="workflow_dispatch" and
             args.head==os.environ.get("GITHUB_SHA"),"Explicit dedicated reviewed supplier workflow required")
     output=args.output.resolve()
