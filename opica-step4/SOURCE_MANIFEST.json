@@ -1,13 +1,13 @@
 {
-  "version": "OPICA25_CUSTODY_DIO_SELECTED_SOURCE_BUNDLE_V1",
+  "version": "OPICA26_ORIGINAL_LONGRUN_PROFILE_V1",
   "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
   "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
   "gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
-  "scope": "Selected single bounded full-contract attempt with explicit read-only loop DIO. Original supplier image and full mounted-file verification, proof commands, all30modular+7independent gates and proof budgets remain required. Resource setup, observation and custody do not grant theorem acceptance.",
+  "scope": "Manual selected original hosted or dedicated ephemeral long-run execution; unchanged original supplier source, native pin, proof commands, all 30 modular and seven independent gates, image and axiom policy. Longrun changes only the job and compile/import wall limits. Source-only push checks do not grant proof acceptance.",
   "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
-  "workflow_sha256": "4a3e8684185cc7949e067712692afe015e122a24ddd1128acfcb467202d8e8c1",
-  "prior_execution_head": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
-  "prior_execution_disposition": "INCOMPLETE_GUARDED_KERNEL_IMPORT_TIMEOUT; 19PASS_1INCOMPLETE_10NOT_RUN; NO_GUARD_OR_CLOSED_OBJECT; INDEPENDENT_SKIPPED",
+  "workflow_sha256": "c5e10ce7c4d3e91a49fb58c5792f221ef8990062b587a4232403221de56bab87",
+  "prior_execution_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "prior_execution_disposition": "INCOMPLETE_GUARDED_KERNEL_IMPORT_TIMEOUT_1800_SECONDS; 19PASS_1INCOMPLETE_10NOT_RUN; INDEPENDENT_SKIPPED",
   "files": [
     {
       "path": "README.md",
@@ -380,6 +380,11 @@
       "sha256": "341c081e9f19318d23fc71e758d1e283130b1eed4dfca748a30f7b3c938d0562"
     },
     {
+      "path": "resource_profiles/ORIGINAL_LONGRUN.md",
+      "bytes": 2013,
+      "sha256": "c16be4d01acb69f09932fbdc5be417a2f44453869716cfc5a1aba633d31346d5"
+    },
+    {
       "path": "resource_profiles/loop_ro_dio1_64k.json",
       "bytes": 1259,
       "sha256": "67fe5fd85db2938a40ae51181b2d84f4b8494c8b7fefcf9be0de6fb8cba9c1ba"
@@ -388,6 +393,11 @@
       "path": "resource_profiles/loop_ro_dio1_64k.py",
       "bytes": 29155,
       "sha256": "d8835808472cc92b6f70c74311b290f8b6ea6304ff1a91cebb79b9188924d5d6"
+    },
+    {
+      "path": "resource_profiles/prepare_original_longrun.py",
+      "bytes": 4122,
+      "sha256": "e08c416cbb724d4be06faef935b4797004b7d4d3dc6835dc14d3f2094c2f7e5a"
     },
     {
       "path": "resource_profiles/test_loop_ro_dio1_64k.py",
@@ -438,12 +448,24 @@
     "host_support": "Must be observed and accepted by the adapter before proof and checked after the attempt",
     "execution": "Results must be read from authenticated workflow and process receipts; no completion or proof acceptance asserted here"
   },
-  "historical_prior_execution_head": "780928f57bda7773971dcb7fc080a52ded6b2b32",
+  "historical_prior_execution_head": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
   "diagnostic_basis": {
     "head": "ff9e53b457168b4cc51b6be570fd7e356675e6b5",
     "run_id": 45022141225,
     "artifact_id": 14756786853,
     "disposition": "CORE_COMPLETED_553_034S_FINALIZATION_INCOMPLETE_AT_600S_TIMEOUT",
     "selection_scope": "File-cache-pressure hypothesis; baseline effective DIO and image-specific residency unobserved; no causal speedup claim"
+  },
+  "longrun_execution_profile": {
+    "profile_id": "LONGRUN_ORIGINAL",
+    "requires_reviewed_head": true,
+    "runner_label": "opica-original-433-longrun",
+    "job_timeout_minutes": 1200,
+    "compile_timeout_seconds": 14400,
+    "original_hosted_compile_timeout_seconds": 1800,
+    "proof_acceptance": false,
+    "RH": "OPEN",
+    "C1": "OPEN",
+    "Step4": "OPEN"
   }
 }

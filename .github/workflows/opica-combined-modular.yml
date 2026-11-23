@@ -7,19 +7,68 @@ on:
       - .github/workflows/opica-combined-modular.yml
       - opica-step4/**
   workflow_dispatch:
+    inputs:
+      execution_profile:
+        description: Select original hosted or dedicated long-run execution (same proof gates)
+        required: true
+        type: choice
+        options: [HOSTED_ORIGINAL, LONGRUN_ORIGINAL]
+        default: HOSTED_ORIGINAL
+      reviewed_head:
+        description: Exact reviewed 40-hex proof branch commit
+        required: true
+        type: string
 permissions:
   contents: read
 concurrency:
   group: opica-exact-step4-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify:
+  source-profile:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify the entire committed bundle and run resource controls
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import hashlib,json,subprocess
+          from pathlib import Path
+          root=Path('opica-step4')
+          manifest=json.loads((root/'SOURCE_MANIFEST.json').read_text())
+          def need(ok,reason):
+              if not ok: raise SystemExit(reason)
+          need(hashlib.sha256(Path('.github/workflows/opica-combined-modular.yml').read_bytes()).hexdigest()==manifest['workflow_sha256'],'workflow digest differs')
+          seen=set()
+          for row in manifest['files']:
+              p=Path(row['path'])
+              need(not p.is_absolute() and '..' not in p.parts and row['path'] not in seen,'unsafe manifest path')
+              seen.add(row['path'])
+              f=root/p
+              need(f.is_file() and not f.is_symlink(),'source member missing: '+str(p))
+              raw=f.read_bytes()
+              need(len(raw)==row['bytes'] and hashlib.sha256(raw).hexdigest()==row['sha256'],'source digest differs: '+str(p))
+          need(subprocess.check_output(['git','rev-parse','HEAD:src'],text=True).strip()==manifest['supplier_source_tree'],'supplier source tree differs')
+          print('SOURCE_BUNDLE_HASH_AUDIT_ONLY; NO PROOF ACCEPTANCE',len(seen))
+          PY
+          python3 -B -m unittest discover -v -s opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
+          python3 -O -B -m unittest discover -v -s opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
+  verify:
+    needs: source-profile
+    if: ${{ github.event_name == 'workflow_dispatch' && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-step4-combined-gate-20261121' && inputs.reviewed_head == github.sha }}
+    runs-on: ${{ fromJSON(inputs.execution_profile == 'LONGRUN_ORIGINAL' && '["self-hosted","Linux","X64","opica-original-433-longrun"]' || '["ubuntu-24.04"]') }}
+    timeout-minutes: ${{ inputs.execution_profile == 'LONGRUN_ORIGINAL' && 1200 || 360 }}
     env:
       LEAN_ABORT_ON_PANIC: '1'
       LEAN_NUM_THREADS: '2'
       OPICA_RESOURCE_PROFILE: 'LOOP_RO_DIO1_ORIGINAL64K_V1'
+      OPICA_EXECUTION_PROFILE: ${{ inputs.execution_profile }}
+      OPICA_COMPILE_TIMEOUT: ${{ inputs.execution_profile == 'LONGRUN_ORIGINAL' && '14400' || '1800' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -35,18 +84,31 @@ jobs:
             --selection "$OPICA_RESOURCE_PROFILE"
           python3 -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
           python3 -O -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
-      - name: Prepare bounded standard runner
+      - name: Prepare the explicitly selected bounded runner
+        env:
+          REVIEWED_HEAD: ${{ inputs.reviewed_head }}
         run: |
           set -euo pipefail
+          test "$REVIEWED_HEAD" = "$GITHUB_SHA"
           work="$RUNNER_TEMP/opica-step4-round24"
-          mkdir -p "$work"
+          test ! -e "$work"
+          mkdir "$work"
           printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
-          sudo apt-get update -qq
-          sudo apt-get install -y squashfs-tools zstd python3-venv
+          case "$OPICA_EXECUTION_PROFILE" in
+            HOSTED_ORIGINAL)
+              test "$RUNNER_ENVIRONMENT" = github-hosted
+              sudo apt-get update -qq
+              sudo apt-get install -y squashfs-tools zstd python3-venv
+              python3 supplier/opica-step4/prepare_runner.py --work "$work"
+              ;;
+            LONGRUN_ORIGINAL)
+              python3 -B supplier/opica-step4/resource_profiles/prepare_original_longrun.py --work "$work" --head "$REVIEWED_HEAD"
+              ;;
+            *) exit 2 ;;
+          esac
           python3 -m venv "$work/venv"
           "$work/venv/bin/python" -m pip install --disable-pip-version-check -r supplier/opica-step4/transport/requirements.txt
           printf '%s\n' "$work/venv/bin" >> "$GITHUB_PATH"
-          python3 supplier/opica-step4/prepare_runner.py --work "$work"
       - name: Check transport and verification controls
         run: |
           set -euo pipefail
@@ -133,7 +195,7 @@ jobs:
             --comparison-helper "$GITHUB_WORKSPACE/supplier/opica-step4/portable_gate/comparison_control/.lake/build/bin/compare_exports" \
             --external-evidence "$GITHUB_WORKSPACE/supplier/opica-step4/modular/external-evidence" \
             --output "$OPICA_WORK/verification" \
-            --jobs 2 --compile-timeout 1800 --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
+            --jobs 2 --compile-timeout "$OPICA_COMPILE_TIMEOUT" --fresh-timeout 7200 --export-timeout 7200 --replay-timeout 3600
       - name: Independently check the complete combined proof
         id: independent_proof
         run: |
@@ -276,6 +338,7 @@ jobs:
         with:
           name: opica-loop-resource-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
+            ${{ env.OPICA_RESOURCE_WORK }}/RUNNER_RESOURCES.json
             ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_STARTED.json
             ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/OWNED_LOOP.json
             ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_RESULT.json
