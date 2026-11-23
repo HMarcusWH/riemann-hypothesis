@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "scope": "Reproducible native common-pin bootstrap source bundle; no closed C1/RH proof included",
+  "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "mathlib_rev": "0df444a360eaa60ab8c11dca51a86af692955474",
+  "files": [
+    {
+      "path": "bootstrap_native.py",
+      "bytes": 30869,
+      "sha256": "1a9e8c7643bf122c7b855433f47460462501ac1ecefaefe54c6b459ea7443b66"
+    },
+    {
+      "path": "validate_bootstrap.py",
+      "bytes": 5473,
+      "sha256": "af551a5acd627da2e78fefc35b3f98486fb2d48522816773f9d5b545409a2ec7"
+    },
+    {
+      "path": "README.md",
+      "bytes": 6750,
+      "sha256": "dd82f0f37b8119a289b631ac01cf3433e5689803d935803eba5ef3bc01e3c18f"
+    },
+    {
+      "path": "lake-manifest.json",
+      "bytes": 3553,
+      "sha256": "391f2a0f7147306be70a47338cb31829e652981b9db028af02e475b73368c5f4"
+    },
+    {
+      "path": "native_sources.json",
+      "bytes": 65479,
+      "sha256": "3b6faeca7c42978a5e183f8d33bd921af2dc99f058ba4e4724d2397c271d3ae6"
+    },
+    {
+      "path": "runtime_files.json",
+      "bytes": 4212,
+      "sha256": "550bbf7a1fc8e2549ecf2d122ff5bfa2007f71d78e3ce1dba42d02fb1ae72793"
+    },
+    {
+      "path": "trusted_objects.json.gz",
+      "bytes": 1025646,
+      "sha256": "a60772ae619d879d58690a3318f9b791e91826d10be5bb09ae4a07923797ab60"
+    },
+    {
+      "path": "OPICAStep4/BoundaryFlatCharacterization.lean",
+      "bytes": 4218,
+      "sha256": "e19bfb13fcb523930617aae99c9d1190cccb1ec3915feae610f7195c68bbef61"
+    },
+    {
+      "path": "OPICAStep4/ClaimFingerprint.lean",
+      "bytes": 1822,
+      "sha256": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56"
+    },
+    {
+      "path": "OPICAStep4/ReceiverAudit.lean",
+      "bytes": 1597,
+      "sha256": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b"
+    }
+  ]
+}

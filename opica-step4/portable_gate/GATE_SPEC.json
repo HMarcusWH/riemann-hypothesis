@@ -1,0 +1,104 @@
+{
+  "schema": 2,
+  "name": "OPICA Step 4 isolated integration strict gate",
+  "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "native_tree": "9248b76d7aff60aab3bb775c4be9750dc6006003",
+  "native_toolchain": "leanprover/lean4:v4.33.0-rc2",
+  "integration_toolchain": "leanprover/lean4:v4.33.1",
+  "mathlib_rev": "0df444a360eaa60ab8c11dca51a86af692955474",
+  "recognized_external_heads": {
+    "bdb1810a06c78f246da285c9bcbe7db2cd992888": "User fork source checkpoint",
+    "9266b88245feaf2906ebba592613dd8098b0e8f6": "Upstream infrastructure checkpoint",
+    "40e56bab026552e089d7afcfeff08d2defb9c005": "Original mirror checkpoint"
+  },
+  "external_source_inventory_sha256_without_challenge": "16f09dc78678562246fd2d80dd2244a20d9d590576467a290f7f8ccbfb4426bc",
+  "external_source_inventory_entries_without_challenge": 175187,
+  "external_excluded_path": "src/Challenge.lean",
+  "external_endpoint": "Development.AutomorphicArithmetic.CharacterBoxes.MainConclusion",
+  "external_theorem": "UpperTheory.FinalTheorems.riemannHypothesis",
+  "native_endpoint": "Zeta23.OPICARound4.ArithmeticFrontier.ZeroFreeFloor",
+  "native_module_count": 572,
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "module_types": {
+    "OPICAStep4.ClosedBridge": [
+      "UpperTheory.FinalTheorems.riemannHypothesis",
+      "Zeta23.OPICARound19.step4C1",
+      "Zeta23.OPICARound19.allMomentSlicesZero"
+    ],
+    "OPICAStep4.IndependentConsumer": [
+      "Zeta23.OPICARound19.Audit.literalC1",
+      "Zeta23.OPICARound19.Audit.nativeConsumerReachesMathlibRH"
+    ],
+    "OPICAStep4.ClaimComparison": [
+      "Zeta23.OPICARound19.Audit.provedRequiredC1"
+    ]
+  },
+  "source_sha256": {
+    "OPICAStep4/ClosedBridge.lean": "70c8e2b0dabb449bf29928babc0ca5c1973555d155d8bd0be51ae2864f2b5b08",
+    "OPICAStep4/IndependentConsumer.lean": "db521331e48f2a5cc87a9c4ffb69d2cb4495c0ca97bf9bd1162e1ca10361efa6",
+    "OPICAStep4/ClaimFingerprint.lean": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56",
+    "OPICAStep4/ClaimComparison.lean": "66e061a4183e7c74ba949c9de46a6aca48a733ab17bcf00e7e0519b3009ce0b2"
+  },
+  "claim_boundary": "Exact canonical native C1 theorem verified against separately exported native-only definitions at the recorded 4.33.1 integration pin; fingerprints alone prove neither C1 nor RH. Does not assert external source-to-object provenance, original native-pin compilation, eleven-lane Round4 production acceptance, or separate historical Mobius-cell inequalities.",
+  "comparator_config_sha256": "6831efa2eb4a043a2d1984fa46b465e0ea5fe9e10221f0c1262d12df4fdc75f3",
+  "fingerprint_module": "OPICAStep4.ClaimFingerprint",
+  "closed_comparison_module": "OPICAStep4.ClaimComparison",
+  "comparator_toolchain_version": "4.36.0",
+  "fingerprint_theorems": [
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_reflexive",
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_is_native",
+    "Zeta23.OPICARound19.ClaimFingerprint.requiredRH_reflexive"
+  ],
+  "export_auxiliary_targets": [
+    "Quot",
+    "Quot.mk",
+    "Quot.lift",
+    "Quot.ind",
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Nat.add",
+    "Nat.sub",
+    "Nat.mul",
+    "Nat.pow",
+    "Nat.gcd",
+    "Nat.div",
+    "Nat.mod",
+    "Nat.beq",
+    "Nat.ble",
+    "Nat.land",
+    "Nat.lor",
+    "Nat.xor",
+    "Nat.shiftLeft",
+    "Nat.shiftRight",
+    "String.ofList",
+    "Char.ofNat",
+    "List",
+    "eagerReduce",
+    "Nat",
+    "String",
+    "String.mk",
+    "Char",
+    "optParam",
+    "autoParam",
+    "semiOutParam",
+    "outParam"
+  ],
+  "comparison_control_sha256": {
+    "CompareExports.lean": "8dfb14910edfc92b86e9e188c36e028003e36a566c7ed1f6bf6b6bd335c56635",
+    "test_statement_definitions.py": "32b8930848039ce501384b8d4e8bd1a53c3bd947c1bf5b4325f7705585ce64dd",
+    "lakefile.toml": "fe6ffed53639468f3af755b629986b048103cf80b7b9dcfaac32af3fc1a3a590",
+    "lean-toolchain": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
+    "Export.lean": "4073b8a98a3a0671d867d93ba1cadaaf890fb011f4000e6e2e54ce338cc1b7a5",
+    "Comparator.lean": "86a19f1cfd9d013974deb24310d5d619c344c5f81fd6cd65913f7a1980864857",
+    "Comparator/Util.lean": "693d845330dd7122565aeb19314a3e3de4b49f9a8a7ac6e1fadbc9ab374b9f88",
+    "Comparator/Axioms.lean": "863c5e1329811be0427880e08c171de733343491c5a3619b5dbf2e12b34c6125",
+    "Comparator/Compare.lean": "9bc34cb7de5a069a6fef7f3b13b20fea22f1d52603f74320a93d519b735ad3dd",
+    "Export/Parse.lean": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286",
+    "UPSTREAM_IDENTITY.json": "a6d5f234af2a487b23e1f471072fc08e2b7c7b21ce8dedfbd3c693c51cb53188"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "OPICA_LOOP_RO_DIO1_ORIGINAL64K_PROFILE_V1",
+  "id": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+  "preparation_base": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
+  "image": {
+    "sha256": "49f7e6d407ee8bb17d55cbd5d479c0a01a0f29f40768d9f6214e8a7b3f6ea475",
+    "bytes": 30748491776,
+    "block_bytes": 65536,
+    "files": 350374,
+    "mounted_manifest_sha256": "4b2a2b978e16e54c663fd5c19f4cab3cd8d5a6d5a0141468efefdc6f07d1e411",
+    "transport_helper_sha256": "36e330ddc0a9baae25de15d489dfbcf0c5ce8049cc472db031be58eaa1174d49"
+  },
+  "mount_options": [
+    "ro"
+  ],
+  "loop_offset_bytes": 0,
+  "loop_sizelimit_bytes": 0,
+  "decompressor_threads_option": null,
+  "observation_timeout_seconds": 30,
+  "image_authentication_timeout_seconds": 600,
+  "max_observation_output_bytes": 1048576,
+  "source_only_preparation": true,
+  "proof_acceptance": false,
+  "single_only_kernel_config_fallback": {
+    "CONFIG_SQUASHFS_DECOMP_SINGLE": "y",
+    "CONFIG_SQUASHFS_DECOMP_MULTI": "n",
+    "CONFIG_SQUASHFS_DECOMP_MULTI_PERCPU": "n",
+    "CONFIG_SQUASHFS_CHOICE_DECOMP_BY_MOUNT": "n"
+  },
+  "effective_single_mode": "Accept actual mount threads=single; otherwise require the exact unambiguous single-only kernel-config fallback. Never add a threads mount option."
+}

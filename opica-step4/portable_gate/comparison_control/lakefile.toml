@@ -1,0 +1,13 @@
+name = "opica_statement_comparison_control"
+defaultTargets = ["compare_exports"]
+
+[[lean_lib]]
+name = "Export"
+
+[[lean_lib]]
+name = "Comparator"
+
+[[lean_exe]]
+name = "compare_exports"
+root = "CompareExports"
+supportInterpreter = true

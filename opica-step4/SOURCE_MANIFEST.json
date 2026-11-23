@@ -1,0 +1,471 @@
+{
+  "version": "OPICA26_ORIGINAL_LONGRUN_PROFILE_V1",
+  "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "supplier_source_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
+  "gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
+  "scope": "Manual selected original hosted or dedicated ephemeral long-run execution; unchanged original supplier source, native pin, proof commands, all 30 modular and seven independent gates, image and axiom policy. Longrun changes only the job and compile/import wall limits. Source-only push checks do not grant proof acceptance.",
+  "independent_gate": "INDEPENDENT_KERNEL_OBJECT_COMBINED_PROOF_V1",
+  "workflow_sha256": "c5e10ce7c4d3e91a49fb58c5792f221ef8990062b587a4232403221de56bab87",
+  "prior_execution_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "prior_execution_disposition": "INCOMPLETE_GUARDED_KERNEL_IMPORT_TIMEOUT_1800_SECONDS; 19PASS_1INCOMPLETE_10NOT_RUN; INDEPENDENT_SKIPPED",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 12459,
+      "sha256": "641d58fb81c610e8fff4847b07007879f7d5e37b6bdb34de720be20f276bf950"
+    },
+    {
+      "path": "ROUND24_EXECUTION_HANDOVER_2026-11-22.md",
+      "bytes": 7577,
+      "sha256": "a28c29a8e3f8139efc9e037a50d2f595d3fdbaa6ab016915c8e2cc6d13da26eb"
+    },
+    {
+      "path": "collect_evidence.py",
+      "bytes": 2475,
+      "sha256": "2b899919f2325393098b781e36ad90617a8a3967579d5d04c3696de4d0ed583b"
+    },
+    {
+      "path": "custody/CAPSULE_SPEC.md",
+      "bytes": 12679,
+      "sha256": "2b32d56322ee2bf15a998aa161dd09fd4bcb4434cfb13e34a87d2b9cec34948d"
+    },
+    {
+      "path": "custody/collect_native_capsule.py",
+      "bytes": 26849,
+      "sha256": "c2140c0070e846143b5ae4c15651baf61c2499a9a6a703ac95a4c0b184ff4061"
+    },
+    {
+      "path": "custody/test_collect_native_capsule.py",
+      "bytes": 12662,
+      "sha256": "feb2a49f8f749f34ea57a134fc1d7297c5f7d8c39299a923c82196b8acad5b2c"
+    },
+    {
+      "path": "independent/SPEC.md",
+      "bytes": 10093,
+      "sha256": "72442269a76e66aba2f09133afbadc2934a6248ff1ca3b56b17a411fee4108c5"
+    },
+    {
+      "path": "independent/bootstrap_checker.py",
+      "bytes": 6868,
+      "sha256": "deac882fe3f77da464fc9e0bf282238ef22d353f6a48008c911fc49f7bbdf88a"
+    },
+    {
+      "path": "independent/common.py",
+      "bytes": 7485,
+      "sha256": "83e55931c45af88771bac806ddfc354e995cb2c7089aa81aeed83a39412a92fb"
+    },
+    {
+      "path": "independent/test_independent.py",
+      "bytes": 8516,
+      "sha256": "668363d537f720e71463b2ea01daf607a36cc20a00310c58487c056c834b4c49"
+    },
+    {
+      "path": "independent/verify_independent.py",
+      "bytes": 36425,
+      "sha256": "cceb0b3467675dd87e761ec668f0ffc54f89adf2ca2360cc57d6c41e4319687a"
+    },
+    {
+      "path": "modular/InspectClosedObject.lean",
+      "bytes": 4957,
+      "sha256": "9d54c1c2fd25ade5d1aaa558c9c5d5fdbd156973a20f246b5caf661872fd262c"
+    },
+    {
+      "path": "modular/SPEC.md",
+      "bytes": 23453,
+      "sha256": "c1f2113174162211cbb32a759d1d09f1a59077161953bb2de2aadb322bc621c3"
+    },
+    {
+      "path": "modular/external-evidence/FETCH_RECEIPT.json",
+      "bytes": 1179,
+      "sha256": "1c4528956c5841f2be9ba77924b2c836d85a5c0c50a9bca7a7cd06de8d39682d"
+    },
+    {
+      "path": "modular/external-evidence/SHA256SUMS",
+      "bytes": 2112,
+      "sha256": "a26d92ed4c11c8503e9f09a52fa874fa9175c13b2c7bb29213af21ac12c1ede3"
+    },
+    {
+      "path": "modular/external-evidence/audit.log",
+      "bytes": 2062,
+      "sha256": "0a1473fce6eed840011f4a76b1c51558fc6f03edd1e6bd1ee542e6c738d87a62"
+    },
+    {
+      "path": "modular/external-evidence/con-leche-compare.log",
+      "bytes": 5875,
+      "sha256": "5a068bf55f24904eea9f05eda947c63d43bdee3c6ab0490e43943a3bd9af1f6e"
+    },
+    {
+      "path": "modular/external-evidence/con-leche-master.log",
+      "bytes": 3918,
+      "sha256": "23e27eacb9e8378569474cc185c0e98f6b995b4db0f8df88fd48a921084fed02"
+    },
+    {
+      "path": "modular/external-evidence/index.html",
+      "bytes": 20460,
+      "sha256": "e46488825acc7e4fbf3c0c744edcfaa5219f773571a9267b06df26b11f18a1a3"
+    },
+    {
+      "path": "modular/external-evidence/nanoda.log",
+      "bytes": 852,
+      "sha256": "d4c5360b02d8dd885150c1cc28b616cb6fb5bf5b20d142558d79a7b15ae9d9df"
+    },
+    {
+      "path": "modular/kernel_producer/KernelBridge.lean",
+      "bytes": 22655,
+      "sha256": "bce55684b2e0ca99a46fc79e259573ae801523799d2c01cc5922c6233e49b977"
+    },
+    {
+      "path": "modular/kernel_producer/PRODUCER_SPEC.md",
+      "bytes": 10676,
+      "sha256": "8f9a590976a3e994eb11bfb4e47c5ef7ecfb6bf8a3155eda7b514e51b7b6fad1"
+    },
+    {
+      "path": "modular/kernel_producer/SELECTED_ROOT_INVENTORY.json",
+      "bytes": 2856,
+      "sha256": "5170df5090528ad6bb7edf8a2537dd2aa039284f8a358b4ee7dbeb84a52b48ff"
+    },
+    {
+      "path": "modular/kernel_producer/lakefile.toml",
+      "bytes": 206,
+      "sha256": "689bac7c7427b93750318c305b40cdf8c67264e1752c987e11989b93f0cc6fcc"
+    },
+    {
+      "path": "modular/kernel_producer/lean-toolchain",
+      "bytes": 25,
+      "sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71"
+    },
+    {
+      "path": "modular/monitored_process.py",
+      "bytes": 40037,
+      "sha256": "37cc7e705d660745bc0a6b2dc556a38761c1460c6e7e30fd9597ccae40ca0709"
+    },
+    {
+      "path": "modular/test_monitored_process.py",
+      "bytes": 24608,
+      "sha256": "0a7fab8291f05aa834fb01a7a6f36fb1695ef289a5a3fed401e876feb363afae"
+    },
+    {
+      "path": "modular/test_verify_modular.py",
+      "bytes": 12654,
+      "sha256": "8bf6cd6b676bf62e6816729670ef9a1e85b85d7ef648320e25e894dbf93b2241"
+    },
+    {
+      "path": "modular/verify_modular.py",
+      "bytes": 54282,
+      "sha256": "7953a9d18c63c6567595533b9028a6f176599fe1fbca65c0f84773e1211267b9"
+    },
+    {
+      "path": "native_bootstrap/BUNDLE_MANIFEST.json",
+      "bytes": 1845,
+      "sha256": "fac4557add7f7b7331e1d0fa535ced4b2fc67049ce176a1c993f1ae929ec4b72"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/BoundaryFlatCharacterization.lean",
+      "bytes": 4218,
+      "sha256": "e19bfb13fcb523930617aae99c9d1190cccb1ec3915feae610f7195c68bbef61"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/ClaimFingerprint.lean",
+      "bytes": 1822,
+      "sha256": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56"
+    },
+    {
+      "path": "native_bootstrap/OPICAStep4/ReceiverAudit.lean",
+      "bytes": 1597,
+      "sha256": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b"
+    },
+    {
+      "path": "native_bootstrap/README.md",
+      "bytes": 6750,
+      "sha256": "dd82f0f37b8119a289b631ac01cf3433e5689803d935803eba5ef3bc01e3c18f"
+    },
+    {
+      "path": "native_bootstrap/bootstrap_native.py",
+      "bytes": 30869,
+      "sha256": "1a9e8c7643bf122c7b855433f47460462501ac1ecefaefe54c6b459ea7443b66"
+    },
+    {
+      "path": "native_bootstrap/lake-manifest.json",
+      "bytes": 3553,
+      "sha256": "391f2a0f7147306be70a47338cb31829e652981b9db028af02e475b73368c5f4"
+    },
+    {
+      "path": "native_bootstrap/native_sources.json",
+      "bytes": 65479,
+      "sha256": "3b6faeca7c42978a5e183f8d33bd921af2dc99f058ba4e4724d2397c271d3ae6"
+    },
+    {
+      "path": "native_bootstrap/runtime_files.json",
+      "bytes": 4212,
+      "sha256": "550bbf7a1fc8e2549ecf2d122ff5bfa2007f71d78e3ce1dba42d02fb1ae72793"
+    },
+    {
+      "path": "native_bootstrap/trusted_objects.json.gz",
+      "bytes": 1025646,
+      "sha256": "a60772ae619d879d58690a3318f9b791e91826d10be5bb09ae4a07923797ab60"
+    },
+    {
+      "path": "native_bootstrap/validate_bootstrap.py",
+      "bytes": 5473,
+      "sha256": "af551a5acd627da2e78fefc35b3f98486fb2d48522816773f9d5b545409a2ec7"
+    },
+    {
+      "path": "portable_gate/GATE_SPEC.json",
+      "bytes": 4656,
+      "sha256": "771b194e8330a6844705178a5bc4cfc09ece629c9a2c88031e1bb74615640862"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/BoundaryFlatCharacterization.lean",
+      "bytes": 4218,
+      "sha256": "e19bfb13fcb523930617aae99c9d1190cccb1ec3915feae610f7195c68bbef61"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClaimComparison.lean",
+      "bytes": 677,
+      "sha256": "66e061a4183e7c74ba949c9de46a6aca48a733ab17bcf00e7e0519b3009ce0b2"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClaimFingerprint.lean",
+      "bytes": 1822,
+      "sha256": "255a46d2926e713ad5d41083ef9f818b7e415d89c8a96d63540486d73a56fd56"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ClosedBridge.lean",
+      "bytes": 1903,
+      "sha256": "70c8e2b0dabb449bf29928babc0ca5c1973555d155d8bd0be51ae2864f2b5b08"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ImportGuard.lean",
+      "bytes": 427,
+      "sha256": "549a0c43ced7253fc6c1672e3ab548e6576a88f1d5e42f770592dc570f6c6c27"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/IndependentConsumer.lean",
+      "bytes": 2156,
+      "sha256": "db521331e48f2a5cc87a9c4ffb69d2cb4495c0ca97bf9bd1162e1ca10361efa6"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/MainClosedBridge.lean",
+      "bytes": 1799,
+      "sha256": "a4243a995e778677094035e9f212f504c208b9f7d35dc4e0ee92de80512ec86e"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/NativeValidated.lean",
+      "bytes": 210,
+      "sha256": "490d4dedfbf28088dbb85f3567c9acc93401b15a19d23e5399eea79bd32e03cf"
+    },
+    {
+      "path": "portable_gate/OPICAStep4/ReceiverAudit.lean",
+      "bytes": 1597,
+      "sha256": "99810c3fd20182630ec6b0fcaf6e67c6be3ec0b04171371ba5d723b2dcc4745b"
+    },
+    {
+      "path": "portable_gate/README.md",
+      "bytes": 15299,
+      "sha256": "ae21493d35d965f7569fc9aa2c259c1412429bff1b8eac3d714fec4c8ee76355"
+    },
+    {
+      "path": "portable_gate/comparator.json",
+      "bytes": 556,
+      "sha256": "6831efa2eb4a043a2d1984fa46b465e0ea5fe9e10221f0c1262d12df4fdc75f3"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator.lean",
+      "bytes": 26,
+      "sha256": "86a19f1cfd9d013974deb24310d5d619c344c5f81fd6cd65913f7a1980864857"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Axioms.lean",
+      "bytes": 2389,
+      "sha256": "863c5e1329811be0427880e08c171de733343491c5a3619b5dbf2e12b34c6125"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Compare.lean",
+      "bytes": 4089,
+      "sha256": "9bc34cb7de5a069a6fef7f3b13b20fea22f1d52603f74320a93d519b735ad3dd"
+    },
+    {
+      "path": "portable_gate/comparison_control/Comparator/Util.lean",
+      "bytes": 788,
+      "sha256": "693d845330dd7122565aeb19314a3e3de4b49f9a8a7ac6e1fadbc9ab374b9f88"
+    },
+    {
+      "path": "portable_gate/comparison_control/CompareExports.lean",
+      "bytes": 3276,
+      "sha256": "8dfb14910edfc92b86e9e188c36e028003e36a566c7ed1f6bf6b6bd335c56635"
+    },
+    {
+      "path": "portable_gate/comparison_control/Export.lean",
+      "bytes": 20,
+      "sha256": "4073b8a98a3a0671d867d93ba1cadaaf890fb011f4000e6e2e54ce338cc1b7a5"
+    },
+    {
+      "path": "portable_gate/comparison_control/Export/Parse.lean",
+      "bytes": 20491,
+      "sha256": "1f943b5cc776eece6d528937b976509c8bd57d10bc69a39b1c119bfb6d664286"
+    },
+    {
+      "path": "portable_gate/comparison_control/LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "portable_gate/comparison_control/SOURCE_FREEZE.json",
+      "bytes": 1197,
+      "sha256": "49a7f8e52bd578b9e09dac20edd1034fb817383ec7630e411094989474e0ddce"
+    },
+    {
+      "path": "portable_gate/comparison_control/UPSTREAM_IDENTITY.json",
+      "bytes": 888,
+      "sha256": "a6d5f234af2a487b23e1f471072fc08e2b7c7b21ce8dedfbd3c693c51cb53188"
+    },
+    {
+      "path": "portable_gate/comparison_control/lake-manifest.json",
+      "bytes": 166,
+      "sha256": "a9ebd699791955d5a9959cd94b627017e12e035494101a1ea4cb5a35b6bb431e"
+    },
+    {
+      "path": "portable_gate/comparison_control/lakefile.toml",
+      "bytes": 234,
+      "sha256": "fe6ffed53639468f3af755b629986b048103cf80b7b9dcfaac32af3fc1a3a590"
+    },
+    {
+      "path": "portable_gate/comparison_control/lean-toolchain",
+      "bytes": 25,
+      "sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71"
+    },
+    {
+      "path": "portable_gate/comparison_control/test_statement_definitions.py",
+      "bytes": 5926,
+      "sha256": "32b8930848039ce501384b8d4e8bd1a53c3bd947c1bf5b4325f7705585ce64dd"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/CLI/Check.lean",
+      "bytes": 30904,
+      "sha256": "55daf430e5adea38453b21798cbdf4cd099f66ec969494022a566a8ae098c00b"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Axioms.lean",
+      "bytes": 3359,
+      "sha256": "261fa54494a6a17c23b8588d788ab1080e5c39af2143948f8e140cfa295560d1"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Compare.lean",
+      "bytes": 4028,
+      "sha256": "0281630a33b8f08a9f3f40f229cd843c02441a0cd4d8a6d8548dc2bb8ded4c68"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/Lake/Check/Util.lean",
+      "bytes": 853,
+      "sha256": "f1e1b1ed49778fdad130a436340d55db72a5d6017cf5bc5d6a5dccdf7f55cb3d"
+    },
+    {
+      "path": "portable_gate/comparison_control/upstream-v4.36.0/comparator-from-export-test.sh",
+      "bytes": 1666,
+      "sha256": "b7e7cfab9ac2ddb06c5840c3b8f9b2ed63a9fe3a84be08cd0e1aac26c2095b8d"
+    },
+    {
+      "path": "portable_gate/test_verify_combined.py",
+      "bytes": 10437,
+      "sha256": "4b44435f1e8c4562090bd33d0f557003b0c55993f1e12fca64ee2ef531d6bd9a"
+    },
+    {
+      "path": "portable_gate/verify_combined.py",
+      "bytes": 66747,
+      "sha256": "a01ac482dd59444b2313dc525b63d22036de892a3076a23a06c80514d7df78ca"
+    },
+    {
+      "path": "prepare_runner.py",
+      "bytes": 2087,
+      "sha256": "341c081e9f19318d23fc71e758d1e283130b1eed4dfca748a30f7b3c938d0562"
+    },
+    {
+      "path": "resource_profiles/ORIGINAL_LONGRUN.md",
+      "bytes": 2013,
+      "sha256": "c16be4d01acb69f09932fbdc5be417a2f44453869716cfc5a1aba633d31346d5"
+    },
+    {
+      "path": "resource_profiles/loop_ro_dio1_64k.json",
+      "bytes": 1259,
+      "sha256": "67fe5fd85db2938a40ae51181b2d84f4b8494c8b7fefcf9be0de6fb8cba9c1ba"
+    },
+    {
+      "path": "resource_profiles/loop_ro_dio1_64k.py",
+      "bytes": 29155,
+      "sha256": "d8835808472cc92b6f70c74311b290f8b6ea6304ff1a91cebb79b9188924d5d6"
+    },
+    {
+      "path": "resource_profiles/prepare_original_longrun.py",
+      "bytes": 4122,
+      "sha256": "e08c416cbb724d4be06faef935b4797004b7d4d3dc6835dc14d3f2094c2f7e5a"
+    },
+    {
+      "path": "resource_profiles/test_loop_ro_dio1_64k.py",
+      "bytes": 14384,
+      "sha256": "bb536b97de4e10ca81fcbb594791d9251bfbd995e25abddb81c137b93f22b90b"
+    },
+    {
+      "path": "transport/export_stream_store.py",
+      "bytes": 8913,
+      "sha256": "461caaa8bfc52ef12ca1e39dd22ca0dce219a10ef49efda2d9cc7537ca24b012"
+    },
+    {
+      "path": "transport/requirements.txt",
+      "bytes": 18,
+      "sha256": "da56c02977e00d88d897af40d227d773822aa7134d30e1d40c68e1518d666026"
+    },
+    {
+      "path": "transport/test_export_stream_store.py",
+      "bytes": 2082,
+      "sha256": "60dba6b22ee381dfb844b2251762bfcaa980facf8ba2c37b7fb357bcde03e0ea"
+    },
+    {
+      "path": "transport/test_verified_squashfs_store.py",
+      "bytes": 8028,
+      "sha256": "7cfacaca37fc4baf36c433e08a85b2594a035b27c9bcb9be79d856ecfbbacbe7"
+    },
+    {
+      "path": "transport/verified_squashfs_store.py",
+      "bytes": 17260,
+      "sha256": "36e330ddc0a9baae25de15d489dfbcf0c5ce8049cc472db031be58eaa1174d49"
+    }
+  ],
+  "custody_hook": {
+    "preparation_parent": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
+    "original_source_manifest_sha256": "e3ff36592a00881dd5c5e8c82913992dd6b88f2f137c5a413d7d5cd61f4bc204",
+    "native_dependency_files": 1147,
+    "authored_audit_files": 8,
+    "member_cap_mib": 512,
+    "total_cap_mib": 4096,
+    "caps_are_bounds_not_measured_sufficiency": true,
+    "hosted_execution": "Complete custody must be established from the actual same-run manifest, archive and authenticated artifact provenance"
+  },
+  "resource_profile_candidate": {
+    "profile_id": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+    "committed_selector": "LOOP_RO_DIO1_ORIGINAL64K_V1",
+    "activation": "Explicitly selected after diagnostic45022141225; exact commit and workflow digest bind the selection",
+    "custody_parent_patch_sha256": "6837059214bf5ed3c96e0ba80fb1fc9a0269474288a8b6ba8debd42b573c6c9d",
+    "host_support": "Must be observed and accepted by the adapter before proof and checked after the attempt",
+    "execution": "Results must be read from authenticated workflow and process receipts; no completion or proof acceptance asserted here"
+  },
+  "historical_prior_execution_head": "2d54e707ab9ac8a50c2ed3cb2fd72b4171cb21bf",
+  "diagnostic_basis": {
+    "head": "ff9e53b457168b4cc51b6be570fd7e356675e6b5",
+    "run_id": 45022141225,
+    "artifact_id": 14756786853,
+    "disposition": "CORE_COMPLETED_553_034S_FINALIZATION_INCOMPLETE_AT_600S_TIMEOUT",
+    "selection_scope": "File-cache-pressure hypothesis; baseline effective DIO and image-specific residency unobserved; no causal speedup claim"
+  },
+  "longrun_execution_profile": {
+    "profile_id": "LONGRUN_ORIGINAL",
+    "requires_reviewed_head": true,
+    "runner_label": "opica-original-433-longrun",
+    "job_timeout_minutes": 1200,
+    "compile_timeout_seconds": 14400,
+    "original_hosted_compile_timeout_seconds": 1800,
+    "proof_acceptance": false,
+    "RH": "OPEN",
+    "C1": "OPEN",
+    "Step4": "OPEN"
+  }
+}

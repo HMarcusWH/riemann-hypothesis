@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "archive_url": "https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst",
+  "archive_sha256": "890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235",
+  "files": [
+    {
+      "path": "bin/cadical",
+      "sha256": "8e92f427cfb72072fc605ec6d5f641443c35921b29c39ab2f027776cd533afce",
+      "bytes": 1111624
+    },
+    {
+      "path": "bin/clang",
+      "sha256": "9fcd5fc4baeea9c449bcc9ca4b9db7714465107669498b0056a853f22f5f4def",
+      "bytes": 119320
+    },
+    {
+      "path": "bin/lake",
+      "sha256": "60330ab6f07dce20f3fa9ebb08e8b984ea9549eac172afeb15d9d2227060e2b3",
+      "bytes": 13840
+    },
+    {
+      "path": "bin/ld.lld",
+      "sha256": "d32d5121d96810b624306e48faacc75e41f7302ad0e4865be63c3bbf8f4cd810",
+      "bytes": 6001368
+    },
+    {
+      "path": "bin/lean",
+      "sha256": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+      "bytes": 9024
+    },
+    {
+      "path": "bin/leanc",
+      "sha256": "cc293b2c81b7bc16d750959c7c82d61f4b95f50c2942d1131d57c078b8245ac1",
+      "bytes": 36848
+    },
+    {
+      "path": "bin/leanchecker",
+      "sha256": "84bc3e7cd6efa5bfecd1e7c37571fed9428fb2b3e16da0ddf62f2163573486d0",
+      "bytes": 50896
+    },
+    {
+      "path": "bin/leanir",
+      "sha256": "9c2f8ffa93085e545a6ae723e56f4c12d263e0937ffd37be92973cd397a407c3",
+      "bytes": 221024
+    },
+    {
+      "path": "bin/leanmake",
+      "sha256": "07c96082b95fce057ed9656cc80da50477d596250973cfdd414f74e7631eb56d",
+      "bytes": 839
+    },
+    {
+      "path": "bin/leantar",
+      "sha256": "06d613dffd2a6fd996b095bfd835c2bb720886f9eb7e13ed2adddd7df4507bf3",
+      "bytes": 2692960
+    },
+    {
+      "path": "bin/llvm-ar",
+      "sha256": "697c4da3ff7080716bf591ddf38d02fb093f3173e12188ddd4243304228004ad",
+      "bytes": 76888
+    },
+    {
+      "path": "lib/libLLVM.so.22.1",
+      "sha256": "5145af96bc961289f6dff7efc0dc7f75cbc4b91634aa3b5d517749dce5f3f300",
+      "bytes": 77258216
+    },
+    {
+      "path": "lib/libatomic.so.1.2.0",
+      "sha256": "b2d3f7d9ebf9a0d5dc9caedcb33a43f6ac1b33221ada1f029147d8a66db43c09",
+      "bytes": 26416
+    },
+    {
+      "path": "lib/libc++.so",
+      "sha256": "9a82146864488c9d491a6e60be5af3ca986a9af57f6057763c5c0a8dda85a66e",
+      "bytes": 37
+    },
+    {
+      "path": "lib/libc++.so.1.0",
+      "sha256": "0ec88ab403524f6c3bc3d9029772b97d9af08837267a2973bf6b24fa79119704",
+      "bytes": 1337744
+    },
+    {
+      "path": "lib/libc++abi.so.1.0",
+      "sha256": "3cb42a1a34f48dd20da4aa7559e634ca2eaeab6b019869fd060f90128ae3cb8b",
+      "bytes": 408152
+    },
+    {
+      "path": "lib/libclang-cpp.so.22.1",
+      "sha256": "e11640dbbd29d2abebcdb62f8e90e8a965d7276df914e3cdcfd5263f427208eb",
+      "bytes": 65075176
+    },
+    {
+      "path": "lib/libgcc_s.so",
+      "sha256": "69a56a9993b7729b29b274e65016031c81f2397f176ed5ad44d59bd50425e0bd",
+      "bytes": 132
+    },
+    {
+      "path": "lib/libgcc_s.so.1",
+      "sha256": "3f499bb3b14f33c5c321f52015d385c145c7bd4551a66c5fcff4262c833f2d2a",
+      "bytes": 102664
+    },
+    {
+      "path": "lib/libunwind.so.1.0",
+      "sha256": "c54929622b0991b21088050bf3f23d6756d3d2e082acd293b0e788ddc901da72",
+      "bytes": 69928
+    },
+    {
+      "path": "lib/libz.so.1.2.11",
+      "sha256": "d0aeafffcfe309a107a857dfa1f9afd0db90796d32c2b735a3959eccb317f5b4",
+      "bytes": 100640
+    },
+    {
+      "path": "lib/lean/libInit_shared.so",
+      "sha256": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5",
+      "bytes": 6232
+    },
+    {
+      "path": "lib/lean/libLake_shared.so",
+      "sha256": "b1d164bf248f35b9e9664e696f4cd05a79a7066065510fb9b459139c78beb354",
+      "bytes": 12462304
+    },
+    {
+      "path": "lib/lean/libleanshared.so",
+      "sha256": "23d636cac1cadcba37beac30eff9b9b20d66cee726cf5defb4ae39f1284a3e5a",
+      "bytes": 230925168
+    },
+    {
+      "path": "lib/lean/libleanshared_1.so",
+      "sha256": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5",
+      "bytes": 6232
+    },
+    {
+      "path": "lib/lean/libleanshared_2.so",
+      "sha256": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5",
+      "bytes": 6232
+    }
+  ]
+}
