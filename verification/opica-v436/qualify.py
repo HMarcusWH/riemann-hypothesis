@@ -14,6 +14,8 @@ REPO=HERE.parents[1]
 SRC="69b331ce0e429c7632dac6aa642e5875a50b1218"
 BASE="1b894f7511841e6607bc0398cf2657526bbb29d9"
 ALLOWED={"propext","Classical.choice","Quot.sound"}
+PUBLIC_ROOTS=("riemannHypothesis","riemannZeta_eq_zero_re","LFunction_ne_zero_of_half_lt_re",
+              "LFunction_eq_zero_re","LFunction_eq_zero_re_of_isPrimitive")
 class QualifyError(ValueError):pass
 
 def need(ok,why):
@@ -33,6 +35,13 @@ def source():
          "Unreviewed Mathlib pin")
     need(j["allowed_axioms"]==["propext","Classical.choice","Quot.sound"],
          "Axiom policy changed")
+    need(j["selected_public_roots"]==list(PUBLIC_ROOTS) and
+         j["independent_checker_commit"]=="cd2eceab2e9b10404c663b468639c8aa99d0d1f2" and
+         j["independent_runtime_sha256"]=="2b7ab1ed8b92d2e6abfaf41344823b510064dbc9c0260cac73eb496ab2dea6eb" and
+         j["independent_selected_root_count"]==38,
+         "Independent supplier proof scope differs")
+    need(json.loads((REPO/"comparator.json").read_text())["theorem_names"]==list(PUBLIC_ROOTS),
+         "Comparator public root inventory differs")
     need(j["proof_acceptance"] is False and j["RH"]=="OPEN",
          "Source contract claims RH")
     need(git("rev-parse",BASE+":src")==SRC and git("rev-parse","HEAD:src")==SRC,
@@ -44,8 +53,11 @@ def source():
     for s in ("lakefile.toml","lake-manifest.json","comparator.json"):
         need(git("rev-parse",BASE+":"+s)==git("rev-parse","HEAD:"+s),
              "Trusted supplier environment changed: "+s)
-    need(not git("status","--porcelain","--untracked-files=no"),
-         "Tracked source drift")
+    need(not git("status","--porcelain","--untracked-files=all"),
+         "Tracked or untracked source drift")
+    ignored=git("ls-files","--others","--ignored","--exclude-standard","--","src","verification/opica-v436")
+    need(not any(p.endswith((".lean",".lean.in",".py",".toml",".json")) for p in ignored.splitlines()),
+         "Ignored source provider present")
     code=(HERE/"Ingress.lean").read_text()
     need("public import Main" in code and
          "theorem suppliedRH : RiemannHypothesis := _root_.riemannHypothesis" in code,
@@ -81,6 +93,24 @@ def check_axiom_log(log:Path):
             "proof_acceptance":False,"complete_supplier_replay":False,
             "full_50_roots":False,"RH":"OPEN"}
 
+def check_public_axiom_log(log:Path):
+    text=log.read_text()
+    wrapper=check_axiom_log(log)
+    result={}
+    for name in PUBLIC_ROOTS:
+        # Exact declaration boundary: a shorter root name cannot consume
+        # the longer primitive-character theorem's axiom report.
+        pattern=r"(?<![A-Za-z0-9_.])"+re.escape(name)+r"(?![A-Za-z0-9_.])"
+        rows=[x for x in text.splitlines() if re.search(pattern,x) and "axiom" in x.lower()]
+        need(len(rows)==1,"Missing or ambiguous named public axiom report: "+name)
+        m=re.search(r"\[(.*?)\]",rows[0])
+        need(m is not None,"Unstructured public axiom report: "+name)
+        names={s.strip() for s in m.group(1).split(",") if s.strip()}
+        need(names<=ALLOWED,"Unexpected axiom in "+name+": "+str(names-ALLOWED))
+        result[name]=sorted(names)
+    return {"schema":"OPICA_COMMUNITY_V436_PUBLIC_AXIOMS_V1","roots":result,
+            "wrapper":wrapper,"proof_acceptance":False,"RH":"OPEN"}
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--output",type=Path,required=True)
@@ -90,6 +120,7 @@ def main():
     q=source()
     if a.axiom_log:
         q["compiler_axioms"]=check_axiom_log(a.axiom_log)
+        q["public_axioms"]=check_public_axiom_log(a.axiom_log)
         q["status"]="INGRESS_TYPE_COMPILED_PENDING_FULL_CERTIFICATE"
     a.output.parent.mkdir(parents=True,exist_ok=True)
     a.output.write_text(json.dumps(q,indent=2)+"\n")

@@ -41,7 +41,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
   full-import-qualification:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'HMarcusWH/riemann-hypothesis' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'HMarcusWH/riemann-hypothesis' && inputs.verify_head == github.sha }}
     needs: source
     runs-on: [self-hosted, Linux, X64, opica-longrun]
     timeout-minutes: 1200
@@ -52,41 +52,59 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
       - name: Preflight reviewed disposable host and exact source selection
+        env:
+          REVIEWED_HEAD: ${{ inputs.verify_head }}
         run: |
           set -euo pipefail
-          test "${{ inputs.verify_head }}" = "$GITHUB_SHA"
+          [[ "$REVIEWED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$REVIEWED_HEAD" = "$GITHUB_SHA"
           test "$GITHUB_REPOSITORY" = "HMarcusWH/riemann-hypothesis"
           test "$RUNNER_ENVIRONMENT" = "self-hosted"
           case "$RUNNER_NAME" in opica-longrun-*) ;; *) exit 2;; esac
           test -f /etc/opica/community-v436.json
           test "$(stat -c '%u' /etc/opica/community-v436.json)" = 0
-          test "$(stat -c '%a' /etc/opica/community-v436.json)" -le 644
+          test ! -L /etc/opica/community-v436.json
           python3 - <<'PY'
-          import os,json,subprocess
+          import os,json,stat
           from pathlib import Path
-          j=json.loads(Path('/etc/opica/community-v436.json').read_text())
-          assert j == {"schema":"OPICA_COMMUNITY_436_EPHEMERAL_V1",
-                       "runner_name":os.environ["RUNNER_NAME"],"ephemeral":True}
-          assert len(os.sched_getaffinity(0))>=8
-          ram=int(next(l.split()[1] for l in Path('/proc/meminfo').read_text().splitlines()
-                       if l.startswith('MemTotal:')))//1024
-          assert ram>=120000
-          st=os.statvfs(os.environ['RUNNER_TEMP'])
-          assert st.f_bavail*st.f_frsize>=250*1024**3
-          assert st.f_favail>=400000
+          def need(ok,why):
+              if not ok: raise SystemExit(why)
+          marker=Path("/etc/opica/community-v436.json")
+          s=marker.lstat()
+          need(stat.S_ISREG(s.st_mode) and s.st_uid==0 and not(stat.S_IMODE(s.st_mode)&0o022) and s.st_size<=4096,"unsafe runner marker")
+          j=json.loads(marker.read_text())
+          need(j=={"schema":"OPICA_COMMUNITY_436_EPHEMERAL_V1","runner_name":os.environ["RUNNER_NAME"],"ephemeral":True},"wrong runner marker")
+          need(len(os.sched_getaffinity(0))>=8,"insufficient CPUs")
+          ram=int(next(l.split()[1] for l in Path("/proc/meminfo").read_text().splitlines() if l.startswith("MemTotal:")))//1024
+          st=os.statvfs(os.environ["RUNNER_TEMP"])
+          need(ram>=120000 and st.f_bavail*st.f_frsize>=250*1024**3 and st.f_favail>=400000,"insufficient runner capacity")
+          need(int(Path("/proc/sys/vm/max_map_count").read_text())>=1048576,"insufficient map limit")
           print("RESOURCE_PREFLIGHT_ONLY; RH OPEN")
           PY
           python3 verification/opica-v436/qualify.py \
             --output "$RUNNER_TEMP/OPICA_V436_PREFLIGHT.json"
-      - name: Prepare compiler and complete published source corpus
+      - name: Build the pinned independent checker and official runtime
+        run: |
+          set -euo pipefail
+          sudo -n true
+          python3 -m venv "$RUNNER_TEMP/opica-v436-venv"
+          "$RUNNER_TEMP/opica-v436-venv/bin/python" -m pip install --disable-pip-version-check -r verification/opica-v436/requirements.txt
+          "$RUNNER_TEMP/opica-v436-venv/bin/python" verification/opica-v436/bootstrap_checker.py \
+            --work "$RUNNER_TEMP/opica-v436-checker" --timeout 7200 --memory-mib 10000 --min-free-gib 6
+      - name: Fresh supplier build at the pinned official compiler, no supplier cache reuse
         id: compile
         run: |
           set -euo pipefail
-          command -v lake
+          rt="$RUNNER_TEMP/opica-v436-checker/lean-4.36.0-linux/bin"
+          export PATH="$rt:$PATH" LEAN_ABORT_ON_PANIC=1 LEAN_NUM_THREADS=2
           test "$(cat lean-toolchain)" = "leanprover/lean4:v4.36.0"
-          lake exe cache get
-          lake build Main
-          lake env lean verification/opica-v436/Ingress.lean \
+          test ! -e .lake/build/lib/lean/Main.olean
+          "$rt/lake" exe mathlib/cache get
+          if test -d .lake/build/lib/lean; then
+            test -z "$(find .lake/build/lib/lean -type f -name '*.olean' -print -quit)"
+          fi
+          "$rt/lake" --no-cache --wfail build Main 2>&1 | tee "$RUNNER_TEMP/OPICA_V436_BUILD.log"
+          "$rt/lake" env lean verification/opica-v436/Ingress.lean \
             -o "$RUNNER_TEMP/OPICA_V436_INGRESS.olean" \
             >"$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log" 2>&1
           cat "$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log"
@@ -106,6 +124,13 @@ jobs:
           assert not d["compiler_axioms"]["full_50_roots"]
           print("EXTERNAL_TYPED_INGRESS_ONLY; INDEPENDENT_PROOF_CHECK_OPEN")
           PY
+      - name: Independently verify the complete 38-root supplier dependency closure
+        run: |
+          set -euo pipefail
+          python3 -B verification/opica-v436/independent_38.py \
+            --checker-work "$RUNNER_TEMP/opica-v436-checker" \
+            --axiom-log "$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log" \
+            --head "$GITHUB_SHA" --output "$RUNNER_TEMP/opica-v436-independent"
       - name: Preserve exact full import outcomes even on failure
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -115,5 +140,11 @@ jobs:
             ${{ runner.temp }}/OPICA_V436_PREFLIGHT.json
             ${{ runner.temp }}/OPICA_V436_LEAN_AXIOMS.log
             ${{ runner.temp }}/OPICA_V436_TYPE_AX_ZERO.json
+            ${{ runner.temp }}/OPICA_V436_BUILD.log
+            ${{ runner.temp }}/opica-v436-checker/BOOTSTRAP_RECEIPT.json
+            ${{ runner.temp }}/opica-v436-independent/RECEIPT.json
+            ${{ runner.temp }}/opica-v436-independent/OBJECT_INVENTORY.json
+            ${{ runner.temp }}/opica-v436-independent/*.json
+            ${{ runner.temp }}/opica-v436-independent/*.log
           if-no-files-found: warn
           retention-days: 90

@@ -1,25 +1,7 @@
-# Community v4.36 supplier — exact typed ingress, NOT proof acceptance
+# Community v4.36 supplier: typed ingress and independent 38-root qualification
 
-The synchronized fork's Main theorem is the selected external certificate
-endpoint. This module imports Main under Lean4.36 and restates
-RiemannHypothesis with the original proof root. This is conditional on the
-published source: it is not independently established by a new prime estimate.
+The unchanged community Main has five public comparator endpoints. Ingress.lean supplies independent literal expected-statement consumers, and audits the actual five roots plus the RH wrapper. The new independent_38.py replays exactly 38 selected roots (the five public theorems and 33 explicit primitive/axiom roots), including complete transitive declaration dependencies, with the independently pinned con-leche checker. Its bootstrap and bounded process helpers are byte-preserved copies of the original fork's checker tooling, not reused proof receipts.
 
-Source-only validation pins the source tree 69b331ce0e429c7632dac6aa642e5875a50b1218,
-toolchain v4.36.0 and Mathlib fc4f59e..., allowing normal history/README
-changes without changing mathematical source. The manual full validation
-requires an isolated dedicated self-hosted runner, fresh compiled dependency
-objects and named Lean type/axiom checks. Do not mix original native v4.33
-.olean files with this v4.36 project, and do not reuse the old original
-supplement's 38-root export hash or 50-root independent certificate.
+The manual-only dedicated runner downloads and verifies the official Lean 4.36.0 runtime (the historical pinned SHA-256), builds the unchanged checker, loads only official Mathlib cache and freshly compiles the community supplier Main source without using supplier build caches. It independently checks each public axiom report, all nine dependency source pins, actual import roots, read-only object views, proof closure and final source/object/checker integrity. The checker runs positive unused-axiom, transitive custom-axiom and missing-root controls first. A complete accepted-declaration count is derived from the actual checker log, never copied from the old supplier certificate.
 
-Even a successful supplier typed ingress does not satisfy all original 30
-modular + 7 independent proof gates. A future rebuilt native port, 38-root
-new source export and independent combined proof closure remain mandatory
-before considering Step4 acceptance. Kernel compiler success is an
-intermediate check, not authority for RH release.
-
-The direct original community corpus may be too large for GitHub hosted
-jobs. The manual lane cannot be started without provisioning a dedicated
-runner and publishing the workflow on the default branch. No host is
-provisioned by adding this source.
+The full runner is deliberately not triggered by pushes or PRs. Publish the reviewed workflow to main, provision a dedicated ephemeral opica-longrun-* runner and select the exact reviewed head. This does not port native Lean 4.33 to 4.36. It does not establish the independent combined 50-root proof or original 30+7 gates. Even a successful 38-root supplier receipt leaves native C1, independent Step4 and project RH claim release OPEN. No new compiler or independent checker result is claimed by this implementation.

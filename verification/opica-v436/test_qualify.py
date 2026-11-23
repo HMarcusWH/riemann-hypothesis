@@ -28,4 +28,29 @@ class SourceQualifierTests(unittest.TestCase):
       r=check_axiom_log(q)
       self.assertFalse(r["proof_acceptance"])
       self.assertFalse(r["full_50_roots"])
+
+  def test_exact_public_inventory_and_independent_accounting(self):
+    from qualify import PUBLIC_ROOTS,check_public_axiom_log
+    from independent_38 import ROOTS,acceptance
+    from common import Failure
+    self.assertEqual(len(ROOTS),38)
+    self.assertEqual(len(set(ROOTS)),38)
+    self.assertEqual(len(PUBLIC_ROOTS),5)
+    sample=("con-leche: read: emitting records from 38 constants\n"
+            "con-leche: parse done: 100 fold records — the file's 100, 0 built-in prelude records synthesised\n"
+            "con-leche: check done: 100 declarations\n"
+            "con-leche: accepted 100 declarations (--verified)\n")
+    self.assertEqual(acceptance(sample,38,complete_prelude=True),100)
+    for bad in (sample.replace("38 constants","37 constants"),
+                sample.replace("0 built-in","1 built-in"),sample+"internal error: injected\n",
+                sample.replace("accepted 100","accepted 99")):
+      with self.assertRaises(Failure):acceptance(bad,38,complete_prelude=True)
+    with tempfile.TemporaryDirectory() as td:
+      q=Path(td)/"log"
+      names=(*PUBLIC_ROOTS,"OPICACommunityV436.suppliedRH")
+      raw="".join("'"+n+"' depends on axioms: [propext, Classical.choice, Quot.sound]\n" for n in names)
+      q.write_text(raw)
+      self.assertEqual(set(check_public_axiom_log(q)["roots"]),set(PUBLIC_ROOTS))
+      q.write_text(raw.replace("'LFunction_eq_zero_re' depends on axioms: [propext","'LFunction_eq_zero_re' depends on axioms: [bad.axiom"))
+      with self.assertRaises(QualifyError):check_public_axiom_log(q)
 if __name__=="__main__":unittest.main()
