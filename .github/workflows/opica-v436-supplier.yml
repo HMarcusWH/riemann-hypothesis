@@ -1,0 +1,119 @@
+name: OPICA Lean4.36 community supplier typed ingress
+on:
+  push:
+    branches: [research/opica-community-v436-supplier-qualification-20261123]
+    paths:
+      - .github/workflows/opica-v436-supplier.yml
+      - verification/opica-v436/**
+  workflow_dispatch:
+    inputs:
+      verify_head:
+        description: Exact 40-hex reviewed supplier source revision
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: opica-v436-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify exact unchanged community supplier and no false claim
+        run: |
+          set -euo pipefail
+          python3 verification/opica-v436/qualify.py \
+            --output "$RUNNER_TEMP/OPICA_V436_SOURCE_SCOPE.json"
+          (cd verification/opica-v436 && python3 -m unittest -v test_qualify)
+          (cd verification/opica-v436 && python3 -O -m unittest -v test_qualify)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-v436-source-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/OPICA_V436_SOURCE_SCOPE.json
+          if-no-files-found: warn
+          retention-days: 90
+  full-import-qualification:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'HMarcusWH/riemann-hypothesis' }}
+    needs: source
+    runs-on: [self-hosted, Linux, X64, opica-longrun]
+    timeout-minutes: 1200
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Preflight reviewed disposable host and exact source selection
+        run: |
+          set -euo pipefail
+          test "${{ inputs.verify_head }}" = "$GITHUB_SHA"
+          test "$GITHUB_REPOSITORY" = "HMarcusWH/riemann-hypothesis"
+          test "$RUNNER_ENVIRONMENT" = "self-hosted"
+          case "$RUNNER_NAME" in opica-longrun-*) ;; *) exit 2;; esac
+          test -f /etc/opica/community-v436.json
+          test "$(stat -c '%u' /etc/opica/community-v436.json)" = 0
+          test "$(stat -c '%a' /etc/opica/community-v436.json)" -le 644
+          python3 - <<'PY'
+          import os,json,subprocess
+          from pathlib import Path
+          j=json.loads(Path('/etc/opica/community-v436.json').read_text())
+          assert j == {"schema":"OPICA_COMMUNITY_436_EPHEMERAL_V1",
+                       "runner_name":os.environ["RUNNER_NAME"],"ephemeral":True}
+          assert len(os.sched_getaffinity(0))>=8
+          ram=int(next(l.split()[1] for l in Path('/proc/meminfo').read_text().splitlines()
+                       if l.startswith('MemTotal:')))//1024
+          assert ram>=120000
+          st=os.statvfs(os.environ['RUNNER_TEMP'])
+          assert st.f_bavail*st.f_frsize>=250*1024**3
+          assert st.f_favail>=400000
+          print("RESOURCE_PREFLIGHT_ONLY; RH OPEN")
+          PY
+          python3 verification/opica-v436/qualify.py \
+            --output "$RUNNER_TEMP/OPICA_V436_PREFLIGHT.json"
+      - name: Prepare compiler and complete published source corpus
+        id: compile
+        run: |
+          set -euo pipefail
+          command -v lake
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.36.0"
+          lake exe cache get
+          lake build Main
+          lake env lean verification/opica-v436/Ingress.lean \
+            -o "$RUNNER_TEMP/OPICA_V436_INGRESS.olean" \
+            >"$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log" 2>&1
+          cat "$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log"
+      - name: Exact external endpoint type and axiom report
+        id: receipt
+        run: |
+          set -euo pipefail
+          python3 verification/opica-v436/qualify.py \
+            --axiom-log "$RUNNER_TEMP/OPICA_V436_LEAN_AXIOMS.log" \
+            --output "$RUNNER_TEMP/OPICA_V436_TYPE_AX_ZERO.json"
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"OPICA_V436_TYPE_AX_ZERO.json").read_text())
+          assert d["status"]=="INGRESS_TYPE_COMPILED_PENDING_FULL_CERTIFICATE"
+          assert not d["proof_acceptance"]
+          assert not d["compiler_axioms"]["full_50_roots"]
+          print("EXTERNAL_TYPED_INGRESS_ONLY; INDEPENDENT_PROOF_CHECK_OPEN")
+          PY
+      - name: Preserve exact full import outcomes even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-v436-full-entry-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/OPICA_V436_PREFLIGHT.json
+            ${{ runner.temp }}/OPICA_V436_LEAN_AXIOMS.log
+            ${{ runner.temp }}/OPICA_V436_TYPE_AX_ZERO.json
+          if-no-files-found: warn
+          retention-days: 90
