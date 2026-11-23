@@ -27,3 +27,5 @@ A success of this workflow establishes only that the native writer/checker
 generated a coherent candidate over current native source. Source promotion
 requires human review, a separately frozen source policy, and fresh
 compiler/type/axiom/independent gates at the promoted native head.
+
+V3 additionally reopens all 17 immutable historical Git blobs (16 shards plus index) at frozen historical commit bf75a3... and verifies their full bytes against Git OIDs. This is distinct from the three dated historical current-tree files. The earlier logical historical index digest is not re-computed here; no new compiler certificate is claimed.

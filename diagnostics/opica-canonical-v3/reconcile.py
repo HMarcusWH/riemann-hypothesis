@@ -34,6 +34,14 @@ PROTECTED = (
  "research/RHRC/ool/generated/history/RHKG_OOL_PHASE_ATLAS_v1_PR266.json",
  "research/RHRC/ool/generated/history/RHKG_OOL_ROUTE_CONTACTS_v1_PR266.jsonl",
 )
+HISTORICAL_GIT_COMMIT = "bf75a3a698c42852beda5c95669b06997559c4c0"
+HISTORICAL_GIT_TREE = "3d8200c0d972d313d70532c12a2a2909a5123cbc"
+HISTORICAL_INDEX = "research/RHRC/graph/compiler/REGISTERED_DECLARATION_DEPENDENCIES.jsonl"
+HISTORICAL_SHARDS = tuple(
+    "research/RHRC/graph/compiler/registered_dependencies/"
+    "REGISTERED_DECLARATION_DEPENDENCIES-" + digit + ".jsonl"
+    for digit in "0123456789abcdef"
+)
 MAX_PATCH_BYTES = 100_000_000
 MAX_FILE_BYTES = 100_000_000
 class ReviewError(RuntimeError):pass
@@ -77,6 +85,35 @@ def read_v2(zip_path):
     return {"source_commit":V2_COMMIT,"changed_paths":old["changed_paths"],
             "after_check_hashes":hashes,"patch_sha256":V2_PATCH_SHA,
             "historical":historical["result"]}
+
+def verify_historical_git_objects(native, old_historical):
+    """Reopen every immutable old Git blob, without claiming Lean acceptance."""
+    check(old_historical.get("commit") == HISTORICAL_GIT_COMMIT
+          and old_historical.get("tree") == HISTORICAL_GIT_TREE
+          and old_historical.get("objects") == 17,
+          "V2 historical identity mismatch")
+    actual_tree = git(native, "rev-parse", HISTORICAL_GIT_COMMIT+"^{tree}")
+    check(actual_tree == HISTORICAL_GIT_TREE, "Historical Git tree differs")
+    files = (HISTORICAL_INDEX, *HISTORICAL_SHARDS)
+    check(len(files) == len(set(files)) == 17, "Historical census differs")
+    records = []
+    for path in files:
+        oid = git(native, "rev-parse", HISTORICAL_GIT_COMMIT+":"+path)
+        check(re.fullmatch(r"[0-9a-f]{40}", oid) is not None,
+              "Historical Git object OID malformed")
+        body = subprocess.run(
+            ["git", "-C", str(native), "cat-file", "blob", oid],
+            check=True, capture_output=True, timeout=180).stdout
+        computed = hashlib.sha1(b"blob " + str(len(body)).encode("ascii")
+                                + b"\x00" + body).hexdigest()
+        check(oid == computed, "Historical Git blob identity fails: "+path)
+        records.append({"path":path, "git_oid":oid, "bytes":len(body),
+                        "sha256":sha(body)})
+    return {"scope":"HISTORICAL_GIT_OBJECTS_ONLY_NOT_LEAN_REPLAY",
+            "commit":HISTORICAL_GIT_COMMIT,"tree":HISTORICAL_GIT_TREE,
+            "objects_reopened":len(records),"records":records,
+            "old_logical_sha256_not_recomputed":old_historical.get("logical_sha256"),
+            "fresh_kernel_check":False,"proof_acceptance":False}
 
 def source_state(controller,native):
     check(git(controller,"rev-parse","HEAD:"+ "diagnostics/opica-canonical-v3/reconcile.py")
@@ -157,6 +194,7 @@ def main():
                          "patch_sha256":v2["patch_sha256"],
                          "changed_paths":v2["changed_paths"],
                          "historical":v2["historical"]})
+        report["frozen_historical_git_objects"] = verify_historical_git_objects(native,v2["historical"])
         before=inventory(native,state["authorized"])
         historical_before=inventory(native,PROTECTED)
         report["historical_before"]=historical_before
