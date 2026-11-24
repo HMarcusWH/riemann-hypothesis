@@ -8,7 +8,7 @@ open Filter
 open Zeta23.OPICARound4.ArithmeticFrontier
 open Zeta23.OPICARound6.PrimeDeficit
 open Zeta23.OPICARound3
-open Zeta23.CCM
+open Zeta23.CCM Zeta23.ExceptionalZero
 namespace OPICAR2
 
 /-- One quantitative candidate for the remaining detector bridge. The

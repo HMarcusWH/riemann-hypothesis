@@ -106,8 +106,64 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  principal-supplier:
+    name: principal-supplier (${{ matrix.cut }})
+    needs: source-controls
+    strategy:
+      fail-fast: false
+      matrix:
+        cut: [host, shape, literature]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 40e56bab026552e089d7afcfeff08d2defb9c005
+          path: original
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 4f81c784d3b330395507f6dcd1c8b0010b3835cc
+          path: native-codec
+          persist-credentials: false
+          sparse-checkout: |
+            /Zeta23/RHRC/OpicaTypeExprExport.lean
+          sparse-checkout-cone-mode: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: original
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - name: Compile named supplier and inspect complete transitive dependencies
+        run: python -B controller/research/opica_recursive_round2/principal_suppliers.py --repo original --codec native-codec --cut "${{ matrix.cut }}" --out "$RUNNER_TEMP/principal"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-principal-${{ matrix.cut }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/principal/*.json
+            ${{ runner.temp }}/principal/*.log
+            ${{ runner.temp }}/principal/*.lean
+          if-no-files-found: warn
+          retention-days: 30
+
   native-search:
-    needs: harvest
+    needs: [harvest, principal-supplier]
+    if: always() && !cancelled() && needs.harvest.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     steps:
@@ -154,6 +210,10 @@ jobs:
           test: false
           lint: false
           use-mathlib-cache: true
+      - name: Authenticate available original-source supplier cut receipts
+        env:
+          GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
+        run: python -B controller/research/opica_recursive_round2/principal_suppliers.py --repo controller --out harvest/principal-suppliers --collect
       - name: Exact local research epoch
         run: |
           mkdir -p "$RUNNER_TEMP/native"

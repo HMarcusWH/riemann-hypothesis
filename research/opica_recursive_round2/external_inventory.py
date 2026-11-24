@@ -51,6 +51,10 @@ def load_external(harvest):
         for r in principal["rows"]:
             add(r["name"],r["type_expression"],"ORIGINAL_COMPILER_ADAPTER",r["axioms"],r["dependency_names"],source_module="OPICAExtractionPrincipal",admission="ORIGINAL_PIN_COMPILER_ONLY")
             if rows and rows[-1]["declaration"]==r["name"]:rows[-1]["proof_constants"]=r["proof_constants"]
+    from principal_suppliers import read_suppliers
+    for module,r in read_suppliers(harvest/"principal-suppliers"):
+        add(r["name"],r["type_expression"],"ORIGINAL_SUPPLIER_ADAPTER",r["axioms"],r["dependency_names"],source_module=module,admission="ORIGINAL_PIN_COMPILER_AND_FRESH_STOCK_ONLY")
+        if rows and rows[-1]["declaration"]==r["name"]:rows[-1]["proof_constants"]=r["proof_constants"]
     return rows,rejected
 
 
