@@ -177,7 +177,7 @@ def run(repo,inputs,out):
             extra=bs[:-1]
             for q,i in extra:expression_hash(subdag(q,int(q["nodes"][i][3])))
             conditional_goal=conditional(pb+extra,e,end)
-            report["queries"].append(query("conditional_"+target.split(".")[-1],conditional_goal,menu,{"declaration":"OPICAExtractionR1.Combined."+{"native_windows_of_ramp_windows":"ConditionalNativeWindows","native_energy_of_ramp_windows":"ConditionalEnergy","native_c1_of_ramp_windows_of_direct_bridge":"ConditionalC1"}[target.split(".")[-1]],"module":"OPICAExtractionCombinedTargets","kind":"value"}))
+            report["queries"].append(query("conditional_"+target.split(".")[-1],conditional_goal,menu,{"declaration":"OPICAExtractionR1.Combined."+{"native_windows_of_ramp_windows":"ConditionalNativeWindows","native_energy_of_ramp_windows":"ConditionalEnergy","native_c1_of_ramp_windows_of_direct_bridge":"ConditionalC1"}[target.split(".")[-1]],"module":"OPICAExtractionCombinedTargets" if target.endswith("native_windows_of_ramp_windows") else "OPICAExtractionEnergyTargets","kind":"value"}))
             report["queries"].append(query("closed_"+target.split(".")[-1],subdag(e,end),menu,{"declaration":head(e,end),"module":"OPICAExtractionNative" if target.endswith("native_windows_of_ramp_windows") else "OPICAExtractionEnergy" if target.endswith("native_energy_of_ramp_windows") else "Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices","kind":"value"}))
         # Backward research frontier: actual terminal-head matches trigger
         # recursive typed searches of independently closed binder domains.

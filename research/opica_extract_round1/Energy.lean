@@ -78,8 +78,16 @@ theorem window_energy_bound (g : ℝ → ℝ) {Y ε A : ℝ}
     fun x hx => (Real.continuousAt_rpow_const x _ (Or.inl (hpos x hx).ne')).continuousWithinAt
   have hgg : ContinuousOn (fun x : ℝ => A^2 * x^(-1+2*ε)) (Icc Y (Y^(3/2:ℝ))) :=
     continuousOn_const.mul hpow
-  have hmono := intervalIntegral.integral_mono_on hle
-    (hfg.intervalIntegrable_of_Icc hle) (hgg.intervalIntegrable_of_Icc hle) (fun x hx => by
+  have hfi : IntervalIntegrable (fun x => (max (g x) 0)^2 / x^2)
+      MeasureTheory.volume Y (Y^(3/2:ℝ)) :=
+    hfg.intervalIntegrable_of_Icc hle
+  have hgi : IntervalIntegrable (fun x : ℝ => A^2 * x^(-1+2*ε))
+      MeasureTheory.volume Y (Y^(3/2:ℝ)) :=
+    hgg.intervalIntegrable_of_Icc hle
+  have hmono :
+      (∫ x in Y..Y^(3/2:ℝ), (max (g x) 0)^2 / x^2) ≤
+        ∫ x in Y..Y^(3/2:ℝ), A^2 * x^(-1+2*ε) :=
+    intervalIntegral.integral_mono_on (μ := MeasureTheory.volume) hle hfi hgi (fun x hx => by
       have hx0 := hpos x hx
       have hmax : max (g x) 0 ≤ A * x ^ (1 / 2 + ε) :=
         max_le (hb x hx) (mul_nonneg hA (Real.rpow_nonneg hx0.le _))
