@@ -142,7 +142,9 @@ def collect(out):
     take("external-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-predecessor-join")
     take("energy-repaired","native-typed-search","extraction-native-",["energy-receipt.json","native-retrieval.json","energy-independent-type.log"],"energy")
     take("energy-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
-    take("historical-review","review-old-receipts","opica-support-reviewed-old-comparison-",["reviewed-old-cross-pin-type-comparison.json"],"historical")
+    take("historical-review","review-old-receipts","opica-support-reviewed-old-comparison-",["reviewed-old-cross-pin-type-comparison.json"],"historical",LOCK["evidence"]["historical_comparison"])
+    take("historical-review","native-candidate","opica-support-port-",["receipt.json","NATIVE_TYPE_CANDIDATES.json"],"historical-native-fresh",LOCK["evidence"]["fresh_historical_native"])
+    take("external-repaired","cross-world-typed-search","extraction-cross-world-",["cross-world-retrieval.json","cross-candidates.json"],"cross-world",LOCK["evidence"]["cross_world"])
     take("canonical","canonical-candidate","opica-successor-canonical-review-",["receipt.json","generated-state.patch"],"canonical",LOCK["evidence"]["canonical"])
     take("registration","canonical-candidate","registration-canonical-",["receipt.json","generated-state.patch"],"registration",LOCK["evidence"]["registration"])
     window_results={}

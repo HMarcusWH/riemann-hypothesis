@@ -183,7 +183,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cut: [host, shape, literature]
+        cut: [host, shape, literature, joint]
     runs-on: ubuntu-24.04
     timeout-minutes: 240
     steps:

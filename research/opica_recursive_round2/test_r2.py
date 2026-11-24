@@ -147,7 +147,7 @@ class Controls(unittest.TestCase):
         self.assertFalse(safe_dependency("UpperTheory.Top.plugWin"))
         self.assertFalse(safe_dependency("UpperTheory.Lit.everyE₂"))
         self.assertTrue(safe_dependency("UpperTheory.One.vwin_of_row"))
-        self.assertEqual(sum(len(x[2]) for x in MODULES.values()),7)
+        self.assertEqual(sum(len(x[2]) for x in MODULES.values()),10)
     def test_missing_candidate_result_not_complete(self):
         with tempfile.TemporaryDirectory() as d:
             x=Path(d);i=x/"inputs";pin=LOCK["native"]
@@ -170,4 +170,21 @@ class Controls(unittest.TestCase):
         self.assertEqual(result["signed_cell_cases"],414050)
         self.assertEqual(result["violations"],0)
         self.assertFalse(result["proof_acceptance"])
+    def test_external_context_is_preserved(self):
+        from external_inventory import external_premise_expression,scoped_expression
+        e={"format":"LEAN_EXPR_DAG_V1","root":"3","nodes":[
+            ["sort",["zero"]],["bvar","0"],
+            ["forall",["anonymous"],"default","1","1"],
+            ["forall",["str",["anonymous"],"p"],"default","0","2"]]}
+        expr,contextual=external_premise_expression(e,1)
+        self.assertTrue(contextual);self.assertTrue(scoped_expression(expr))
+        self.assertEqual(expr["nodes"][-1][0],"forall")
+        closed,ctx=external_premise_expression(e,0)
+        self.assertFalse(ctx);self.assertEqual(closed["nodes"],[["sort",["zero"]]])
+        with self.assertRaises(RuntimeError):external_premise_expression(e,2)
+    def test_original_exact_artifact_pin(self):
+        m=LOCK["evidence"]["mining"]
+        self.assertEqual(m["artifact"],14969784455)
+        self.assertEqual(len(set(m["complete_leads"])),9)
+        self.assertEqual(m["complete_lead_union"],175534)
 if __name__=="__main__":unittest.main()

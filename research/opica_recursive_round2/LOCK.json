@@ -179,7 +179,26 @@
         "scan.py",
         "export_graph.py",
         "index_checkpoint.py"
-      ]
+      ],
+      "artifact": 14969784455,
+      "archive_sha256": "101da593316adfa704759230e76da53ee4e9016ada33ead0139b707b4ab9a28d",
+      "member_sha256": "8789b32167bb65fb80398d6b84ac161e98364b1648c616b730143803371275a4",
+      "expected_roots": 36,
+      "expected_declarations": 1484733,
+      "expected_expressions": 1065214335,
+      "complete_leads": [
+        "GlobalTheory.Fc.goal_of_shape_of_hyps",
+        "UpperTheory.Comparison₂.core_gm",
+        "UpperTheory.Comparison₂.level_gm_le_on_family_scales",
+        "UpperTheory.Comparison₂.windowInequality_of_artinInputs",
+        "UpperTheory.Top.supplyChi",
+        "UpperTheory.V.HV.Core.of_four_alt",
+        "UpperTheory.V.HV.vwin_of_counts",
+        "UpperTheory.V.vwinAt_of_joint",
+        "UpperTheory.V.vwin_of_joint"
+      ],
+      "complete_lead_union": 175534,
+      "complete_lead_sum": 828657
     },
     "energy_successor": {
       "head": "2c5d21f86e0af85dc8312aa228733dd81264160d",
@@ -210,6 +229,24 @@
       "archive_sha256": "32aea9318a0afc194828a3da9bed21241cf0d5b70ba43c411d63a8936958832e",
       "artifact_name": "extraction-saved-window-validation-ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
       "candidate": "fe1421c8ea4743f4c3508a3f802e53d2ab24d612c7f270b35dc56721a55a6c68"
+    },
+    "historical_comparison": {
+      "job": 138743308264,
+      "artifact": 14971711337,
+      "archive_sha256": "22bf36ed465d460064b4dba34b7526af76e8283d031d360a4f450545e6d31496",
+      "artifact_name": "opica-support-reviewed-old-comparison-9180f489f39f4d807692b1da6871550bfdbbcbc5-45473412897-1"
+    },
+    "fresh_historical_native": {
+      "job": 138743308212,
+      "artifact": 14971937222,
+      "archive_sha256": "e95f4d884cf2683f1711753fac18c884c43dc735b743a1b36dde15f519acafe1",
+      "artifact_name": "opica-support-port-9180f489f39f4d807692b1da6871550bfdbbcbc5-45473412897-1"
+    },
+    "cross_world": {
+      "job": 138830395630,
+      "artifact": 14974359359,
+      "archive_sha256": "f965c8be45cc6bc7c94c0ff16763f044b1dc8891ba0d29ef96e46e37caca220a",
+      "artifact_name": "extraction-cross-world-ea038dc8f3e86121ddea43213bf3bbeb015b23f3"
     }
   },
   "expanded_readiness": {

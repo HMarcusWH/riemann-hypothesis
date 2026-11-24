@@ -7,6 +7,7 @@ ORIGINAL_TREE="e517b335d21898fd2506ad538a1e1775c0aaa4e4"
 CODEC_HEAD="4f81c784d3b330395507f6dcd1c8b0010b3835cc"
 CODEC_PATH="Zeta23/RHRC/OpicaTypeExprExport.lean"
 MODULES={
+    "joint":("OPICAR2PrincipalJoint","PrincipalJoint.lean",["principal_vwin_of_joint","principal_host_of_joint","principal_windows_of_joint_topG"]),
     "host":("OPICAR2PrincipalHost","PrincipalHost.lean",["principal_vwin_from_source","principal_host_from_source","principal_connected_of_topG","principal_windows_of_topG"]),
     "shape":("OPICAR2PrincipalShape","PrincipalShape.lean",["topG_of_green_hyps","principal_connected_of_green_hyps_host"]),
     "literature":("OPICAR2PrincipalLiterature","PrincipalLiterature.lean",["topG_of_literature_components"])}
