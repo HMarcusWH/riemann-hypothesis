@@ -162,10 +162,9 @@ jobs:
         run: python -B controller/research/opica_recursive_round2/native_campaign.py --repo native --epoch "$RUNNER_TEMP/native/epoch.json" --harvest harvest --out "$RUNNER_TEMP/native/search"
       - name: Compile and independently replay shortlisted native proof plans
         run: python -B controller/research/opica_recursive_round2/verify_candidates.py --repo native --engine native --work "$RUNNER_TEMP/native/search/work" --manifest "$RUNNER_TEMP/native/search/native-candidates.json" --out "$RUNNER_TEMP/native/validation" --mode native
-      - name: Reuse verified closed frontier plans and recompile compositions
+      - name: Reconstruct contextual proof suppliers and perform bounded recursive feedback
         run: |
-          python -B controller/research/opica_recursive_round2/repeat.py --repo native --inventory "$RUNNER_TEMP/native/search/inventory.json" --graph "$RUNNER_TEMP/native/search/graph.json" --manifest "$RUNNER_TEMP/native/search/native-candidates.json" --review "$RUNNER_TEMP/native/validation/review.json" --out "$RUNNER_TEMP/native/feedback-candidates.json"
-          python -B controller/research/opica_recursive_round2/verify_candidates.py --repo native --engine native --work "$RUNNER_TEMP/native/search/work" --manifest "$RUNNER_TEMP/native/feedback-candidates.json" --out "$RUNNER_TEMP/native/feedback-validation" --mode native
+          timeout --signal=TERM --kill-after=30s 100m python -B controller/research/opica_recursive_round2/recursive_feedback.py --repo native --work "$RUNNER_TEMP/native/search/work" --inventory "$RUNNER_TEMP/native/search/inventory.json" --graph "$RUNNER_TEMP/native/search/graph.json" --manifest "$RUNNER_TEMP/native/search/native-candidates.json" --validation "$RUNNER_TEMP/native/validation" --out "$RUNNER_TEMP/native/recursive-feedback" --out-manifest "$RUNNER_TEMP/native/feedback-candidates.json" --out-validation "$RUNNER_TEMP/native/feedback-validation"
       - name: Alternate-kernel shortlist and terminal candidate gate
         if: always() && hashFiles('native/lean-toolchain') != ''
         run: |
@@ -190,6 +189,11 @@ jobs:
             ${{ runner.temp }}/native/validation/review.json
             ${{ runner.temp }}/native/validation/**/*.lean
             ${{ runner.temp }}/native/validation/**/*.log
+            ${{ runner.temp }}/native/recursive-feedback/index.json
+            ${{ runner.temp }}/native/recursive-feedback/compiler-controls.json
+            ${{ runner.temp }}/native/recursive-feedback/dependency-closures/
+            ${{ runner.temp }}/native/recursive-feedback/round-*/manifest.json
+            ${{ runner.temp }}/native/recursive-feedback/round-*/validation/review.json
             ${{ runner.temp }}/native/feedback-candidates.json
             ${{ runner.temp }}/native/feedback-validation/**/receipt.json
             ${{ runner.temp }}/native/feedback-validation/review.json

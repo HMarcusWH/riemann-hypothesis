@@ -64,6 +64,19 @@ class Controls(unittest.TestCase):
             self.assertEqual(r["outcome"],"INCOMPLETE_EXECUTION")
             self.assertIn("COMPILER_INVENTORY_INCOMPLETE",r["research_missing_gates"])
             self.assertEqual(r["bounded_search_outcome"],"INCOMPLETE_SEARCH_SCOPE")
+    def test_feedback_contextual_receipt_and_wrong_epoch(self):
+        from recursive_feedback import candidate_binding,feedback_name
+        pin=LOCK["native"];target={"declaration":"A.context","module":"A","world":"NATIVE_QUERY"}
+        g={"id":"g","declaration":"A.context","type_sha256":"a"*64}
+        plan={"tag":"local","binder_slot":1}
+        c={"id":"b"*64,"goal_id":"g","target":target,"expected_type_sha256":"a"*64,"plan":plan}
+        r={"id":c["id"],"goal_id":"g","target":target,"status":"PROVED_CONDITIONAL_LOCAL_PIN_REVIEW_REQUIRED","actual_local_kernel_proof":True,"expected_type_sha256":"a"*64,"actual_type_sha256":"a"*64,"candidate_plan_sha256":digest(plan),"cross_pin_definition_equivalence":"SAME_NATIVE_PIN","axioms":[],"stages":{k:{"status":"PASS"} for k in ("actual_types","kernel","independent_type","fresh_stock_kernel")}}
+        receipt={"schema":"OPICA_R2_VALIDATION_V1","mode":"native","proof_acceptance":False,"native":pin}
+        candidate_binding(c,r,g,pin,receipt)
+        self.assertEqual(feedback_name(c["id"]),"OPICAR2Feedback"+"b"*32)
+        with self.assertRaises(RuntimeError):candidate_binding(c,{**r,"actual_type_sha256":"c"*64},g,pin,receipt)
+        with self.assertRaises(RuntimeError):candidate_binding(c,r,g,pin,{**receipt,"mode":"mixed"})
+        with self.assertRaises(RuntimeError):feedback_name("../bad")
     def test_no_mixed_candidates_no_source_required(self):
         from mixed_campaign import run
         with tempfile.TemporaryDirectory() as d:

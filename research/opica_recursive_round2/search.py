@@ -22,7 +22,8 @@ def rank_menu(rows,goal,cap,partition=0):
     def key(row):
         # Exact terminal-head matches first, then shared compiler constants.
         # Counts are computational priorities, not logical implications.
-        return (target_head(row["type_expression"])!=h,
+        return (row.get("cohort")!="VERIFIED_RECONSTRUCTED_FEEDBACK",
+                target_head(row["type_expression"])!=h,
                 -len(const&set(row.get("type_constants",[]))),
                 len(row.get("dependencies",[])) or row.get("closure_count",10**9),
                 row["declaration"],row["world"])

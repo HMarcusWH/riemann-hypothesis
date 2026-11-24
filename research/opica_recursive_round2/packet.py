@@ -21,6 +21,16 @@ def packet(inputs,out,controller):
             except Exception as ex:errors.append({"input":row.get("declaration"),"reason":"Dependency evidence: "+str(ex)[:500]})
     graph=load("native/search/graph.json",{"nodes":[],"edges":[],"queries":[],"roots":[]})
     compiler=load("native/search/compiler.json",{})
+    feedback={}
+    if (inputs/"native/recursive-feedback/index.json").is_file():
+        feedback=load("native/recursive-feedback/index.json",{})
+        try:
+            need(feedback["schema"]=="OPICA_R2_RECURSIVE_FEEDBACK_V1" and feedback["native"]==epoch.get("native") and feedback["proof_acceptance"] is False,"Feedback index scope differs")
+            for item in feedback["registered"]:
+                row=item["row"]
+                verify_dependency_row(row,inputs/"native/recursive-feedback")
+                artifacts["native/recursive-feedback/"+row["dependency_file"]]=row["dependency_archive_sha256"]
+        except Exception as ex:errors.append({"input":"recursive-feedback","reason":str(ex)[:500]})
     validations=[]
     for rel in ("native/validation/review.json","native/feedback-validation/review.json","mixed/review.json","native/alternate/review.json","native/feedback-alternate/review.json","mixed/alternate/review.json"):
         p=inputs/rel
@@ -69,7 +79,7 @@ def packet(inputs,out,controller):
     terminal=[r for r in alternate if r["validation_mode"]=="native" and r.get("terminal_candidate",{}).get("status")=="PASS_ALTERNATE_SELECTED_CLOSURE_ONLY"]
     roots=set(graph["roots"])
     def goal_key(n):return (n["id"],n["declaration"],n["type_sha256"],n.get("world","NATIVE_QUERY"))
-    verified_targets={(r["goal_id"],r["target"]["declaration"],r["expected_type_sha256"],r["target"].get("world","NATIVE_QUERY")) for r in local}
+    verified_targets={(r["goal_id"],r["target"]["declaration"],r["expected_type_sha256"],r["target"].get("world","NATIVE_QUERY")) for r in local if r["validation_mode"]=="native"}
     frontier=[n for n in graph["nodes"] if n["id"] not in roots and goal_key(n) not in verified_targets]
     qs=graph["queries"]
     missing=[]
@@ -86,6 +96,8 @@ def packet(inputs,out,controller):
     if any(r.get("status") in ("RESOURCE_EXHAUSTED","INDEPENDENT_REPLAY_FAILED","INDEPENDENT_CHECKER_UNAVAILABLE","ADAPTER_REQUIRED","UNRESOLVED","INCOMPLETE","REJECTED_OR_INCOMPLETE") for r in allresults):missing.append("CANDIDATE_EXECUTION_INCOMPLETE")
     readiness=harvest.get("expanded_search_readiness",{})
     if readiness.get("status")=="WAITING_FOR_UPSTREAM_EVIDENCE":missing.append("WAITING_FOR_UPSTREAM_EVIDENCE")
+    if not feedback and (inputs/"native/feedback-candidates.json").is_file():missing.append("LEGACY_OR_INCOMPLETE_RECURSIVE_FEEDBACK")
+    if feedback and (feedback.get("errors") or feedback.get("status") in ("FEEDBACK_INCOMPLETE","FEEDBACK_RESOURCE_LIMIT","FEEDBACK_ROUND_CAP_REACHED")):missing.append("RECURSIVE_FEEDBACK_INCOMPLETE_OR_BOUNDED")
     research_missing=list(missing)
     production_missing=[]
     if not any(x.get("key")=="canonical" for x in canonical):production_missing.append("CANONICAL_PATCH_REVIEW_PENDING")
@@ -97,7 +109,7 @@ def packet(inputs,out,controller):
     # All statuses stay scoped to the isolated research epoch. The release gate
     # is intentionally not callable from this hosted R2 workflow.
     write(out/"RUN_MANIFEST.json",{"schema":"OPICA_R2_RUN_MANIFEST_V1","controller":controller,"lock_sha256":filehash(HERE/"LOCK.json"),"epoch":epoch,"input_sha256":artifacts,"workflow_results":os.environ.get("R2_WORKFLOW_RESULTS","UNAVAILABLE"),**CLAIMS})
-    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"errors":errors,**CLAIMS})
+    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"recursive_feedback":feedback,"errors":errors,**CLAIMS})
     write(out/"QUALIFIED_THEOREM_INVENTORY.json",{"scope":"FRESH_RESEARCH_INVENTORY_ONLY","native_rows":inventory.get("native_rows",[]),"external_research_rows":inventory.get("external_research_rows",[]),"requested_native_roots":inventory.get("requested_native_roots"),"production_admission":"NOT_ESTABLISHED",**CLAIMS})
     write(out/"PROOF_OBLIGATION_GRAPH.json",{"nodes":graph["nodes"],"edges":graph["edges"],"roots":graph["roots"],"queries":[{k:v for k,v in q.items() if k!="plans"}|{"candidate_ids":[p["id"] for p in q.get("plans",[])]} for q in qs],"truncation":graph.get("truncation",[]),"authority":"RESEARCH_CONTACTS_NOT_PROOFS",**CLAIMS})
     candidate_rows=[]

@@ -1,5 +1,5 @@
 import Zeta23.RHRC.OpicaRound3AtlasExport
-import Zeta23.RHRC.OpicaComposition.Export
+import Zeta23.RHRC.OpicaComposition.Audit
 open Lean Elab Command Meta
 namespace OPICAR2Export
 
@@ -43,5 +43,27 @@ def registerPremise (owner : Name) (slot : Nat) (target : Name) : CommandElabM U
       ("name", .str target.toString), ("contextual", .bool dependent)]).compress)
   Zeta23.RHRC.OpicaComposition.exportTarget target "value"
   Zeta23.RHRC.OpicaComposition.exportRetrievalProofConstants target "value"
+
+/-- Reconstruct a uniquely named theorem from a previously validated plan.
+    The full compiler target telescope is retained by elaborateClosed.
+    No earlier proof object, axiom, or free local is imported from evidence. -/
+def registerFeedback (resultName targetName : Name) (targetKind : String)
+    (plan table allowed forbidden : String) : CommandElabM Unit := do
+  unless resultName.toString.startsWith "OPICAR2Feedback" do
+    throwError "Invalid feedback theorem name"
+  let p ← ofExcept <| Zeta23.RHRC.OpicaComposition.parsePlan (← ofExcept <| Json.parse plan)
+  let constants ← ofExcept <| Zeta23.RHRC.OpicaComposition.parseConstants (← ofExcept <| Json.parse table)
+  let allowedAxioms ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse allowed)
+  let forbiddenNames ← ofExcept <| fromJson? (α := Array String) (← ofExcept <| Json.parse forbidden)
+  let (target, value) ← liftTermElabM do
+    let target ← Zeta23.RHRC.OpicaComposition.expectedTarget targetName targetKind
+    let value ← Zeta23.RHRC.OpicaComposition.elaborateClosed constants p target
+    pure (target, value)
+  let targetInfo ← getConstInfo targetName
+  liftTermElabM <| addDecl <| .thmDecl {
+    name := resultName, levelParams := targetInfo.levelParams,
+    type := target, value := value }
+  Zeta23.RHRC.OpicaComposition.auditDeclaration resultName target allowedAxioms
+    forbiddenNames "OPICA_R2_FEEDBACK"
 
 end OPICAR2Export
