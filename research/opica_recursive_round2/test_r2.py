@@ -63,6 +63,7 @@ class Controls(unittest.TestCase):
             r=read(x/"out/STEP4_VERDICT.json")
             self.assertEqual(r["outcome"],"INCOMPLETE_EXECUTION")
             self.assertIn("COMPILER_INVENTORY_INCOMPLETE",r["research_missing_gates"])
+            self.assertEqual(r["bounded_search_outcome"],"INCOMPLETE_SEARCH_SCOPE")
     def test_no_mixed_candidates_no_source_required(self):
         from mixed_campaign import run
         with tempfile.TemporaryDirectory() as d:
@@ -77,7 +78,7 @@ class Controls(unittest.TestCase):
             pin=LOCK["native"]
             write(i/"native/epoch.json",{"native":pin,"historical_status":"HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH"})
             write(i/"native/search/inventory.json",{"native_rows":[]})
-            write(i/"native/search/compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED"})
+            write(i/"native/search/compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED","failures":[{"status":"EXCLUDED_ENDPOINT"},{"status":"NON_PROOF_OR_CONTAMINATED"}]})
             node={"id":"g","declaration":"A","type_sha256":"a"*64,"label":"A"}
             write(i/"native/search/graph.json",{"nodes":[node],"roots":["g"],"edges":[],"queries":[{"goal":"g","bounded_complete":True,"plans":[]}]})
             write(i/"native/validation/review.json",{"mode":"native","native":pin,"results":[]})

@@ -78,7 +78,11 @@ def packet(inputs,out,controller):
     if epoch.get("historical_status")!="HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH":missing.append("HISTORICAL_NATIVE_INTEGRATION_PENDING")
     if graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs):missing.append("BOUNDED_SEARCH_OR_FRONTIER_INCOMPLETE")
     if not validations:missing.append("NO_KERNEL_VALIDATION_RECEIPT")
-    if compiler.get("status")!="COMPILER_RESEARCH_INVENTORY_EXPORTED" or compiler.get("failures"):missing.append("COMPILER_INVENTORY_INCOMPLETE")
+    # Deliberately excluded endpoints/non-proof rows are part of the admissible
+    # inventory boundary, not failed compilation. Every other failure is blocking.
+    intentional={"EXCLUDED_ENDPOINT","NON_PROOF_OR_CONTAMINATED"}
+    inventory_incomplete=compiler.get("status")!="COMPILER_RESEARCH_INVENTORY_EXPORTED" or any(f.get("status") not in intentional for f in compiler.get("failures",[]))
+    if inventory_incomplete:missing.append("COMPILER_INVENTORY_INCOMPLETE")
     if any(r.get("status") in ("RESOURCE_EXHAUSTED","INDEPENDENT_REPLAY_FAILED","INDEPENDENT_CHECKER_UNAVAILABLE","ADAPTER_REQUIRED","UNRESOLVED","INCOMPLETE","REJECTED_OR_INCOMPLETE") for r in allresults):missing.append("CANDIDATE_EXECUTION_INCOMPLETE")
     readiness=harvest.get("expanded_search_readiness",{})
     if readiness.get("status")=="WAITING_FOR_UPSTREAM_EVIDENCE":missing.append("WAITING_FOR_UPSTREAM_EVIDENCE")
@@ -89,7 +93,7 @@ def packet(inputs,out,controller):
     production_missing+=["CANONICAL_PRODUCTION_11_LANE_AND_3_GROUP_ACCEPTANCE_NOT_ESTABLISHED","MANUAL_DISPATCH_AND_SIGNED_SCALAR_GOVERNED_TARGET_RESULTS_PENDING_OR_UNADMITTED","EXTERNAL_TO_NATIVE_SEMANTIC_ADAPTER_REVIEW_REQUIRED"]
     missing+=production_missing
     outcome="INCOMPLETE_EXECUTION" if errors else "STEP4_CLOSURE_CANDIDATE" if terminal else "NEW_SUPPORTING_THEOREM" if any(identity(r) in alt_ids for r in local) else "INCOMPLETE_EXECUTION" if research_missing or not qs else "CANDIDATES_IN_ENUMERATED_SCOPE" if any(q.get("plans") for q in qs) else "NO_MATCH_IN_ENUMERATED_SCOPE"
-    bounded="INCOMPLETE_SEARCH_SCOPE" if not qs or graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs) else "CANDIDATES_IN_ENUMERATED_SCOPE" if any(q.get("plans") for q in qs) else "NO_MATCH_IN_ENUMERATED_SCOPE"
+    bounded="INCOMPLETE_SEARCH_SCOPE" if inventory_incomplete or not qs or graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs) else "CANDIDATES_IN_ENUMERATED_SCOPE" if any(q.get("plans") for q in qs) else "NO_MATCH_IN_ENUMERATED_SCOPE"
     # All statuses stay scoped to the isolated research epoch. The release gate
     # is intentionally not callable from this hosted R2 workflow.
     write(out/"RUN_MANIFEST.json",{"schema":"OPICA_R2_RUN_MANIFEST_V1","controller":controller,"lock_sha256":filehash(HERE/"LOCK.json"),"epoch":epoch,"input_sha256":artifacts,"workflow_results":os.environ.get("R2_WORKFLOW_RESULTS","UNAVAILABLE"),**CLAIMS})
