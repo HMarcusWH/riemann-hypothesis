@@ -17,7 +17,7 @@ def row_id(row):
     return digest([row["world"],row["declaration"],row["type_sha256"]])
 def target_head(expression):
     return head(expression,peel(expression)[1])
-def rank_menu(rows,goal,cap):
+def rank_menu(rows,goal,cap,partition=0):
     h=target_head(goal["expression"]);const={name(n[1]) for n in goal["expression"]["nodes"] if n[0]=="const" and n[1][0]!="num"}
     def key(row):
         # Exact terminal-head matches first, then shared compiler constants.
@@ -32,12 +32,16 @@ def rank_menu(rows,goal,cap):
     ordered=[];seen=set()
     for r in sorted(filtered,key=key):
         if r["declaration"] not in seen:ordered.append(r);seen.add(r["declaration"])
-    return ordered[:cap],max(0,len(ordered)-cap)
-def query(goal,rows,mode):
+    if partition==0:chosen=ordered[:cap]
+    else:
+        anchors=min(16,cap//2);start=cap+(partition-1)*(cap-anchors)
+        chosen=ordered[:anchors]+ordered[start:start+cap-anchors]
+    return chosen,max(0,len(ordered)-len(chosen))
+def query(goal,rows,mode,partition=0):
     eh,retrieve,SearchBudget,GrammarProfile,used,validate=api()
     need(eh(goal["expression"])==goal["type_sha256"],"Goal type digest differs")
     rows=[r for r in rows if mode=="mixed" or r["world"]=="NATIVE_COMPILER"]
-    menu,omitted=rank_menu(rows,goal,BUDGET["menu_roots"])
+    menu,omitted=rank_menu(rows,goal,BUDGET["menu_roots"],partition)
     ids={row_id(r):r["declaration"] for r in menu}
     forbidden_names=sorted({r["declaration"] for r in rows if forbidden(r["declaration"])}|{goal["declaration"]})
     spec=SimpleNamespace(allowed_constants=ids,expected_type_hash=goal["type_sha256"],declaration=goal["declaration"],forbidden_constants=forbidden_names)
@@ -53,7 +57,7 @@ def query(goal,rows,mode):
         worlds=sorted({r["world"] for r in sources})
         ident=digest([goal["declaration"],goal["type_sha256"],plan,const])
         plans.append({"id":ident,"label":goal["label"],"target":{"declaration":goal["declaration"],"module":goal["module"],"kind":"value","origin":goal.get("origin"),"world":goal.get("world","NATIVE_QUERY")},"expected_expression":goal["expression"],"expected_type_sha256":goal["type_sha256"],"plan":plan,"sources":sources,"worlds":worlds,"proof_acceptance":False})
-    return {"goal":goal["id"],"mode":mode,"selected_menu":sorted(ids.values()),"omitted_menu_roots":omitted,"provenance":provenance,"bounded_complete":complete and not omitted,"plans":plans,"status":"CANDIDATES_NOT_PROOFS" if plans else "NO_MATCH_IN_ENUMERATED_SCOPE" if complete and not omitted else "INCOMPLETE_SEARCH_SCOPE"}
+    return {"goal":goal["id"],"mode":mode,"partition":partition,"selected_menu":sorted(ids.values()),"omitted_menu_roots":omitted,"provenance":provenance,"bounded_complete":complete and not omitted,"plans":plans,"status":"CANDIDATES_NOT_PROOFS" if plans else "NO_MATCH_IN_ENUMERATED_SCOPE" if complete and not omitted else "INCOMPLETE_SEARCH_SCOPE"}
 def premise_owners(goal,rows):
     h=target_head(goal["expression"])
     if h is None:return []
@@ -65,7 +69,7 @@ def premise_owners(goal,rows):
         else:
             slots=[i for i,(e,j) in enumerate(peel(r["type_expression"])[0]) if e["nodes"][j][2]=="default"]
         if slots:result.append((r,slots))
-    return sorted(result,key=lambda a:(len(a[1]),len(a[0].get("dependencies",[])),a[0]["declaration"]))[:BUDGET["frontier_alternatives"]]
+    return sorted(result,key=lambda a:(len(a[1]),a[0].get("closure_count",len(a[0].get("dependencies",[]))),a[0]["declaration"]))[:BUDGET["frontier_alternatives"]]
 def explore(roots,rows,register):
     """Every generated native goal is compiled before entering the queue.
     Head contacts are hypotheses about relevance, not implication edges.
@@ -80,8 +84,9 @@ def explore(roots,rows,register):
         for mode in ("native","mixed"):
             if mode=="native" and goal.get("world")=="ORIGINAL_QUERY":continue
             if mode=="mixed" and not any(r["world"]!="NATIVE_COMPILER" for r in rows):continue
-            try:queries.append(query(goal,rows,mode))
-            except Exception as ex:failures.append({"goal":key,"mode":mode,"reason":str(ex)[:1200]})
+            for partition in range(BUDGET.get("root_menu_partitions",1) if depth==0 else 1):
+                try:queries.append(query(goal,rows,mode,partition))
+                except Exception as ex:failures.append({"goal":key,"mode":mode,"partition":partition,"reason":str(ex)[:1200]})
         if depth>=BUDGET["frontier_depth"]:
             truncation.append({"goal":key,"reason":"FRONTIER_DEPTH_CAP"});continue
         for row,slots in premise_owners(goal,rows):

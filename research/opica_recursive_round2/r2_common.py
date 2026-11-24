@@ -1,6 +1,6 @@
 """Immutable research epoch helpers. No source/claim promotion."""
 from __future__ import annotations
-import hashlib,json,os,re,subprocess,signal,time,sys
+import hashlib,json,os,re,subprocess,signal,time,sys,gzip
 from functools import lru_cache
 from pathlib import Path
 
@@ -29,6 +29,26 @@ def read(path,limit=256<<20):
 def write(path,value):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     with path.open("x",encoding="utf-8") as f: json.dump(value,f,ensure_ascii=False,indent=2,allow_nan=False);f.write("\n")
+def compact_dependency_row(row,folder):
+    """Store the full checked dependency set separately, not 978 MB of
+    repeated names in the search inventory. Search retains counts and hashes."""
+    row=dict(row);deps=row.pop("dependencies")
+    need(type(deps) is list and all(isinstance(x,str) for x in deps),"Invalid dependency list")
+    key=digest([row["world"],row["declaration"],row["type_sha256"]])
+    rel="dependency-closures/"+key+".json.gz";p=Path(folder)/rel
+    p.parent.mkdir(parents=True,exist_ok=True)
+    raw=json.dumps(deps,ensure_ascii=False,separators=(",",":"),allow_nan=False).encode()
+    with p.open("xb") as f:
+        with gzip.GzipFile(filename="",mode="wb",fileobj=f,mtime=0,compresslevel=6) as z:z.write(raw)
+    row.update(closure_count=len(deps),dependency_sha256=hashlib.sha256(raw).hexdigest(),dependency_file=rel,dependency_archive_sha256=filehash(p),dependency_archive_bytes=p.stat().st_size)
+    return row
+def verify_dependency_row(row,folder):
+    rel=row["dependency_file"];need(re.fullmatch(r"dependency-closures/[0-9a-f]{64}\.json\.gz",rel) is not None,"Bad closure path")
+    p=Path(folder)/rel;need(p.is_file() and not p.is_symlink() and p.stat().st_size==row["dependency_archive_bytes"] and filehash(p)==row["dependency_archive_sha256"],"Closure archive drift")
+    with gzip.open(p,"rb") as z:raw=z.read(64<<20)
+    need(len(raw)<64<<20 and hashlib.sha256(raw).hexdigest()==row["dependency_sha256"],"Closure digest/size")
+    deps=json.loads(raw);need(type(deps) is list and len(deps)==row["closure_count"] and all(isinstance(x,str) and not forbidden(x) for x in deps),"Closure inventory or endpoint")
+    return True
 def git(repo,*args):
     return subprocess.check_output(["git","-C",str(repo),*args],text=True,timeout=180).strip()
 def check_pin(repo,pin,clean=True):

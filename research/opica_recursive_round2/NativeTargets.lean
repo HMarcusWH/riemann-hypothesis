@@ -32,4 +32,33 @@ theorem onePolarity_of_samePolicyOpposedSupply (h : SamePolicyOpposedSupply) :
   obtain ⟨r, hr, hs⟩ := h
   exact (onePolarityRawSubpower_iff_opposed_of_tail_error r hr).mpr hs
 
+/-- Weaker sufficient target: the opposed energy and its full remainder
+are small on the same cofinal scales, with fixed polarity and policy. -/
+def JointCofinalOpposedSupply : Prop :=
+  ∃ r : ℕ → Removal,
+    CofinalSubpower (fun X => opposedSurvivorEnergy X (r X) +
+      unsignedErrorEnergy X + completeRemovalCost X (r X)) ∨
+    CofinalSubpower (fun X => reverseOpposedSurvivorEnergy X (r X) +
+      unsignedErrorEnergy X + completeRemovalCost X (r X))
+
+theorem cofinalSubpower_of_pointwise_le (f g : ℕ → ℝ)
+    (hfg : ∀ X, f X ≤ g X) (hg : CofinalSubpower g) : CofinalSubpower f := by
+  intro ε hε
+  obtain ⟨C,hC,hwin⟩ := hg ε hε
+  refine ⟨C,hC,?_⟩
+  intro X₀
+  obtain ⟨X,hX,hbound⟩ := hwin X₀
+  exact ⟨X,hX,(hfg X).trans hbound⟩
+
+theorem onePolarity_of_jointCofinalOpposedSupply (h : JointCofinalOpposedSupply) :
+    OnePolarityRawSubpower := by
+  obtain ⟨r,hs⟩ := h
+  rcases hs with hp | hn
+  · left
+    change CofinalSubpower rawPositiveEnergy
+    exact cofinalSubpower_of_pointwise_le _ _ (fun X => (rawPositiveEnergy_bracket X (r X)).2) hp
+  · right
+    change CofinalSubpower rawNegativeEnergy
+    exact cofinalSubpower_of_pointwise_le _ _ (fun X => (rawNegativeEnergy_bracket X (r X)).2) hn
+
 end OPICAR2

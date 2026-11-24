@@ -66,3 +66,7 @@ registration is merged. Those source-dependent actions must not be faked
 by this isolated hosted workflow. R2 packet records their absence. If a
 selected native proof closes C1, release remains contingent on full native
 canonical admission and all project claim gates. RH, C1 and Step4 are OPEN.
+
+## Repaired execution epoch
+
+The controller now inherits repaired R1. The original principal cut, two canonical candidates and historical native proof receipts keep their old exact producer identities; new original-export evidence must originate from the locked repaired R1 run. Historical admission requires the relocation-aware V2 comparison from the new review controller against the exact old native receipt, preserving raw and normalized counts. Dependency closures are stored in individually hashed gzip shards instead of repeating nearly one gigabyte of names in a single search inventory. Root queries use bounded menu partitions and preserve omissions; joint cofinal opposed-energy plus full-remainder is a new sufficient OPEN target, not an estimate. All source and production claim gates remain unchanged.

@@ -29,6 +29,14 @@ def load_external(harvest):
             else:rejected.append({"declaration":r["name"],"world":"ORIGINAL_EXPORT","reason":"INELIGIBLE_OR_INCOMPLETE_GRAPH_ROOT"})
     principal=get("principal","principal-receipt.json")
     if principal:
+        spec=LOCK["evidence"]["old_principal"]
+        need(receipts["principal"]["artifact_id"]==spec["artifact"] and receipts["principal"]["zip_sha256"]==spec["archive_sha256"],"Old principal evidence identity")
+        root=HERE.parent.parent
+        old=next(x["head"] for x in LOCK["runs"] if x["key"]=="external")
+        new=LOCK["controller"]["parent"]
+        for f in spec["unchanged_controller_components"]:
+            path="research/opica_extract_round1/"+f
+            need(git(root,"rev-parse",old+":"+path)==git(root,"rev-parse",new+":"+path),"Principal controller component changed: "+f)
         need(principal["status"]=="PASS_CONDITIONAL_PRINCIPAL_CUT_ONLY" and principal["head"]==R1_PIN["original"]["head"] and principal["proof_acceptance"] is False,"Principal receipt differs")
         need(principal["shared_source_sha256"]==filehash(R1/"Common.lean"),"Principal shared-source bytes differ")
         for r in principal["rows"]:

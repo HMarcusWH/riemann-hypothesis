@@ -11,7 +11,7 @@ C1="Zeta23.OPICARound4.ArithmeticFrontier."
 MAIN_GOALS=[(C1+"CofinalMomentSliceVanishingErrorBounds","Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices"),
 (NS+"PositiveRawSubpower",NS+"SourceEnergies"),(NS+"NegativeRawSubpower",NS+"SourceEnergies"),(NS+"OnePolarityRawSubpower",NS+"SourceEnergies"),
 (DEF+"LargePrimeDeficitSubpower",DEF+"Source"),(DEF+"MissingPrimeDeficitToLiteralGBridge",DEF+"Source")]
-NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply"]
+NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply"]
 BASE_MODULES=[NS+"BipolarTransfer",DEF+"Source","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","Zeta23.RHRC.OpicaComposition.Audit","Zeta23.RHRC.OpicaRound3AtlasExport"]
 class Campaign:
     def __init__(self,repo,epoch,harvest,out):
@@ -53,7 +53,7 @@ class Campaign:
         requests={r["declaration"]:{ "module":r["module"],"expected_type_sha256":r["type_sha256"],"cohort":"FROZEN_462_ATLAS"} for r in atlas}
         policy=read(self.repo/"research/RHRC/integration/opica_round6/bipolar_transfer/POLICY.json")
         for n in policy["roots"]:requests[n]={"module":NS+"BipolarTransfer","cohort":"BIPOLAR_16"}
-        for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets")]:
+        for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_jointCofinalOpposedSupply","OPICAR2Targets")]:
             requests.setdefault(n,{"module":m,"cohort":"ARITHMETIC_SUPPORT"})
         for n in ("even","odd","tendsto"):
             requests.setdefault(C1+"cofinal_moment_slice_bounds_of_"+n,{"module":"Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","cohort":"C1_CONSUMER_SUPPORT"})
@@ -72,9 +72,12 @@ class Campaign:
         # Build frozen source modules, not every repository workflow/target.
         modules_to_build=sorted({r["module"] for r in requests.values() if r["module"] and r["module"].startswith("Zeta23.")})
         missing=set()
-        for i in range(0,len(modules_to_build),24):
-            chunk=modules_to_build[i:i+24]
-            if not self.build(chunk,"atlas-build-"+str(i),3600):missing.update(chunk)
+        def build_chunk(chunk,label):
+            if self.build(chunk,label,3600):return
+            if len(chunk)==1:missing.update(chunk);return
+            mid=len(chunk)//2
+            build_chunk(chunk[:mid],label+"-a");build_chunk(chunk[mid:],label+"-b")
+        for i in range(0,len(modules_to_build),24):build_chunk(modules_to_build[i:i+24],"atlas-build-"+str(i))
         pending=[]
         for n,r in sorted(requests.items()):
             if forbidden(n):self.failures.append({"declaration":n,"status":"EXCLUDED_ENDPOINT"});continue
@@ -103,7 +106,7 @@ class Campaign:
                     self.failures.append({"declaration":name,"status":"NON_PROOF_OR_CONTAMINATED"});continue
                 if spec.get("expected_type_sha256") and h!=spec["expected_type_sha256"]:
                     self.failures.append({"declaration":name,"status":"FROZEN_TYPE_DRIFT","observed":h});continue
-                self.rows.append({**row,"world":"NATIVE_COMPILER","source_module":row["module"],"type_sha256":h,"proof_constants":ps,"dependencies":c["dependencies"],"cohort":spec["cohort"],"admission":"FRESH_NATIVE_COMPILER_RESEARCH_NOT_PRODUCTION"})
+                self.rows.append(compact_dependency_row({**row,"world":"NATIVE_COMPILER","source_module":row["module"],"type_sha256":h,"proof_constants":ps,"dependencies":c["dependencies"],"cohort":spec["cohort"],"admission":"FRESH_NATIVE_COMPILER_RESEARCH_NOT_PRODUCTION"},self.out))
         for start in range(0,len(pending),BUDGET["atlas_batch"]):export(pending[start:start+BUDGET["atlas_batch"]])
         return len(requests)
     def goal(self,label,declaration,module):
@@ -137,7 +140,7 @@ class Campaign:
                 roots.append(self.goal(n,"OPICAExtractionR1."+n,"OPICAExtractionEnergy"))
         ext,rejected=load_external(self.harvest)
         roots.extend(principal_goals(ext))
-        inventory={"schema":"OPICA_R2_QUALIFIED_RESEARCH_INVENTORY_V1","epoch":self.epoch,"requested_native_roots":requested,"native_rows":self.rows,"external_research_rows":ext,"exclusions":self.failures+rejected,"production_admission":"NOT_ESTABLISHED",**CLAIMS}
+        inventory={"schema":"OPICA_R2_QUALIFIED_RESEARCH_INVENTORY_V2","epoch":self.epoch,"requested_native_roots":requested,"native_rows":self.rows,"external_research_rows":ext,"exclusions":self.failures+rejected,"production_admission":"NOT_ESTABLISHED",**CLAIMS}
         write(self.out/"inventory.json",inventory)
         graph=explore(roots,self.rows+ext,self.register)
         write(self.out/"graph.json",graph)

@@ -31,14 +31,20 @@ def safe_members(z):
         names.add(n);total+=i.file_size
         need(total<=768<<20 and len(names)<=20000,"Expanded artifact budget")
     return names
-def artifact(record,prefix,wanted,out):
+def artifact(record,prefix,wanted,out,expected_id=None,expected_digest=None):
     spec=record["spec"];run=record["run"];attempt=run["run_attempt"]
     endpoint="repos/"+spec["repository"]+"/actions/runs/"+str(spec["run"])+"/artifacts"
     rows=pages(endpoint,"artifacts")
     matches=[a for a in rows if a["name"].startswith(prefix) and not a["expired"]]
-    # R1 artifacts predate attempt-suffixed naming. Refuse ambiguity, do not guess.
+    if expected_id is not None:matches=[a for a in matches if a["id"]==expected_id]
+    else:
+        suffixed=[a for a in matches if a["name"].endswith("-"+str(spec["run"])+"-"+str(attempt))]
+        if suffixed:matches=suffixed
+        else:need(attempt==1,"Unsuffixed retry artifact requires explicit pinned identity")
     need(len(matches)==1,"Missing/ambiguous artifact "+prefix)
     a=matches[0];expected=a.get("digest","")
+    need(a["workflow_run"]["id"]==spec["run"],"Artifact producer run differs")
+    if expected_digest is not None:need(expected=="sha256:"+expected_digest,"Pinned artifact digest differs")
     need(re.fullmatch(r"sha256:[0-9a-f]{64}",expected) is not None,"Artifact digest unavailable")
     need(0<a["size_in_bytes"]<=256<<20,"Artifact compressed budget")
     out.mkdir(parents=True,exist_ok=True)
@@ -82,18 +88,20 @@ def collect(out):
             rec["status"]="EXACT_RUN_OBSERVED"
         except Exception as ex:
             rec["error"]=str(ex)[:1200];errors.append({"lane":key,"reason":rec["error"]})
-    def take(key,job,prefix,wanted,label):
+    def take(key,job,prefix,wanted,label,pinned=None):
         try:
             rec=reports[key]
             need(rec["status"]=="EXACT_RUN_OBSERVED" and successful_job(rec,job),"Producer job not verified successful")
-            receipts[label]=artifact(rec,prefix,wanted,out/"inputs"/label)
+            receipts[label]=artifact(rec,prefix,wanted,out/"inputs"/label,
+                                     expected_id=pinned.get("artifact") if pinned else None,
+                                     expected_digest=pinned.get("archive_sha256") if pinned else None)
         except Exception as ex:errors.append({"lane":label,"reason":str(ex)[:1000]})
-    take("external","verified-export-mining","extraction-original-proof-graph-",["original-dependencies.json"],"original")
-    take("external","principal-arithmetic-cut","extraction-principal-",["principal-receipt.json"],"principal")
-    take("external","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
-    take("historical","cross-pin-type-comparison","opica-support-cross-pin-comparison-",["cross-pin-type-comparison.json"],"historical")
-    take("canonical","canonical-candidate","opica-successor-canonical-review-",["receipt.json","generated-state.patch"],"canonical")
-    take("registration","canonical-candidate","registration-canonical-",["receipt.json","generated-state.patch"],"registration")
+    take("external-repaired","verified-export-mining","extraction-original-proof-graph-",["original-dependencies.json"],"original")
+    take("external","principal-arithmetic-cut","extraction-principal-",["principal-receipt.json"],"principal",LOCK["evidence"]["old_principal"])
+    take("external-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
+    take("historical-review","review-old-receipts","opica-support-reviewed-old-comparison-",["reviewed-old-cross-pin-type-comparison.json"],"historical")
+    take("canonical","canonical-candidate","opica-successor-canonical-review-",["receipt.json","generated-state.patch"],"canonical",LOCK["evidence"]["canonical"])
+    take("registration","canonical-candidate","registration-canonical-",["receipt.json","generated-state.patch"],"registration",LOCK["evidence"]["registration"])
     report={"schema":"OPICA_R2_AUTHENTICATED_HARVEST_V1","runs":reports,"artifact_receipts":receipts,"unavailable":errors,**CLAIMS}
     write(out/"harvest.json",report)
     print(json.dumps({"runs_observed":sum(r["status"]=="EXACT_RUN_OBSERVED" for r in reports.values()),"artifacts":sorted(receipts),"unavailable":len(errors),**CLAIMS}))

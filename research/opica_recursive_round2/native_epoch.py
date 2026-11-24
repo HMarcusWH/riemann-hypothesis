@@ -15,12 +15,14 @@ def prepare(native,historical,harvest,output):
     accepted=[];status="HISTORICAL_SUPPORT_NOT_YET_QUALIFIED"
     receipt=h["artifact_receipts"].get("historical")
     if receipt:
-        p=harvest/"inputs/historical/cross-pin-type-comparison.json"
+        p=harvest/"inputs/historical/reviewed-old-cross-pin-type-comparison.json"
         need(filehash(p)==receipt["entries"][p.name]["sha256"],"Historical comparison bytes differ")
         r=read(p)
         source=r["source"]
         need(source["checked_commit"]==LOCK["historical"]["head"] and source["checked_tree"]==LOCK["historical"]["tree"],"Historical source receipt drift")
-        need(r["status"]=="PASS_EXACT_ROOT_TYPE_DAGS_AND_AXIOMS_ONLY" and r["root_count"]==r["exact_type_matches"]==167 and not r["type_differences"] and not r["axiom_differences"],"Historical type comparison not complete")
+        review=r["review_controller"];pin=LOCK["historical_review"]
+        need(review["checked_commit"]==pin["head"] and review["checked_tree"]==pin["tree"] and r["reviewed_old_evidence"] is True,"Historical review controller identity")
+        need(r["schema"]=="OPICA_SUPPORT_CROSS_PIN_TYPE_COMPARISON_V2" and r["status"]=="PASS_RELOCATION_AWARE_ROOT_TYPE_DAGS_AND_AXIOMS_ONLY" and r["root_count"]==r["normalized_type_matches"]==167 and r["exact_type_matches"]+r["relocation_type_matches"]==167 and len(r["raw_type_differences"])==len(r["relocation_matches"])==r["relocation_type_matches"] and not r["type_differences"] and not r["axiom_differences"],"Historical relocation comparison not complete")
         need(r["proof_acceptance"] is False and source["roots"]==roots,"Historical source root set differs")
         # Verify the sealed source on the original historical branch before copying.
         subprocess.run(["python3","-B",str(historical/SUPPORT/"check_candidate.py")],cwd=historical,check=True,timeout=900,env=compiler_env())

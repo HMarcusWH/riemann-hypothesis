@@ -2,8 +2,8 @@
   "schema": "OPICA_RECURSIVE_R2_LOCK_V1",
   "controller": {
     "repository": "HMarcusWH/riemann-hypothesis",
-    "parent": "574f6e070e401a0f0b096df4fa5bdba7954ce640",
-    "tree": "d8250ccf6c4178f921c8c760fbc21707ca1066c8"
+    "parent": "ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+    "tree": "07c57bad8c54cf84d795fe3192fc15d8f82f1b87"
   },
   "native": {
     "repository": "HMarcusWH/zeta-23-lean",
@@ -69,6 +69,22 @@
       "head": "1eab1eb59e47d503ade1615a2c465f967fa65c6e",
       "run": 45409447656,
       "workflow": ".github/workflows/opica-bipolar-transfer.yml"
+    },
+    {
+      "key": "external-repaired",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+      "run": 45472802058,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
+    },
+    {
+      "key": "historical-review",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 313,
+      "head": "9180f489f39f4d807692b1da6871550bfdbbcbc5",
+      "run": 45473412897,
+      "workflow": ".github/workflows/opica-historical-support-port.yml"
     }
   ],
   "budget": {
@@ -83,12 +99,40 @@
     "attempts_mixed": 4,
     "search_states": 16384,
     "term_depth": 32,
-    "search_seconds": 30
+    "search_seconds": 30,
+    "root_menu_partitions": 2
   },
   "claim_boundary": {
     "RH": "OPEN",
     "C1": "OPEN",
     "Step4": "OPEN",
     "proof_acceptance": false
+  },
+  "historical_review": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "9180f489f39f4d807692b1da6871550bfdbbcbc5",
+    "tree": "71ecc1c926933df94fd92532659f467c563fa115"
+  },
+  "evidence": {
+    "old_principal": {
+      "run": 45411269329,
+      "artifact": 14936817041,
+      "archive_sha256": "530e4e87fb410b39a12f3ea073e9d6555e91ab51e9e85a46200ae976194c17f7",
+      "unchanged_controller_components": [
+        "Common.lean",
+        "Principal.lean",
+        "PrincipalCheck.lean",
+        "PrincipalAudit.lean",
+        "principal_receipt.py"
+      ]
+    },
+    "canonical": {
+      "artifact": 14951996827,
+      "archive_sha256": "521eda3d4caabbf376d3c9fb215069f73e8532083925ed6f47ae629e0522af50"
+    },
+    "registration": {
+      "artifact": 14951591655,
+      "archive_sha256": "68fa51d388b7de03d1ce8340f4ea6242965c43ed7e1fc745f1a753632017b09d"
+    }
   }
 }
