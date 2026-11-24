@@ -1,0 +1,213 @@
+name: OPICA cross-repository mathematical extraction R1
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'research/opica_extract_round1/**'
+      - '.github/workflows/opica-extraction-r1.yml'
+permissions:
+  contents: read
+concurrency:
+  group: opica-extraction-r1-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-cuts:
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-cross-repository-extraction-r1-20261124'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /.github/
+          sparse-checkout-cone-mode: false
+      - name: Mine exact original and current source cut statements
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 --filter=blob:none --no-tags origin 668e62327f5e2b65b20a8d7a98dcd901e29f6cd8 40e56bab026552e089d7afcfeff08d2defb9c005
+          python3 -B research/opica_extract_round1/scan.py --repo "$PWD" --output "$RUNNER_TEMP/source-cuts.json"
+          (cd research/opica_extract_round1 && python3 -B -m unittest -v test_graph)
+          (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_graph)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-source-cuts-${{ github.sha }}
+          path: ${{ runner.temp }}/source-cuts.json
+          if-no-files-found: error
+  export-format-smoke:
+    needs: source-cuts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - name: Parse real independently published challenge, authenticate all bytes
+        run: |
+          set -euo pipefail
+          command -v zstd
+          python3 -B research/opica_extract_round1/export_graph.py --mode challenge --output "$RUNNER_TEMP/challenge-dependencies.json" --scratch "$RUNNER_TEMP/challenge-index" --root-seconds 120
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-challenge-${{ github.sha }}
+          path: ${{ runner.temp }}/challenge-dependencies.json
+          if-no-files-found: error
+  verified-export-mining:
+    needs: export-format-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - name: Stream original verified proof — elaborated dependencies, no compilation
+        run: |
+          set -euo pipefail
+          command -v zstd
+          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-original-proof-graph-${{ github.sha }}
+          path: ${{ runner.temp }}/original-dependencies.json
+          if-no-files-found: error
+  native-typed-search:
+    needs: source-cuts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          path: controller
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 4f81c784d3b330395507f6dcd1c8b0010b3835cc
+          path: native
+          persist-credentials: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: native
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+      - name: Compile source normalization and run genuine native OPICA target search
+        run: |
+          set -euo pipefail
+          controller="$PWD/controller/research/opica_extract_round1"
+          native="$PWD/native"
+          work="$RUNNER_TEMP/extract-native"
+          mkdir "$work"
+          cd "$native"
+          test "$(git rev-parse HEAD)" = "4f81c784d3b330395507f6dcd1c8b0010b3835cc"
+          test "$(git rev-parse HEAD^{tree})" = 84b235c455980cfd516a8c0ccaf7749bce3c5339
+          lake build Zeta23.OPICARound6.PrimeDeficit.Source Zeta23.OPICARound6.NextSearch.SourceEnergies Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure Zeta23.RHRC.OpicaComposition.Export Zeta23.RHRC.OpicaRound3AtlasExport
+          cp "$controller/Common.lean" "$work/OPICAExtractionCommon.lean"
+          cp "$controller/Native.lean" "$work/OPICAExtractionNative.lean"
+          lean="$(lake env which lean)"
+          lp="$(lake env printenv LEAN_PATH)"
+          export LEAN_PATH="$work:$lp"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionCommon.olean" "$work/OPICAExtractionCommon.lean" 2>&1 | tee "$work/common.log"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionNative.olean" "$work/OPICAExtractionNative.lean" 2>&1 | tee "$work/native.log"
+          python3 -B "$controller/adapter_receipt.py" --world native --work "$work"
+          python3 -B "$controller/native_search.py" --repo "$native" --work "$work" --output "$work/native-retrieval.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-native-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/extract-native/*.log
+            ${{ runner.temp }}/extract-native/*.json
+            ${{ runner.temp }}/extract-native/*.lean
+          if-no-files-found: warn
+  external-small-adapter:
+    needs: source-cuts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean
+            /lakefile.toml
+            /lake-manifest.json
+            /lean-toolchain
+          sparse-checkout-cone-mode: false
+      - name: Pin source and fetch Mathlib only, never build Main
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD:src)" = 6e972745429bd501b15e5daa9db46c8a9feb85db
+          curl -fsSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o "$RUNNER_TEMP/elan-init.sh"
+          sh "$RUNNER_TEMP/elan-init.sh" -y --default-toolchain none
+          export PATH="$HOME/.elan/bin:$PATH" MATHLIB_CACHE_GET_URL=https://cache.mathlib.org/mathlib4
+          lake exe mathlib/cache get
+          lake --no-cache build +Development.AutomorphicArithmetic.DedekindLFunctions.CharFamily
+          work="$RUNNER_TEMP/extract-external"
+          mkdir "$work"
+          cp research/opica_extract_round1/Common.lean "$work/OPICAExtractionCommon.lean"
+          cp research/opica_extract_round1/External.lean "$work/OPICAExtractionExternal.lean"
+          lean="$(lake env which lean)"
+          lp="$(lake env printenv LEAN_PATH)"
+          export LEAN_PATH="$work:$lp"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionCommon.olean" "$work/OPICAExtractionCommon.lean" 2>&1 | tee "$work/common.log"
+          "$lean" --root="$work" -DwarningAsError=true "$work/OPICAExtractionExternal.lean" 2>&1 | tee "$work/external.log"
+          python3 -B research/opica_extract_round1/adapter_receipt.py --world external --work "$work"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-external-small-adapter-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/extract-external/*.log
+            ${{ runner.temp }}/extract-external/*.json
+            ${{ runner.temp }}/extract-external/*.lean
+          if-no-files-found: warn
+  research-join:
+    needs: [source-cuts, export-format-smoke, verified-export-mining, native-typed-search, external-small-adapter]
+    if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-cross-repository-extraction-r1-20261124'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: extraction-*
+          path: ${{ runner.temp }}/extract-join-inputs
+      - name: Join actual available evidence and remaining obligations
+        run: |
+          set -euo pipefail
+          python3 -B research/opica_extract_round1/join.py --inputs "$RUNNER_TEMP/extract-join-inputs" --output "$RUNNER_TEMP/extraction-research-join.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-research-join-${{ github.sha }}
+          path: ${{ runner.temp }}/extraction-research-join.json
+          if-no-files-found: error
