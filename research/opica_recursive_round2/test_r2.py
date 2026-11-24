@@ -164,4 +164,10 @@ class Controls(unittest.TestCase):
             v=read(x/"out/STEP4_VERDICT.json")
             self.assertEqual(v["outcome"],"INCOMPLETE_EXECUTION")
             self.assertIn("CANDIDATE_POPULATION_INCOMPLETE_OR_BUDGETED",v["research_missing_gates"])
+    def test_complete_cost_finite_cells(self):
+        from removal_controls import run
+        result=run()
+        self.assertEqual(result["signed_cell_cases"],414050)
+        self.assertEqual(result["violations"],0)
+        self.assertFalse(result["proof_acceptance"])
 if __name__=="__main__":unittest.main()

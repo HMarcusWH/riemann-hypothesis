@@ -8,6 +8,10 @@ CUTS=[
     ("OPICAR2Targets","OPICAR2.cofinalSubpower_min_iff"),
     ("OPICAR2Targets","OPICAR2.minPolarityRawSubpower_iff"),
     ("OPICAR2Targets","OPICAR2.onePolarity_of_adaptiveMinOpposedSupply"),
+    ("OPICAR2Targets","OPICAR2.empty_clippedOpposedEnergy_le"),
+    ("OPICAR2Targets","OPICAR2.empty_min_budget_optimal"),
+    ("OPICAR2Targets","OPICAR2.adaptiveMin_iff_emptyRemoval"),
+    ("OPICAR2Targets","OPICAR2.onePolarity_of_emptyRemovalSupply"),
     ("OPICAR2EnergyDetector","OPICAR2.directEnergyToC1_of_power_comparison"),
     ("OPICAR2EnergyDetector","OPICAR2.directEnergyToC1_of_power_supply")]
 def main():
@@ -32,6 +36,8 @@ def main():
         prefix=Path(subprocess.check_output([c.lean,"--print-prefix"],cwd=c.repo,env=c.env,text=True).strip())
         for module in ("OPICAR2Targets","OPICAR2EnergyDetector"):
             need(c.run([prefix/"bin/leanchecker","--fresh","--verbose",module],"fresh-stock-"+module,1800),"Fresh stock replay failed")
+        from removal_controls import run as finite_removal_controls
+        result["finite_removal_controls"]=finite_removal_controls()
         f=Feedback(c.repo,c.work,{"epoch":epoch},{"nodes":[]},out/"context-controls");f.controls()
         result["context_controls"]=read(out/"context-controls/compiler-controls.json")
         for row in result["roots"]:verify_dependency_row(row,out)

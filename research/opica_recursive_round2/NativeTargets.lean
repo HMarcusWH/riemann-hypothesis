@@ -207,4 +207,126 @@ theorem onePolarity_of_adaptiveMinOpposedSupply (h : AdaptiveMinOpposedSupply) :
   · rw [min_eq_right hn]
     exact (min_le_right _ _).trans (rawNegativeEnergy_bracket X r).2
 
+
+/-! Complete-cost optimality for the UNRESTRICTED Removal surrogate.
+    This is not a statement about admissible nonempty stopped-cut policies. -/
+
+open Zeta23.OPICARound6.PrimeFactorPaths
+
+def emptyRemoval : Removal := ⟨∅, ∅⟩
+
+theorem emptyRemoval_cost_zero (X : ℕ) :
+    completeRemovalCost X emptyRemoval = 0 := by
+  classical
+  simp [completeRemovalCost, removedLabels, emptyRemoval, Removal.all, RoughNodeCharges.charge]
+
+theorem emptyRemoval_survivor (X : ℕ) (j : Key) :
+    survivorCharge X j emptyRemoval =
+      RoughNodeCharges.charge (roughCutoff X) (rawLabels X j) := by
+  classical
+  simp [survivorCharge, survivingLabels, emptyRemoval, Removal.all]
+
+private theorem clipped_le_add_abs (a b d : ℝ) :
+    max (a-d) 0 ≤ max (b-d) 0 + |a-b| := by
+  have h := abs_max_sub_max_le_abs (a-d) (b-d) 0
+  rw [show (a-d)-(b-d) = a-b by ring] at h
+  have h' := (le_abs_self (max (a-d) 0 - max (b-d) 0)).trans h
+  linarith
+
+def clippedOpposedEnergy (X : ℕ) (r : Removal) (pol : ℝ) : ℝ :=
+  ∑ j ∈ wholeCoarseKeys X, weight j *
+    max ((max (pol * survivorCharge X j r) 0)^2 -
+      (unsignedDiscrepancy X j)^2) 0
+
+theorem clippedOpposedEnergy_one (X : ℕ) (r : Removal) :
+    clippedOpposedEnergy X r 1 = opposedSurvivorEnergy X r := by
+  simp only [clippedOpposedEnergy, opposedSurvivorEnergy,
+    NativeStoppingCost.native_opposed_cost, one_mul]
+
+theorem clippedOpposedEnergy_neg_one (X : ℕ) (r : Removal) :
+    clippedOpposedEnergy X r (-1) = reverseOpposedSurvivorEnergy X r := by
+  simp only [clippedOpposedEnergy, reverseOpposedSurvivorEnergy,
+    NativeStoppingCost.native_opposed_cost_reverse, neg_one_mul]
+
+/-- Clipping by the same unsigned discrepancy cannot increase the
+    positive-part square loss. The full removal charge therefore pays
+    for every possible reduction of the opposed energy. -/
+theorem empty_clippedOpposedEnergy_le (X : ℕ) (r : Removal)
+    (pol : ℝ) (hpol : |pol| = 1) :
+    clippedOpposedEnergy X emptyRemoval pol ≤
+      clippedOpposedEnergy X r pol + completeRemovalCost X r := by
+  unfold clippedOpposedEnergy completeRemovalCost
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_le_sum
+  intro j _
+  rw [← mul_add]
+  apply mul_le_mul_of_nonneg_left _ (weight_nonneg j)
+  rw [emptyRemoval_survivor]
+  let s := RoughNodeCharges.charge (roughCutoff X) (rawLabels X j)
+  let t := survivorCharge X j r
+  let H : ℝ := (rawLabels X j).card
+  have hs : |pol*s| ≤ H := by
+    rw [abs_mul, hpol, one_mul]
+    exact RoughNodeCharges.abs_charge_le_card _ _
+  have ht : |pol*t| ≤ H := by
+    rw [abs_mul, hpol, one_mul]
+    dsimp [t, H]
+    unfold survivorCharge survivingLabels
+    exact (RoughNodeCharges.abs_charge_le_card _ _).trans
+      (by exact_mod_cast Finset.card_le_card
+        (Finset.sdiff_subset (s := rawLabels X j) (t := r.all)))
+  have h := FiniteSelectorEnergy.posSq_sub_le (pol*s) (pol*t) H hs ht
+  have hd : s-t =
+      RoughNodeCharges.charge (roughCutoff X) (removedLabels X j r) :=
+    RoughNodeCharges.charge_sub_survivors (roughCutoff X) (rawLabels X j) r.all
+  rw [← mul_sub, abs_mul, hpol, one_mul, hd] at h
+  exact (clipped_le_add_abs ((max (pol*s) 0)^2) ((max (pol*t) 0)^2)
+    ((unsignedDiscrepancy X j)^2)).trans (add_le_add_left h _)
+
+def EmptyRemovalMinSupply : Prop :=
+  CofinalSubpower (fun X => min (opposedSurvivorEnergy X emptyRemoval)
+    (reverseOpposedSurvivorEnergy X emptyRemoval) + unsignedErrorEnergy X)
+
+/-- With both signs charged on the same source and the complete removal
+    penalty included, the empty policy minimizes the unrestricted budget. -/
+theorem empty_min_budget_optimal (X : ℕ) (r : Removal) :
+    min (opposedSurvivorEnergy X emptyRemoval)
+      (reverseOpposedSurvivorEnergy X emptyRemoval) + unsignedErrorEnergy X ≤
+      min (opposedSurvivorEnergy X r) (reverseOpposedSurvivorEnergy X r) +
+        unsignedErrorEnergy X + completeRemovalCost X r := by
+  have hp := empty_clippedOpposedEnergy_le X r 1 (by norm_num)
+  have hn := empty_clippedOpposedEnergy_le X r (-1) (by norm_num)
+  simp only [clippedOpposedEnergy_one] at hp
+  simp only [clippedOpposedEnergy_neg_one] at hn
+  rcases le_total (opposedSurvivorEnergy X r) (reverseOpposedSurvivorEnergy X r) with h | h
+  · rw [min_eq_left h]
+    linarith [min_le_left (opposedSurvivorEnergy X emptyRemoval)
+      (reverseOpposedSurvivorEnergy X emptyRemoval)]
+  · rw [min_eq_right h]
+    linarith [min_le_right (opposedSurvivorEnergy X emptyRemoval)
+      (reverseOpposedSurvivorEnergy X emptyRemoval)]
+
+/-- Exact equivalence of the adaptive unrestricted supplier to one with
+    NO removal parameter. The cofinal unsigned remainder remains essential. -/
+theorem adaptiveMin_iff_emptyRemoval :
+    AdaptiveMinOpposedSupply ↔ EmptyRemovalMinSupply := by
+  constructor
+  · intro h ε hε
+    obtain ⟨C,hC,hw⟩ := h ε hε
+    refine ⟨C,hC,?_⟩
+    intro X₀
+    obtain ⟨X,r,hX,hb⟩ := hw X₀
+    exact ⟨X,hX,(empty_min_budget_optimal X r).trans hb⟩
+  · intro h ε hε
+    obtain ⟨C,hC,hw⟩ := h ε hε
+    refine ⟨C,hC,?_⟩
+    intro X₀
+    obtain ⟨X,hX,hb⟩ := hw X₀
+    refine ⟨X,emptyRemoval,hX,?_⟩
+    simpa only [emptyRemoval_cost_zero, add_zero] using hb
+
+theorem onePolarity_of_emptyRemovalSupply (h : EmptyRemovalMinSupply) :
+    OnePolarityRawSubpower :=
+  onePolarity_of_adaptiveMinOpposedSupply (adaptiveMin_iff_emptyRemoval.mpr h)
+
 end OPICAR2
