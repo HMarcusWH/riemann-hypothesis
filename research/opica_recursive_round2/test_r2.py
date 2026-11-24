@@ -133,4 +133,19 @@ class Controls(unittest.TestCase):
             v=read(x/"out/STEP4_VERDICT.json")
             self.assertEqual(v["outcome"],"INCOMPLETE_EXECUTION");self.assertFalse(v["proof_acceptance"]);self.assertEqual(v["RH"],"OPEN")
             self.assertEqual(len(list((x/"out").iterdir())),10)
+    def test_evidence_ledger_never_promotes_metadata(self):
+        from sync_evidence import classify,disposition
+        self.assertEqual(classify("native-search"),"RESEARCH_PRODUCING_CHECK")
+        self.assertEqual(classify("unknown"),"UNCLASSIFIED_REQUIRES_REVIEW")
+        self.assertEqual(disposition({"status":"completed","conclusion":"success"},[{"status":"completed","conclusion":"success"}]),"METADATA_GREEN_RECEIPTS_REQUIRE_REVIEW")
+        self.assertEqual(disposition({"status":"in_progress","conclusion":None},[]),"RUNNING_OR_QUEUED")
+        self.assertEqual(disposition({"status":"completed","conclusion":"failure"},[]),"TERMINAL_NON_SUCCESS")
+        self.assertEqual(disposition({"status":"completed","conclusion":"success"},[]),"INCOMPLETE_OR_NON_SUCCESS_JOB")
+    def test_principal_source_cut_firewall(self):
+        from principal_suppliers import safe_dependency,MODULES
+        self.assertFalse(safe_dependency("UpperTheory.FinalTheorems.riemannHypothesis"))
+        self.assertFalse(safe_dependency("UpperTheory.Top.plugWin"))
+        self.assertFalse(safe_dependency("UpperTheory.Lit.everyE₂"))
+        self.assertTrue(safe_dependency("UpperTheory.One.vwin_of_row"))
+        self.assertEqual(sum(len(x[2]) for x in MODULES.values()),7)
 if __name__=="__main__":unittest.main()

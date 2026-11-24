@@ -106,6 +106,77 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  native-math-cut:
+    needs: source-controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 1eab1eb59e47d503ade1615a2c465f967fa65c6e
+          path: native
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: native
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - run: python -B controller/research/opica_recursive_round2/native_math_cut.py --repo native --out "$RUNNER_TEMP/native-math-cut"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-native-math-cut-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-math-cut/*.json
+            ${{ runner.temp }}/native-math-cut/dependency-closures/
+            ${{ runner.temp }}/native-math-cut/context-controls/*.json
+            ${{ runner.temp }}/native-math-cut/compiler/work/*.lean
+            ${{ runner.temp }}/native-math-cut/compiler/work/*.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  evidence-sync:
+    needs: source-controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - name: Cross-repository live and pinned job/attempt inventory
+        env:
+          GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
+        run: python -B controller/research/opica_recursive_round2/sync_evidence.py --repo controller --out "$RUNNER_TEMP/evidence"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/evidence/
+          if-no-files-found: warn
+          retention-days: 30
+
   principal-supplier:
     name: principal-supplier (${{ matrix.cut }})
     needs: source-controls
@@ -148,6 +219,14 @@ jobs:
           test: false
           lint: false
           use-mathlib-cache: true
+      - name: Check original tracked source remains unchanged and allow only local Lake state
+        working-directory: original
+        run: |
+          set -euo pipefail
+          test -z "$(git diff --name-only HEAD)"
+          test -z "$(git ls-files -- .lake)"
+          printf '\n/.lake/\n' >> "$(git rev-parse --git-path info/exclude)"
+          test -z "$(git status --porcelain --untracked-files=all)"
       - name: Compile named supplier and inspect complete transitive dependencies
         run: python -B controller/research/opica_recursive_round2/principal_suppliers.py --repo original --codec native-codec --cut "${{ matrix.cut }}" --out "$RUNNER_TEMP/principal"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -387,7 +466,7 @@ jobs:
           retention-days: 30
   packet:
     if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-recursive-closure-r2-20261124'
-    needs: [source-controls, harvest, canonical-review, native-search, mixed-validation]
+    needs: [source-controls, harvest, canonical-review, principal-supplier, native-math-cut, evidence-sync, native-search, mixed-validation]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -421,6 +500,16 @@ jobs:
         with:
           name: opica-r2-mixed-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/mixed
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-native-math-cut-${{ github.run_id }}-${{ github.run_attempt }}
+          path: inputs/native-math-cut
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: inputs/evidence-sync
       - name: Produce the ten-file packet, including explicit incompleteness
         env:
           R2_WORKFLOW_RESULTS: ${{ toJSON(needs) }}
@@ -433,3 +522,30 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  final-evidence-sync:
+    if: always() && !cancelled() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-recursive-closure-r2-20261124'
+    needs: packet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - name: Refresh exact live and pinned evidence after packet
+        env:
+          GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
+        run: python -B controller/research/opica_recursive_round2/sync_evidence.py --repo controller --out "$RUNNER_TEMP/evidence-final"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-evidence-final-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/evidence-final/
+          if-no-files-found: warn
+          retention-days: 30
