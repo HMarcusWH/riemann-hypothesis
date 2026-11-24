@@ -1,0 +1,35 @@
+{
+  "schema": "OPICA_COMMUNITY_V436_SUPPLIER_CONTRACT_V1",
+  "source_repository": "HMarcusWH/riemann-hypothesis",
+  "frozen_supplier_commit": "1b894f7511841e6607bc0398cf2657526bbb29d9",
+  "frozen_supplier_src_tree": "69b331ce0e429c7632dac6aa642e5875a50b1218",
+  "source_toolchain": "leanprover/lean4:v4.36.0",
+  "source_mathlib": "fc4f59e577feb1a4956671bc04ac18aaaf8cd842",
+  "root": "_root_.riemannHypothesis",
+  "exact_target": "RiemannHypothesis",
+  "typed_consumer": "OPICACommunityV436.suppliedRH",
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "original_certificate_root_count": 38,
+  "historical_old_supplier_cert": "INVALID_FOR_NEW_PROOF_SOURCE",
+  "cross_compiler_native_433": "PROHIBITED",
+  "root_50_plus_original_30_plus_7": "REQUIRES_NEW_FRESH_ACCEPTANCE",
+  "new_full_supplier_proof": "NOT_VERIFIED",
+  "native_c1": "NOT_VERIFIED",
+  "proof_acceptance": false,
+  "RH": "OPEN",
+  "selected_public_roots": [
+    "riemannHypothesis",
+    "riemannZeta_eq_zero_re",
+    "LFunction_ne_zero_of_half_lt_re",
+    "LFunction_eq_zero_re",
+    "LFunction_eq_zero_re_of_isPrimitive"
+  ],
+  "independent_checker_commit": "cd2eceab2e9b10404c663b468639c8aa99d0d1f2",
+  "independent_runtime_sha256": "2b7ab1ed8b92d2e6abfaf41344823b510064dbc9c0260cac73eb496ab2dea6eb",
+  "independent_selected_root_count": 38,
+  "community_38_execution": "IMPLEMENTED_NOT_EXECUTED"
+}
