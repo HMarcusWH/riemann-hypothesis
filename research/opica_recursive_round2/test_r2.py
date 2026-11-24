@@ -29,6 +29,20 @@ class Controls(unittest.TestCase):
         self.assertTrue(closed_plan(p));self.assertFalse(closed_plan({"tag":"local","index":0}))
         self.assertFalse(closed_plan({"tag":"lambda","body":q}))
         self.assertEqual(substitute(p,v,seen),q);self.assertEqual(seen,{"a"})
+    def test_dependency_shard_tamper(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);r={"world":"NATIVE_COMPILER","declaration":"A","type_sha256":"a"*64,"dependencies":["Nat.add","propext"]}
+            c=compact_dependency_row(r,p)
+            self.assertNotIn("dependencies",c);self.assertEqual(c["closure_count"],2)
+            self.assertTrue(verify_dependency_row(c,p))
+            with (p/c["dependency_file"]).open("ab") as f:f.write(b"x")
+            with self.assertRaises(RuntimeError):verify_dependency_row(c,p)
+    def test_no_mixed_candidates_no_source_required(self):
+        from mixed_campaign import run
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);m={"schema":"OPICA_R2_CANDIDATE_MANIFEST_V1","mode":"mixed","native":LOCK["native"],"original_head":R1_PIN["original"]["head"],"selected":[],"proof_acceptance":False}
+            run(p/"missing-original",p/"missing-native",m,p/"out")
+            self.assertEqual(read(p/"out/review.json")["status"],"NO_SHORTLISTED_MIXED_CANDIDATES")
     def test_empty_packet_cannot_pass(self):
         with tempfile.TemporaryDirectory() as d:
             x=Path(d);(x/"inputs").mkdir()

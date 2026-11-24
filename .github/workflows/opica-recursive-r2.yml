@@ -180,6 +180,7 @@ jobs:
           path: |
             ${{ runner.temp }}/native/epoch.json
             ${{ runner.temp }}/native/search/*.json
+            ${{ runner.temp }}/native/search/dependency-closures/
             ${{ runner.temp }}/native/search/work/*.lean
             ${{ runner.temp }}/native/search/work/*.log
             ${{ runner.temp }}/native/validation/**/receipt.json
@@ -221,7 +222,23 @@ jobs:
         with:
           name: opica-r2-native
           path: native-results
+      - name: Check shortlist before any source bootstrap
+        id: menu
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path("native-results/search/mixed-candidates.json")
+          if not p.is_file():raise RuntimeError("Missing mixed candidate manifest")
+          m=json.loads(p.read_text())
+          if m["schema"]!="OPICA_R2_CANDIDATE_MANIFEST_V1" or m["mode"]!="mixed" or m["proof_acceptance"] is not False:raise RuntimeError("Wrong manifest")
+          has=bool(m["selected"])
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f:f.write("has_candidates="+str(has).lower()+"\n")
+          if not has:
+              out=pathlib.Path(os.environ["RUNNER_TEMP"])/"mixed";out.mkdir()
+              (out/"review.json").write_text(json.dumps({"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","native":m["native"],"status":"NO_SHORTLISTED_MIXED_CANDIDATES","results":[],"proof_acceptance":False,"RH":"OPEN","C1":"OPEN","Step4":"OPEN"})+"\n")
+          PY
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
         with:
           repository: HMarcusWH/zeta-23-lean
           ref: 1eab1eb59e47d503ade1615a2c465f967fa65c6e
@@ -229,6 +246,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
         with:
           repository: HMarcusWH/zeta-23-lean
           ref: 983b6e78eccf9156ee7e2ec55f6772bd64cedccd
@@ -236,6 +254,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
         with:
           repository: HMarcusWH/riemann-hypothesis
           ref: 5601d19ff185d58376e109d82dd4512488295372
@@ -243,13 +262,25 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
         with:
           repository: HMarcusWH/riemann-hypothesis
           ref: 40e56bab026552e089d7afcfeff08d2defb9c005
           path: original
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify original source and exclude only local Lake build state
+        if: steps.menu.outputs.has_candidates == 'true'
+        working-directory: original
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 40e56bab026552e089d7afcfeff08d2defb9c005
+          test "$(git rev-parse HEAD^{tree})" = e517b335d21898fd2506ad538a1e1775c0aaa4e4
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test -z "$(git ls-files -- .lake)"
+          printf '\n/.lake/\n' >> "$(git rev-parse --git-path info/exclude)"
       - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        if: steps.menu.outputs.has_candidates == 'true'
         with:
           lake-package-directory: original
           auto-config: false
@@ -258,10 +289,12 @@ jobs:
           lint: false
           use-mathlib-cache: true
       - name: Reconstruct the same local native epoch
+        if: steps.menu.outputs.has_candidates == 'true'
         run: |
           python -B controller/research/opica_recursive_round2/native_epoch.py --native native --historical historical --harvest harvest --output "$RUNNER_TEMP/mixed-epoch.json"
           test -f native-results/search/mixed-candidates.json
       - name: Port source only and validate mixed plans
+        if: steps.menu.outputs.has_candidates == 'true'
         run: python -B controller/research/opica_recursive_round2/mixed_campaign.py --original original --native native --manifest native-results/search/mixed-candidates.json --out "$RUNNER_TEMP/mixed"
       - name: Alternate independent checker for mixed candidates
         if: always()

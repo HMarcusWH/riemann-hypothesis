@@ -8,8 +8,11 @@ from verify_candidates import SUCCESS
 def run(repo,work,validation,historical,checker_code,out):
     out.mkdir(parents=True,exist_ok=False)
     review=read(validation/"review.json")
-    selected=[r for r in review["results"] if r["status"]==SUCCESS and r.get("actual_local_kernel_proof")][:2]
-    result={"schema":"OPICA_R2_ALTERNATE_KERNEL_V1","results":[],"status":"NO_ELIGIBLE_LOCAL_PROOF",**CLAIMS}
+    terminal_names={"OPICAR2.C1Named","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds"}
+    eligible=[r for r in review["results"] if r["status"]==SUCCESS and r.get("actual_local_kernel_proof")]
+    eligible.sort(key=lambda r:(not (review["mode"]=="native" and r["target"]["declaration"] in terminal_names),r["id"]))
+    selected=eligible[:2]
+    result={"schema":"OPICA_R2_ALTERNATE_KERNEL_V2","results":[],"status":"NO_ELIGIBLE_LOCAL_PROOF","native":review["native"],"mode":review["mode"],"omitted_candidates":[r["id"] for r in eligible[2:]],**CLAIMS}
     try:
         if not selected:return
         check_pin(historical,LOCK["historical"])
@@ -62,7 +65,7 @@ def run(repo,work,validation,historical,checker_code,out):
             need({str(p):digest(file_inventory(p)) for p in folders}==inventories,"Alternate checker input objects changed")
             return {"status":"PASS_ALTERNATE_SELECTED_CLOSURE_ONLY","root":root,"accepted_declaration_records":count,"selected_roots":names,"object_inventory_digests":inventories}
         for r in selected:
-            item={"id":r["id"],"target":r["target"],"status":"INCOMPLETE"}
+            item={"id":r["id"],"target":r["target"],"expected_type_sha256":r["expected_type_sha256"],"candidate_plan_sha256":r["candidate_plan_sha256"],"status":"INCOMPLETE"}
             result["results"].append(item)
             try:
                 candidate=validation/r["id"]

@@ -28,6 +28,8 @@ def validate(repo,engine,work,manifest,out,mode):
     evaluator.SUFFIXES=evaluator.SUFFIXES|{"RiemannHypothesis","no_off_line_zero_of_cofinal_moment_slice_bounds","not_cofinal_moment_slice_bounds_of_off_line_zero"}
     evaluator.execute(repo,engine,work,manifest,out,mode,BUDGET["attempts_"+mode])
     raw=read(out/"validation.json");results=[]
+    ids=[r["id"] for r in rows];observed=[r["id"] for r in raw["results"]]
+    need(len(ids)==len(set(ids))==len(observed)==len(set(observed)) and set(ids)==set(observed),"Validation receipt ID bijection differs")
     for result,candidate in zip(raw["results"],rows):
         need(result["id"]==candidate["id"],"Validation result order differs")
         r={**result,"target":candidate["target"],"expected_type_sha256":candidate["expected_type_sha256"],"candidate_plan_sha256":digest(candidate["plan"])}

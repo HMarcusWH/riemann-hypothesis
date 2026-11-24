@@ -11,15 +11,21 @@ from verify_candidates import validate
 
 def run(original,native,manifest,out):
     original=original.resolve();native=native.resolve();out=out.resolve()
-    need(git(original,"rev-parse","HEAD")==R1_PIN["original"]["head"],"Original pin differs")
-    need(not git(original,"status","--porcelain","--untracked-files=all"),"Original source dirty")
-    check_pin(native,manifest["native"])
-    need(manifest["schema"]=="OPICA_R2_CANDIDATE_MANIFEST_V1" and manifest["mode"]=="mixed" and manifest["proof_acceptance"] is False,"Mixed manifest scope")
+    need(manifest["schema"]=="OPICA_R2_CANDIDATE_MANIFEST_V1" and manifest["mode"]=="mixed" and manifest["proof_acceptance"] is False and manifest["original_head"]==R1_PIN["original"]["head"],"Mixed manifest scope")
     out.mkdir(parents=True,exist_ok=False)
     if not manifest["selected"]:
-        write(out/"review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","status":"NO_SHORTLISTED_MIXED_CANDIDATES","results":[],**CLAIMS});return
+        write(out/"review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","native":manifest["native"],"status":"NO_SHORTLISTED_MIXED_CANDIDATES","results":[],**CLAIMS});return
+    need(git(original,"rev-parse","HEAD")==R1_PIN["original"]["head"] and git(original,"rev-parse","HEAD^{tree}")=="e517b335d21898fd2506ad538a1e1775c0aaa4e4","Original pin differs")
+    status=git(original,"status","--porcelain","--untracked-files=all")
+    need(not status,"Original source dirty: "+status[:1500])
+    need((original/"lean-toolchain").read_text().strip()==R1_PIN["original"]["toolchain"],"Original compiler differs")
+    manifest_packages=read(original/"lake-manifest.json")["packages"]
+    ml=[x for x in manifest_packages if x["name"]=="mathlib"]
+    need(len(ml)==1 and ml[0]["rev"]==R1_PIN["original"]["mathlib"],"Original Mathlib pin differs")
+    for p in manifest_packages:need(git(original/".lake/packages"/p["name"],"rev-parse","HEAD")==p["rev"],"Original package checkout differs: "+p["name"])
+    check_pin(native,manifest["native"])
     work=out/"work";work.mkdir()
-    adapters={"OPICAExtractionCommon":R1/"Common.lean","OPICAExtractionNative":R1/"Native.lean","OPICAExtractionEnergy":R1/"Energy.lean","OPICAExtractionPrincipal":R1/"Principal.lean","OPICAExtractionCombinedTargets":R1/"CombinedTargets.lean","OPICAR2Targets":HERE/"NativeTargets.lean","OPICAR2Export":HERE/"Export.lean","OPICAR2PrincipalTargets":HERE/"PrincipalTargets.lean"}
+    adapters={"OPICAExtractionCommon":R1/"Common.lean","OPICAExtractionNative":R1/"Native.lean","OPICAExtractionEnergy":R1/"Energy.lean","OPICAExtractionPrincipal":R1/"Principal.lean","OPICAExtractionCombinedTargets":R1/"CombinedTargets.lean","OPICAExtractionEnergyTargets":R1/"EnergyTargets.lean","OPICAR2Targets":HERE/"NativeTargets.lean","OPICAR2Export":HERE/"Export.lean","OPICAR2PrincipalTargets":HERE/"PrincipalTargets.lean"}
     port.PIN={**R1_PIN,"native":manifest["native"]}
     for cand in manifest["selected"]:
         t=cand["target"];origin=t.get("origin")
@@ -43,17 +49,7 @@ def run(original,native,manifest,out):
     p=read(out/"port.json")
     if not p["resolved"]:
         write(out/"review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","status":"NO_PORTABLE_CANDIDATES","results":p["rejected"],**CLAIMS});return
-    required=set(p["build_modules"]);needed=set()
-    def collect(m):
-        if m not in adapters:required.add(m);return
-        if m in needed:return
-        needed.add(m)
-        for line in (stage/(m+".lean")).read_text().splitlines():
-            s=re.match(r"^\s*import\s+([\w.']+)",line)
-            if s:collect(s[1])
-    for cand in p["resolved"]:
-        collect(cand["target"]["module"])
-        for row in cand["sources"]:collect(row["source_module"])
+    required=set(p["build_modules"]);needed=[x["module"] for x in p["adapter_order"]]
     need(not (required&port.DENIED),"Endpoint module in common-pin build")
     env=compiler_env();b=command(["lake","build",*["+"+m for m in sorted(required)]],original,env,out/"build.log",seconds=9000)
     write(out/"build.json",b)
@@ -70,7 +66,7 @@ def run(original,native,manifest,out):
         path=work/(m+".lean");shutil.copyfile(stage/(m+".lean"),path)
         r=command([lean,"--root="+str(work),"-DwarningAsError=true","-o",path.with_suffix(".olean"),path],original,env,out/(m+".log"),seconds=900)
         need(r["status"]=="PASS","Common-pin adapter compile failed: "+m);built.add(m)
-    for m in sorted(needed):compile(m)
+    for m in needed:compile(m)
     validate(original,native,work,p,out/"validation","mixed")
     write(out/"review.json",read(out/"validation/review.json"))
 def main():

@@ -24,6 +24,8 @@ def substitute(p,virtual,used):
 def feedback(inventory,graph,manifest,review,out):
     from verify_candidates import SUCCESS
     rows=inventory["native_rows"];actual={c["id"]:c for c in manifest["selected"]}
+    need(len(actual)==len(manifest["selected"]) and len({r["id"] for r in review["results"]})==len(review["results"]) and set(actual)=={r["id"] for r in review["results"]},"Feedback receipt/manifest bijection")
+    need(review["native"]==manifest["native"],"Feedback source epoch differs")
     virtual={};extra=[];held=[]
     for r in review["results"]:
         if r["status"]!=SUCCESS:continue
