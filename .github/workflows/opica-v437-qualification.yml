@@ -1,0 +1,23 @@
+name: OPICA v4.37 supplier and combined proof candidate
+on:
+  workflow_dispatch:
+    inputs:
+      verify_head:
+        description: Exact reviewed 40-hex qualification branch head
+        required: true
+        type: string
+      include_native_candidate:
+        description: Also attempt the same-pin native 50-root bridge
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  refuse-default:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Default branch is registration only
+        run: |
+          echo "REFUSED: select the separately reviewed v4.37 qualification topic branch; this stub never runs a proof."
+          exit 1
