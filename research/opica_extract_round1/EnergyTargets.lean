@@ -1,17 +1,26 @@
 import OPICAExtractionCombinedTargets
 import OPICAExtractionEnergy
 
-/-! Conditional energy and C1 queries; all arithmetic and direct bridge
-premises are retained. -/
+/-! Preserve the actual principal telescope and consumer binder domains.
+    No arithmetic or detector premise is discharged by this registration. -/
 noncomputable section
 namespace OPICAExtractionR1.Combined
+
+run_cmd registerConditionalTarget
+  `OPICAExtractionR1.Combined.ConditionalEnergy
+  `OPICAExtractionR1.native_energy_of_ramp_windows false
+
+run_cmd registerConditionalTarget
+  `OPICAExtractionR1.Combined.ConditionalC1
+  `OPICAExtractionR1.native_c1_of_ramp_windows_of_direct_bridge true
+
 open Formalism.HC UpperTheory.Top
 
-def ConditionalEnergy : Prop :=
-  TopG → VWinAt PChar.one 401 → NativeEnergySubpower
+example : ConditionalEnergy =
+    (TopG → VWinAt PChar.one 401 → NativeEnergySubpower) := rfl
 
-def ConditionalC1 : Prop :=
-  TopG → VWinAt PChar.one 401 → DirectEnergyToC1 →
-    Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds
+example : ConditionalC1 =
+    (TopG → VWinAt PChar.one 401 → DirectEnergyToC1 →
+      Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds) := rfl
 
 end OPICAExtractionR1.Combined

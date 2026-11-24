@@ -80,7 +80,12 @@ def execute(repo,engine,work,manifest,out,mode,limit):
             need(len(types)==len(table)+1,"actual type inventory")
             expected=cand["expected_expression"];need(expression_hash(expected)==cand["expected_type_sha256"],"frozen target digest")
             eq=lambda a,b: expression_hash(a)==expression_hash(b) if mode=="native" else fingerprint(a)==fingerprint(b)
-            if not eq(types[0],expected) or any(not eq(e,contract[row["declaration"]]["type_expression"]) for row,e in zip(table,types[1:])):
+            comparisons=[(tname,types[0],expected)]+[(row["declaration"],e,contract[row["declaration"]]["type_expression"]) for row,e in zip(table,types[1:])]
+            result["type_comparisons"]=[{"declaration":name,
+                "actual_sha256":expression_hash(actual),"expected_sha256":expression_hash(wanted),
+                "actual_fingerprint":fingerprint(actual),"expected_fingerprint":fingerprint(wanted),
+                "matches":eq(actual,wanted)} for name,actual,wanted in comparisons]
+            if not all(x["matches"] for x in result["type_comparisons"]):
                 result["status"]="ADAPTER_REQUIRED";result["reason"]="actual compiler types differ from frozen research types";continue
             spec=TargetSpec("R1_"+cand["id"][:16],tname,tmod,expression_hash(types[0]),ids,sorted(PIN["allowed_axioms"]),sorted({tmod,*[x["module"] for x in table]}),list(PER_ATTEMPT_GATES),"value",FORBIDDEN)
             proposal=CompositionProposal(cand["id"],spec.target_id,"0"*64,cand["plan"])
