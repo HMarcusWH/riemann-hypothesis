@@ -68,8 +68,11 @@ theorem window_energy_bound (g : ℝ → ℝ) {Y ε A : ℝ}
       Y = Y ^ (1 : ℝ) := (Real.rpow_one Y).symm
       _ ≤ Y ^ (3 / 2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hY1 (by norm_num)
   have hpos : ∀ x ∈ Icc Y (Y ^ (3 / 2 : ℝ)), 0 < x := fun x hx => hY0.trans_le hx.1
+  have hmaxcont : ContinuousOn (fun x => max (g x) 0) (Icc Y (Y ^ (3 / 2 : ℝ))) := by
+    change ContinuousOn (fun x => g x ⊔ 0) (Icc Y (Y ^ (3 / 2 : ℝ)))
+    exact hc.sup continuousOn_const
   have hfg : ContinuousOn (fun x => (max (g x) 0)^2 / x^2) (Icc Y (Y ^ (3 / 2 : ℝ))) :=
-    ((hc.max continuousOn_const).pow 2).div
+    (hmaxcont.pow 2).div
       (continuous_id.pow 2).continuousOn (fun x hx => pow_ne_zero _ (hpos x hx).ne')
   have hpow : ContinuousOn (fun x : ℝ => x ^ (-1 + 2*ε)) (Icc Y (Y ^ (3 / 2 : ℝ))) :=
     fun x hx => (Real.continuousAt_rpow_const x _ (Or.inl (hpos x hx).ne')).continuousWithinAt
@@ -86,14 +89,10 @@ theorem window_energy_bound (g : ℝ → ℝ) {Y ε A : ℝ}
         (max (g x) 0)^2 / x^2 ≤ (A*x^(1/2+ε))^2 / x^2 :=
           div_le_div_of_nonneg_right hsq (sq_nonneg x)
         _ = A^2 * x^(-1+2*ε) := by
-          rw [mul_pow]
           have hp : (x^(1/2+ε:ℝ))^2 = x^((1/2+ε)*2:ℝ) := by
-            convert (Real.rpow_mul_natCast hx0.le (1/2+ε) 2).symm using 1 <;> norm_num
-          rw [hp, mul_div_assoc]
-          congr 1
-          rw [show (-1+2*ε:ℝ) = (1/2+ε)*2-2 by ring,
-            Real.rpow_sub hx0]
-          rw [← Real.rpow_natCast x 2] <;> norm_num)
+            rw [Real.rpow_mul hx0.le, Real.rpow_two]
+          rw [mul_pow, hp, mul_div_assoc, ← Real.rpow_two x, ← Real.rpow_sub hx0,
+            show ((1/2+ε:ℝ)*2-2) = -1+2*ε by ring])
   calc
     _ ≤ ∫ x in Y..Y^(3/2:ℝ), A^2 * x^(-1+2*ε) := hmono
     _ = A^2 * ((Y^(3/2:ℝ))^(2*ε) - Y^(2*ε)) / (2*ε) := by
@@ -101,8 +100,7 @@ theorem window_energy_bound (g : ℝ → ℝ) {Y ε A : ℝ}
         show (-1+2*ε+1:ℝ) = 2*ε by ring, mul_div_assoc]
     _ ≤ A^2/(2*ε)*Y^(3*ε) := by
       have he : (Y^(3/2:ℝ))^(2*ε) = Y^(3*ε) := by
-        rw [← Real.rpow_mul hY0.le]
-        congr 1 <;> ring
+        rw [← Real.rpow_mul hY0.le, show (3/2:ℝ)*(2*ε) = 3*ε by ring]
       rw [he]
       calc
         A^2 * (Y^(3*ε) - Y^(2*ε))/(2*ε) ≤ A^2*Y^(3*ε)/(2*ε) :=
@@ -138,7 +136,8 @@ theorem native_energy_of_ramp_windows (hw : RampWindows) : NativeEnergySubpower 
           (Real.rpow_nonneg (hYpos.le.trans hx.1) _)))
     _ ≤ Y^(η-3*ε)*Y^(3*ε) :=
       mul_le_mul_of_nonneg_right hcoef (Real.rpow_nonneg hYpos.le _)
-    _ = Y^η := by rw [← Real.rpow_add hYpos]; congr 1 <;> ring
+    _ = Y^η := by
+      rw [← Real.rpow_add hYpos, show η-3*ε+3*ε = η by ring]
 
 theorem native_energy_of_literal_windows (hw : NativeLiteralWindows) : NativeEnergySubpower :=
   native_energy_of_ramp_windows (windows_congr native_literalG_eq_rampG hw)
