@@ -1,0 +1,27 @@
+{
+  "schema": "OPICA_V437_QUALIFICATION_CANDIDATE_V1",
+  "base_commit": "668e62327f5e2b65b20a8d7a98dcd901e29f6cd8",
+  "base_tree": "bc7e5eafda153227ebddff3a1523fcadd848b402",
+  "upstream": "73958da58a8a4d1f61b789745c5444baf6247cae",
+  "src_tree": "6e972745429bd501b15e5daa9db46c8a9feb85db",
+  "comparator_tree": "a14c3e84eee63917486fb7369cc8a4cfbb8c35d4",
+  "toolchain": "leanprover/lean4:v4.37.0-rc1",
+  "mathlib": "31ce06eaadf4a200c0e1407c5f10953cf606b8f8",
+  "runtime_url": "https://github.com/leanprover/lean4/releases/download/v4.37.0-rc1/lean-4.37.0-rc1-linux.tar.zst",
+  "runtime_sha256": "2e1bbb832870bb81b7131cb70b13aec2cc7ed9f22e2bdbb236b86076ae20382d",
+  "runtime_bytes": 659694066,
+  "bridge_tree": "a011c48883d70c4dd918c0f8fbc12ec7a9c640ef",
+  "native_commit": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "native_tree": "9248b76d7aff60aab3bb775c4be9750dc6006003",
+  "challenge_hashes": {
+    "original": "bb37c4bb518fe68a13f12aa3929dd62dfecb663f0c063ad8c338e39601f28a60",
+    "formal_conjectures": "d08f9a601253ac28f09d7a64f674fd4227e665d573eae437a582f41f0ecb262c"
+  },
+  "topic": "research/opica-community-v437-qualification-20261124",
+  "full_supplier": "NOT_RUN",
+  "combined_50": "NOT_RUN",
+  "legacy_con_leche_38_50": "NOT_RUN",
+  "original_30_plus_7": "NOT_RUN",
+  "independent_native_step4": "OPEN",
+  "proof_acceptance": false
+}

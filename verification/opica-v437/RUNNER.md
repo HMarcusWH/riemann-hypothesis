@@ -1,0 +1,13 @@
+# Disposable runner and durable proof storage
+
+Do not provision compute automatically. Select a dedicated, expendable Linux x86_64 VM or equivalent isolated machine, with no unrelated workload, personal files, or credentials. Review the exact PR #11 head and its source, regression and real smoke receipts first. Use GitHub's repository Settings → Actions → Runners to enroll an ephemeral runner dedicated to this workflow; restrict the runner group to reviewed workflows where supported. Label it `opica-v437`, and use an `opica-v437-*` runner name. Install Git, Python 3.11+, curl, tar, zstd, bubblewrap and C build prerequisites. Ensure unprivileged user namespace isolation works; never replace it with unsandboxed proof checking. The runner executes as a non-root user. Resource gate: 192000 MiB RAM, 500 GiB free proof storage, at least 8 available CPUs and vm.max_map_count >= 1048576. The 20-hour outer job may still time out.
+
+Create durable storage at `/var/lib/opica-v437/runs` on the intended evidence disk. Give only the dedicated runner account write permission; no world-write and no symlink. Keep the disk after the job/runner exits. Do not put evidence under RUNNER_TEMP. Create root-owned, non-symlink, non-group/world-writable `/etc/opica/community-v437.json` with these exact fields, substituting the actual name and reviewed 40-hex head:
+
+```json
+{"schema":"OPICA_COMMUNITY_V437_EPHEMERAL_V2","runner_name":"opica-v437-REVIEWED","ephemeral":true,"no_private_data":true,"reviewed_head":"REPLACE_WITH_REVIEWED_HEAD","evidence_root":"/var/lib/opica-v437/runs"}
+```
+
+Register only the non-executing default branch workflow stub. Once it is merged and the exact topic head is reviewed, use Actions → OPICA v4.37 supplier and combined proof candidate → Run workflow → branch research/opica-community-v437-qualification-20261124. Enter the exact reviewed SHA for verify_head. First use include_native_candidate=false to qualify both actual supplier Comparators. The true option attempts the combined native candidate after both supplier gates in the same run. The same-pin native port is unexecuted; incompatibility fails closed. Avoid running the heavy workflow on a mutable or unreviewed head.
+
+Retain `/var/lib/opica-v437/runs/<run-id>-<attempt>/` including full export files, actual runtime, source and object evidence until post-green review and archive custody complete. Small logs and receipts are uploaded by CI. A failed or skipped stage confers no proof authority. The old con-leche and 30+7 gates remain separate. Never claim independent arithmetic Step 4 from this imported supplier.
