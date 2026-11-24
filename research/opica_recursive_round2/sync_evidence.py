@@ -17,12 +17,15 @@ EXACT_JOB_CLASS={
  "canonical-candidate":"RESEARCH_PRODUCING_CHECK","canonical-review":"REGRESSION_GATE",
  "verified-export-mining":"RESEARCH_PRODUCING_CHECK","principal-arithmetic-cut":"RESEARCH_PRODUCING_CHECK",
  "native-typed-search":"RESEARCH_PRODUCING_CHECK","research-join":"RESEARCH_PRODUCING_CHECK",
+ "original-focus":"RESEARCH_PRODUCING_CHECK",
  "native-math-cut":"FORMAL_VALIDITY_GATE","native-search":"RESEARCH_PRODUCING_CHECK",
  "mixed-validation":"FORMAL_VALIDITY_GATE","harvest":"REGRESSION_GATE",
  "packet":"RESEARCH_PRODUCING_CHECK","evidence-sync":"REGRESSION_GATE","final-evidence-sync":"REGRESSION_GATE"}
 def classify(name):
     if name in EXACT_JOB_CLASS:return EXACT_JOB_CLASS[name]
     if name.startswith("principal-supplier ("):return "RESEARCH_PRODUCING_CHECK"
+    if name=="Round4 / PARENT_REGRESSION" or "REGRESSION_NOT_REPLAY" in name:return "REGRESSION_GATE"
+    if name=="Round4 / SOURCE_NUMERICS":return "RESEARCH_PRODUCING_CHECK"
     if name.startswith("Round4 / "):return "FORMAL_VALIDITY_GATE"
     return "UNCLASSIFIED_REQUIRES_REVIEW"
 def disposition(run,jobs):

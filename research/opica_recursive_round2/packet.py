@@ -23,6 +23,19 @@ def packet(inputs,out,controller):
     compiler=load("native/search/compiler.json",{})
     math_cut=load("native-math-cut/receipt.json",{}) if (inputs/"native-math-cut/receipt.json").is_file() else {}
     evidence_sync=load("evidence-sync/EVIDENCE_LEDGER.json",{}) if (inputs/"evidence-sync/EVIDENCE_LEDGER.json").is_file() else {}
+    original_focus={}
+    if (inputs/"original-focus/original-focus-receipt.json").is_file():
+        original_focus=load("original-focus/original-focus-receipt.json",{})
+        try:
+            need(original_focus["schema"]=="OPICA_R2_ORIGINAL_FOCUS_V1" and original_focus["proof_acceptance"] is False and original_focus["controller"]==controller and original_focus["native"]==LOCK["native"],"Original-only focus scope differs")
+            if original_focus["status"]=="ORIGINAL_FOCUS_RESEARCH_EXECUTED_NOT_PROOF":
+                for leaf,key in (("original-focus-graph.json","graph_sha256"),("original-focus-candidates.json","candidates_sha256")):
+                    rel="original-focus/"+leaf
+                    need(filehash(inputs/rel)==original_focus[key],"Original-only focus bytes differ")
+                    artifacts[rel]=original_focus[key]
+                # Focus proposals are separate research contacts, never
+                # silently merged into the native proof-validation ledger.
+        except Exception as ex:errors.append({"input":"original-focus","reason":str(ex)[:500]})
     feedback={}
     if (inputs/"native/recursive-feedback/index.json").is_file():
         feedback=load("native/recursive-feedback/index.json",{})
@@ -130,7 +143,7 @@ def packet(inputs,out,controller):
     # All statuses stay scoped to the isolated research epoch. The release gate
     # is intentionally not callable from this hosted R2 workflow.
     write(out/"RUN_MANIFEST.json",{"schema":"OPICA_R2_RUN_MANIFEST_V1","controller":controller,"lock_sha256":filehash(HERE/"LOCK.json"),"epoch":epoch,"input_sha256":artifacts,"workflow_results":os.environ.get("R2_WORKFLOW_RESULTS","UNAVAILABLE"),**CLAIMS})
-    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"recursive_feedback":feedback,"candidate_coverage":coverage,"native_math_cut":math_cut,"cross_repository_evidence":evidence_sync,"errors":errors,**CLAIMS})
+    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"recursive_feedback":feedback,"candidate_coverage":coverage,"native_math_cut":math_cut,"original_focus":original_focus,"cross_repository_evidence":evidence_sync,"errors":errors,**CLAIMS})
     write(out/"QUALIFIED_THEOREM_INVENTORY.json",{"scope":"FRESH_RESEARCH_INVENTORY_ONLY","native_rows":inventory.get("native_rows",[]),"external_research_rows":inventory.get("external_research_rows",[]),"requested_native_roots":inventory.get("requested_native_roots"),"production_admission":"NOT_ESTABLISHED",**CLAIMS})
     write(out/"PROOF_OBLIGATION_GRAPH.json",{"nodes":graph["nodes"],"edges":graph["edges"],"roots":graph["roots"],"queries":[{k:v for k,v in q.items() if k!="plans"}|{"candidate_ids":[p["id"] for p in q.get("plans",[])]} for q in qs],"truncation":graph.get("truncation",[]),"authority":"RESEARCH_CONTACTS_NOT_PROOFS",**CLAIMS})
     candidate_rows=[]

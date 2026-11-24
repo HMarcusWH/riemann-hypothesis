@@ -257,5 +257,17 @@
     ],
     "missing_disposition": "WAITING_FOR_UPSTREAM_EVIDENCE",
     "production_acceptance": false
+  },
+  "original_focus_budget": {
+    "goals": 28,
+    "frontier_depth": 3,
+    "frontier_alternatives": 3,
+    "menu_roots": 24,
+    "candidates_per_goal": 4,
+    "search_states": 16384,
+    "term_depth": 32,
+    "search_seconds": 20,
+    "root_menu_partitions": 1,
+    "attempts_mixed": 4
   }
 }

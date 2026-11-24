@@ -11,7 +11,7 @@ C1="Zeta23.OPICARound4.ArithmeticFrontier."
 MAIN_GOALS=[(C1+"CofinalMomentSliceVanishingErrorBounds","Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices"),
 (NS+"PositiveRawSubpower",NS+"SourceEnergies"),(NS+"NegativeRawSubpower",NS+"SourceEnergies"),(NS+"OnePolarityRawSubpower",NS+"SourceEnergies"),
 (DEF+"LargePrimeDeficitSubpower",DEF+"Source"),(DEF+"MissingPrimeDeficitToLiteralGBridge",DEF+"Source")]
-NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply","AdaptiveOnePolarityOpposedSupply","AdaptiveBipolarSupply","BipolarRawSubpower","MinPolarityRawSubpower","AdaptiveMinOpposedSupply","EmptyRemovalMinSupply"]
+NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply","AdaptiveOnePolarityOpposedSupply","AdaptiveBipolarSupply","BipolarRawSubpower","MinPolarityRawSubpower","AdaptiveMinOpposedSupply","EmptyRemovalMinSupply","RawMinWithUnsignedSupply"]
 BASE_MODULES=[NS+"BipolarTransfer",DEF+"Source","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","Zeta23.RHRC.OpicaComposition.Audit","Zeta23.RHRC.OpicaRound3AtlasExport"]
 class Campaign:
     def __init__(self,repo,epoch,harvest,out):
@@ -59,7 +59,7 @@ class Campaign:
         for n in policy["roots"]:requests[n]={"module":NS+"BipolarTransfer","cohort":"BIPOLAR_16"}
         for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_jointCofinalOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_jointCofinal","OPICAR2Targets"),("OPICAR2.bipolarRaw_of_adaptiveSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_bipolarRaw","OPICAR2Targets"),("OPICAR2.cofinalSubpower_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_fixed","OPICAR2Targets")]:
             requests.setdefault(n,{"module":m,"cohort":"ARITHMETIC_SUPPORT"})
-        for n in ("cofinalSubpower_min_iff","minPolarityRawSubpower_iff","onePolarity_of_adaptiveMinOpposedSupply","emptyRemoval_cost_zero","emptyRemoval_survivor","clippedOpposedEnergy_one","clippedOpposedEnergy_neg_one","empty_clippedOpposedEnergy_le","empty_min_budget_optimal","adaptiveMin_iff_emptyRemoval","onePolarity_of_emptyRemovalSupply"):
+        for n in ("cofinalSubpower_min_iff","minPolarityRawSubpower_iff","onePolarity_of_adaptiveMinOpposedSupply","emptyRemoval_cost_zero","emptyRemoval_survivor","clippedOpposedEnergy_one","clippedOpposedEnergy_neg_one","empty_clippedOpposedEnergy_le","empty_min_budget_optimal","adaptiveMin_iff_emptyRemoval","onePolarity_of_emptyRemovalSupply","empty_min_budget_raw_comparison","emptyRemovalSupply_iff_rawMinUnsigned","rawMinUnsigned_iff_fixed","adaptiveMin_iff_fixed_raw_unsigned"):
             requests["OPICAR2."+n]={"module":"OPICAR2Targets","cohort":"COFINAL_POLARITY_REDUCTION"}
         if "OPICAR2EnergyDetector" in self.adapter_modules:
             for n in ("directEnergyToC1_of_power_comparison","directEnergyToC1_of_power_supply"):

@@ -329,4 +329,105 @@ theorem onePolarity_of_emptyRemovalSupply (h : EmptyRemovalMinSupply) :
     OnePolarityRawSubpower :=
   onePolarity_of_adaptiveMinOpposedSupply (adaptiveMin_iff_emptyRemoval.mpr h)
 
+
+/-! A further finite compression: after full-cost removal elimination,
+    the clipped opposed energy plus unsigned discrepancy is equivalent
+    (up to factor two) to the raw minimum plus that same discrepancy. -/
+
+def RawMinWithUnsignedSupply : Prop :=
+  CofinalSubpower (fun X => min (rawPositiveEnergy X) (rawNegativeEnergy X) +
+    unsignedErrorEnergy X)
+
+private theorem opposed_nonneg (X : ℕ) (r : Removal) :
+    0 ≤ opposedSurvivorEnergy X r := by
+  unfold opposedSurvivorEnergy
+  exact Finset.sum_nonneg fun j _ => mul_nonneg (weight_nonneg j)
+    (mul_nonneg (mul_nonneg (by norm_num) (le_max_right _ _)) (le_max_right _ _))
+
+private theorem reverse_opposed_nonneg (X : ℕ) (r : Removal) :
+    0 ≤ reverseOpposedSurvivorEnergy X r := by
+  unfold reverseOpposedSurvivorEnergy
+  exact Finset.sum_nonneg fun j _ => mul_nonneg (weight_nonneg j)
+    (mul_nonneg (mul_nonneg (by norm_num) (le_max_right _ _)) (le_max_right _ _))
+
+/-- Exact empty-removal budget and raw-plus-unsigned comparison, at the
+    same native cutoff. No asymptotic estimate is introduced. -/
+theorem empty_min_budget_raw_comparison (X : ℕ) :
+    (min (opposedSurvivorEnergy X emptyRemoval)
+      (reverseOpposedSurvivorEnergy X emptyRemoval) + unsignedErrorEnergy X ≤
+        min (rawPositiveEnergy X) (rawNegativeEnergy X) + unsignedErrorEnergy X) ∧
+    (min (rawPositiveEnergy X) (rawNegativeEnergy X) + unsignedErrorEnergy X ≤
+      2 * (min (opposedSurvivorEnergy X emptyRemoval)
+        (reverseOpposedSurvivorEnergy X emptyRemoval) + unsignedErrorEnergy X)) := by
+  have hp := rawPositiveEnergy_bracket X emptyRemoval
+  have hn := rawNegativeEnergy_bracket X emptyRemoval
+  simp only [emptyRemoval_cost_zero, add_zero] at hp hn
+  have hu : 0 ≤ min (opposedSurvivorEnergy X emptyRemoval)
+      (reverseOpposedSurvivorEnergy X emptyRemoval) :=
+    le_min (opposed_nonneg X _) (reverse_opposed_nonneg X _)
+  have hraw : min (rawPositiveEnergy X) (rawNegativeEnergy X) ≤
+      min (opposedSurvivorEnergy X emptyRemoval)
+        (reverseOpposedSurvivorEnergy X emptyRemoval) + unsignedErrorEnergy X := by
+    rcases le_total (opposedSurvivorEnergy X emptyRemoval)
+        (reverseOpposedSurvivorEnergy X emptyRemoval) with h | h
+    · rw [min_eq_left h]
+      exact (min_le_left _ _).trans hp.2
+    · rw [min_eq_right h]
+      exact (min_le_right _ _).trans hn.2
+  constructor
+  · exact add_le_add_right (min_le_min hp.1 hn.1) _
+  · linarith
+
+private theorem cofinalSubpower_mul_const (f : ℕ → ℝ) (a : ℝ)
+    (ha : 0 ≤ a) (h : CofinalSubpower f) :
+    CofinalSubpower (fun X => a * f X) := by
+  intro ε hε
+  obtain ⟨C,hC,hwin⟩ := h ε hε
+  refine ⟨a*C,mul_nonneg ha hC,?_⟩
+  intro X₀
+  obtain ⟨X,hX,hb⟩ := hwin X₀
+  refine ⟨X,hX,?_⟩
+  calc
+    a * f X ≤ a * (C * (X : ℝ)^ε) := mul_le_mul_of_nonneg_left hb ha
+    _ = (a*C) * (X : ℝ)^ε := by ring
+
+theorem emptyRemovalSupply_iff_rawMinUnsigned :
+    EmptyRemovalMinSupply ↔ RawMinWithUnsignedSupply := by
+  constructor
+  · intro h
+    exact cofinalSubpower_of_pointwise_le _ _
+      (fun X => (empty_min_budget_raw_comparison X).2)
+      (cofinalSubpower_mul_const _ 2 (by norm_num) h)
+  · intro h
+    exact cofinalSubpower_of_pointwise_le _ _
+      (fun X => (empty_min_budget_raw_comparison X).1) h
+
+private theorem min_add_common (a b c : ℝ) :
+    min (a+c) (b+c) = min a b + c := by
+  rcases le_total a b with h | h
+  · rw [min_eq_left (add_le_add_right h c), min_eq_left h]
+  · rw [min_eq_right (add_le_add_right h c), min_eq_right h]
+
+/-- One fixed polarity is recovered without any exchange of quantifiers.
+    BOTH terms still use the same cofinal witness. -/
+theorem rawMinUnsigned_iff_fixed :
+    RawMinWithUnsignedSupply ↔
+      CofinalSubpower (fun X => rawPositiveEnergy X + unsignedErrorEnergy X) ∨
+      CofinalSubpower (fun X => rawNegativeEnergy X + unsignedErrorEnergy X) := by
+  have h : (fun X => min (rawPositiveEnergy X) (rawNegativeEnergy X) + unsignedErrorEnergy X) =
+      (fun X => min (rawPositiveEnergy X + unsignedErrorEnergy X)
+        (rawNegativeEnergy X + unsignedErrorEnergy X)) := by
+    funext X
+    exact (min_add_common _ _ _).symm
+  unfold RawMinWithUnsignedSupply
+  rw [h]
+  exact cofinalSubpower_min_iff _ _
+
+theorem adaptiveMin_iff_fixed_raw_unsigned :
+    AdaptiveMinOpposedSupply ↔
+      CofinalSubpower (fun X => rawPositiveEnergy X + unsignedErrorEnergy X) ∨
+      CofinalSubpower (fun X => rawNegativeEnergy X + unsignedErrorEnergy X) :=
+  adaptiveMin_iff_emptyRemoval.trans
+    (emptyRemovalSupply_iff_rawMinUnsigned.trans rawMinUnsigned_iff_fixed)
+
 end OPICAR2

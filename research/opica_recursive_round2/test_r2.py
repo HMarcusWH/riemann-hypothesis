@@ -136,6 +136,8 @@ class Controls(unittest.TestCase):
     def test_evidence_ledger_never_promotes_metadata(self):
         from sync_evidence import classify,disposition
         self.assertEqual(classify("native-search"),"RESEARCH_PRODUCING_CHECK")
+        self.assertEqual(classify("original-focus"),"RESEARCH_PRODUCING_CHECK")
+        self.assertEqual(classify("Round4 / PARENT_REGRESSION"),"REGRESSION_GATE")
         self.assertEqual(classify("unknown"),"UNCLASSIFIED_REQUIRES_REVIEW")
         self.assertEqual(disposition({"status":"completed","conclusion":"success"},[{"status":"completed","conclusion":"success"}]),"METADATA_GREEN_RECEIPTS_REQUIRE_REVIEW")
         self.assertEqual(disposition({"status":"in_progress","conclusion":None},[]),"RUNNING_OR_QUEUED")

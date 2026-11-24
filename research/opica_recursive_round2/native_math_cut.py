@@ -12,6 +12,10 @@ CUTS=[
     ("OPICAR2Targets","OPICAR2.empty_min_budget_optimal"),
     ("OPICAR2Targets","OPICAR2.adaptiveMin_iff_emptyRemoval"),
     ("OPICAR2Targets","OPICAR2.onePolarity_of_emptyRemovalSupply"),
+    ("OPICAR2Targets","OPICAR2.empty_min_budget_raw_comparison"),
+    ("OPICAR2Targets","OPICAR2.emptyRemovalSupply_iff_rawMinUnsigned"),
+    ("OPICAR2Targets","OPICAR2.rawMinUnsigned_iff_fixed"),
+    ("OPICAR2Targets","OPICAR2.adaptiveMin_iff_fixed_raw_unsigned"),
     ("OPICAR2EnergyDetector","OPICAR2.directEnergyToC1_of_power_comparison"),
     ("OPICAR2EnergyDetector","OPICAR2.directEnergyToC1_of_power_supply")]
 def main():

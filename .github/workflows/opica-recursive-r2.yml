@@ -106,6 +106,43 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  original-focus:
+    # Do not wait for a full native build or for the principal matrix.
+    needs: harvest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
+          path: harvest
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 1eab1eb59e47d503ade1615a2c465f967fa65c6e
+          path: native
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Search the nine authenticated original leads and preserved premise contexts
+        run: python -B controller/research/opica_recursive_round2/original_focus.py --native native --harvest harvest --out "$RUNNER_TEMP/original-focus"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-original-focus-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/original-focus/
+          if-no-files-found: warn
+          retention-days: 30
+
   native-math-cut:
     needs: source-controls
     runs-on: ubuntu-24.04
@@ -468,7 +505,7 @@ jobs:
           retention-days: 30
   packet:
     if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-recursive-closure-r2-20261124'
-    needs: [source-controls, harvest, canonical-review, principal-supplier, native-math-cut, evidence-sync, native-search, mixed-validation]
+    needs: [source-controls, harvest, canonical-review, principal-supplier, native-math-cut, evidence-sync, original-focus, native-search, mixed-validation]
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -512,6 +549,11 @@ jobs:
         with:
           name: opica-r2-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/evidence-sync
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-original-focus-${{ github.run_id }}-${{ github.run_attempt }}
+          path: inputs/original-focus
       - name: Produce the ten-file packet, including explicit incompleteness
         env:
           R2_WORKFLOW_RESULTS: ${{ toJSON(needs) }}
