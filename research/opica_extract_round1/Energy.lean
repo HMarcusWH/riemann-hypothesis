@@ -68,9 +68,8 @@ theorem window_energy_bound (g : ℝ → ℝ) {Y ε A : ℝ}
       Y = Y ^ (1 : ℝ) := (Real.rpow_one Y).symm
       _ ≤ Y ^ (3 / 2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hY1 (by norm_num)
   have hpos : ∀ x ∈ Icc Y (Y ^ (3 / 2 : ℝ)), 0 < x := fun x hx => hY0.trans_le hx.1
-  have hmaxcont : ContinuousOn (fun x => max (g x) 0) (Icc Y (Y ^ (3 / 2 : ℝ))) := by
-    change ContinuousOn (fun x => g x ⊔ 0) (Icc Y (Y ^ (3 / 2 : ℝ)))
-    exact hc.sup continuousOn_const
+  have hmaxcont : ContinuousOn (fun x => max (g x) 0) (Icc Y (Y ^ (3 / 2 : ℝ))) :=
+    hc.sup continuousOn_const
   have hfg : ContinuousOn (fun x => (max (g x) 0)^2 / x^2) (Icc Y (Y ^ (3 / 2 : ℝ))) :=
     (hmaxcont.pow 2).div
       (continuous_id.pow 2).continuousOn (fun x hx => pow_ne_zero _ (hpos x hx).ne')

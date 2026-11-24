@@ -68,7 +68,7 @@ jobs:
   verified-export-mining:
     needs: export-format-smoke
     runs-on: ubuntu-24.04
-    timeout-minutes: 350
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -77,26 +77,31 @@ jobs:
           sparse-checkout: |
             /research/opica_extract_round1/
           sparse-checkout-cone-mode: false
-      - name: Stream original verified proof — elaborated dependencies, no compilation
-        timeout-minutes: 310
+      - name: Verify exact predecessor producer and unchanged mining source
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          command -v zstd
-          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300 --index-gib 20 --keep-index
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
+          git fetch --depth=1 --filter=blob:none --no-tags origin ea038dc8f3e86121ddea43213bf3bbeb015b23f3
+          gh api repos/HMarcusWH/riemann-hypothesis/actions/runs/45472802058 > "$RUNNER_TEMP/mining-run.json"
+          gh api repos/HMarcusWH/riemann-hypothesis/actions/jobs/138745091804 > "$RUNNER_TEMP/mining-job.json"
+          python3 -B research/opica_extract_round1/reuse_mining.py --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --identity-only
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: extraction-original-proof-graph-${{ github.sha }}
-          path: ${{ runner.temp }}/original-dependencies.json
-          if-no-files-found: warn
+          name: extraction-original-proof-graph-f413bc3030c20617988aca46556cabda6373a4a0
+          repository: HMarcusWH/riemann-hypothesis
+          run-id: 45472802058
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/reused-mining
+      - name: Authenticate unchanged graph and preserve original producer identity
+        run: |
+          set -euo pipefail
+          python3 -B research/opica_extract_round1/reuse_mining.py --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --graph "$RUNNER_TEMP/reused-mining/original-dependencies.json" --receipt "$RUNNER_TEMP/reused-mining/original-proof-producer-receipt.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
         with:
-          name: extraction-completed-root-checkpoints-${{ github.event.pull_request.head.sha }}
-          path: |
-            ${{ runner.temp }}/original-index/INDEX_READY.json
-            ${{ runner.temp }}/original-index/root-checkpoints/
-          if-no-files-found: warn
+          name: extraction-original-proof-graph-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reused-mining/
+          if-no-files-found: error
   native-typed-search:
     needs: source-cuts
     runs-on: ubuntu-24.04
