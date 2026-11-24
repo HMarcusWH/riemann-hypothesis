@@ -75,6 +75,8 @@ def packet(inputs,out,controller):
     if epoch.get("historical_status")!="HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH":missing.append("HISTORICAL_NATIVE_INTEGRATION_PENDING")
     if graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs):missing.append("BOUNDED_SEARCH_OR_FRONTIER_INCOMPLETE")
     if not validations:missing.append("NO_KERNEL_VALIDATION_RECEIPT")
+    readiness=harvest.get("expanded_search_readiness",{})
+    if readiness.get("status")=="WAITING_FOR_UPSTREAM_EVIDENCE":missing.append("WAITING_FOR_UPSTREAM_EVIDENCE")
     research_missing=list(missing)
     production_missing=[]
     if not any(x.get("key")=="canonical" for x in canonical):production_missing.append("CANONICAL_PATCH_REVIEW_PENDING")
@@ -108,7 +110,7 @@ def packet(inputs,out,controller):
     for n in frontier[:40]:lines.append("- "+n["label"]+" ("+n["type_sha256"]+")")
     lines+=["","## Missing execution/admission gates"]+["- "+m for m in missing]+["","RH, C1 and Step4 remain OPEN."]
     (out/"REMAINING_MATHEMATICS.md").write_text("\n".join(lines)+"\n")
-    write(out/"STEP4_VERDICT.json",{"schema":"OPICA_R2_STEP4_VERDICT_V1","outcome":outcome,"bounded_search_outcome":bounded,"research_missing_gates":research_missing,"production_missing_gates":production_missing,"missing_gates":missing,"input_errors":errors,"local_exact_proof_count":len(local),"alternate_kernel_count":len(alternate),"terminal_candidates":terminal,"reduced_frontier_certified":False,"scope":"ISOLATED_RESEARCH_NOT_RELEASE",**CLAIMS})
+    write(out/"STEP4_VERDICT.json",{"schema":"OPICA_R2_STEP4_VERDICT_V1","outcome":outcome,"bounded_search_outcome":bounded,"expanded_search_readiness":readiness,"research_missing_gates":research_missing,"production_missing_gates":production_missing,"missing_gates":missing,"input_errors":errors,"local_exact_proof_count":len(local),"alternate_kernel_count":len(alternate),"terminal_candidates":terminal,"reduced_frontier_certified":False,"scope":"ISOLATED_RESEARCH_NOT_RELEASE",**CLAIMS})
 def main():
     p=argparse.ArgumentParser();p.add_argument("--inputs",type=Path,required=True);p.add_argument("--out",type=Path,required=True);p.add_argument("--repo",type=Path,required=True)
     a=p.parse_args();packet(a.inputs,a.out,controller_scope(a.repo))

@@ -44,3 +44,7 @@ Final research-feedback.json harvests actual candidate dispositions and future p
 ## Repair successor
 
 The lossless V2 disk index uses eight-byte common records (apps with two 31-bit edges and two-word records) plus exact four-word overflow records. The index budget is bounded by reviewed CLI limits and actual disk reserve, not the failed 10 GiB constant. Progress logs include disk, overflow, and peak RSS; parser failure is preserved ahead of induced pipe errors. Both export SHA-256 pins are unchanged. The V2 complete local checkpoint is versioned and hashes both files and the exact producer code. Hosted jobs retain the completed-index receipt and completed root checkpoint JSON only, not multi-GiB full indexes; a fresh ingest is still required on a fresh runner unless a separately approved durable index is provided. No unauthenticated partial ingest can be resumed. A separate saved-candidate job authenticates the prior exact window manifest and compiles only its import closure. Source and kernel validation remain required; all claims OPEN.
+
+## Energy lint successor
+
+Remove the redundant change tactic without altering statements or warning-as-error checks. The full compact-index ingest remains on run 45472802058, job 138745091804. This successor requires its exact successful producer and identical mining source blobs, downloads the exact previous run artifact and preserves its graph bytes with a separate reuse receipt. No second complete ingest is launched; missing or failed evidence fails closed. No theorem authority is promoted.

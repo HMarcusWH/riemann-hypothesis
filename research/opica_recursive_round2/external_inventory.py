@@ -19,6 +19,15 @@ def load_external(harvest):
         except Exception as ex:rejected.append({"declaration":name,"world":world,"reason":str(ex)[:800]})
     graph=get("original","original-dependencies.json")
     if graph:
+        mining=LOCK["evidence"]["mining"];actual=receipts["original"]
+        need(actual["head"]==mining["head"] and actual["run"]==mining["run"] and actual["attempt"]==mining["attempt"] and actual["producer_job"]==mining["job"] and actual["artifact_name"]==mining["artifact_name"],"Original mining producer evidence differs")
+        root=HERE.parent.parent
+        need(git(root,"rev-parse",mining["head"]+"^{tree}")==mining["tree"],"Original mining tree differs")
+        for f in mining["unchanged_controller_components"]:
+            path="research/opica_extract_round1/"+f
+            need(git(root,"rev-parse",mining["head"]+":"+path)==git(root,"rev-parse",LOCK["controller"]["parent"]+":"+path),"Mining source component changed: "+f)
+        from reuse_mining import verify_graph
+        verify_graph(graph)
         spec=R1_PIN["original"]["solution"];transport=graph["download"]
         need(graph["schema"]=="OPICA_AUTHENTICATED_EXPORT_DEPENDENCIES_V1" and graph["mode"]=="solution" and graph["proof_acceptance"] is False,"Wrong original graph")
         need(graph["raw_sha256"]==spec["raw_sha256"] and transport["compressed_sha256"]==spec["compressed_sha256"] and transport["observed_raw_sha256"]==spec["raw_sha256"] and transport["zstd_exit"]==0 and not transport["feed_errors"],"Original export byte authentication differs")

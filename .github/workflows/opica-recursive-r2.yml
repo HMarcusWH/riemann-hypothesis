@@ -53,11 +53,11 @@ jobs:
       - name: Exact run and artifact harvest
         env:
           GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
-        run: python -B controller/research/opica_recursive_round2/harvest.py --out "$RUNNER_TEMP/harvest"
+        run: python -B controller/research/opica_recursive_round2/harvest.py --out "$RUNNER_TEMP/harvest" --require-expanded
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: opica-r2-harvest
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/harvest
           if-no-files-found: warn
           retention-days: 30
@@ -79,7 +79,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: opica-r2-harvest
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
           path: harvest
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -99,7 +99,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: opica-r2-canonical
+          name: opica-r2-canonical-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/canonical
           if-no-files-found: warn
           retention-days: 30
@@ -121,7 +121,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: opica-r2-harvest
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
           path: harvest
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -177,7 +177,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: opica-r2-native
+          name: opica-r2-native-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/native/epoch.json
             ${{ runner.temp }}/native/search/*.json
@@ -217,11 +217,11 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: opica-r2-harvest
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
           path: harvest
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
-          name: opica-r2-native
+          name: opica-r2-native-${{ github.run_id }}-${{ github.run_attempt }}
           path: native-results
       - name: Check shortlist before any source bootstrap
         id: menu
@@ -307,7 +307,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: opica-r2-mixed
+          name: opica-r2-mixed-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/mixed/*.json
             ${{ runner.temp }}/mixed/*.log
@@ -338,22 +338,22 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         continue-on-error: true
         with:
-          name: opica-r2-harvest
+          name: opica-r2-harvest-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/harvest
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         continue-on-error: true
         with:
-          name: opica-r2-canonical
+          name: opica-r2-canonical-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/canonical
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         continue-on-error: true
         with:
-          name: opica-r2-native
+          name: opica-r2-native-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/native
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         continue-on-error: true
         with:
-          name: opica-r2-mixed
+          name: opica-r2-mixed-${{ github.run_id }}-${{ github.run_attempt }}
           path: inputs/mixed
       - name: Produce the ten-file packet, including explicit incompleteness
         env:
@@ -362,7 +362,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: OPICA-R2-RESULT-PACKET
+          name: OPICA-R2-RESULT-PACKET-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/packet
           if-no-files-found: warn
           retention-days: 30

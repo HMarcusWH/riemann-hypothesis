@@ -78,6 +78,14 @@ class Controls(unittest.TestCase):
             r=read(x/"out/STEP4_VERDICT.json")
             self.assertEqual(r["local_exact_proof_count"],0);self.assertTrue(r["input_errors"]);self.assertFalse(r["proof_acceptance"])
 
+    def test_expanded_readiness_and_pinned_mining_attempt(self):
+        from harvest import expanded_readiness,run_identity
+        self.assertEqual(expanded_readiness({"principal":{}})["missing"],["historical","original"])
+        self.assertEqual(expanded_readiness({k:{} for k in ("historical","original","principal")})["status"],"READY_FOR_FRESH_EXPANDED_RESEARCH")
+        spec=next(x for x in LOCK["runs"] if x["key"]=="external-repaired")
+        run={"id":spec["run"],"head_sha":spec["head"],"repository":{"full_name":spec["repository"]},"head_repository":{"full_name":spec["repository"]},"path":spec["workflow"],"run_attempt":1}
+        run_identity(run,spec)
+        with self.assertRaises(RuntimeError):run_identity({**run,"run_attempt":2},spec)
     def test_empty_packet_cannot_pass(self):
         with tempfile.TemporaryDirectory() as d:
             x=Path(d);(x/"inputs").mkdir()

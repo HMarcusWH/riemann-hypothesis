@@ -20,6 +20,7 @@ def run_identity(run,spec):
     need(run["repository"]["full_name"]==spec["repository"] and run["head_repository"]["full_name"]==spec["repository"],"Wrong run repository")
     need(run["path"].split("@")[0]==spec["workflow"],"Wrong workflow")
     need(type(run["run_attempt"]) is int and run["run_attempt"]>0,"Missing attempt")
+    if "attempt" in spec:need(run["run_attempt"]==spec["attempt"],"Pinned producer attempt differs")
 def successful_job(record,name):
     return sum(j["name"]==name and j["status"]=="completed" and j["conclusion"]=="success" for j in record["jobs"])==1
 def safe_members(z):
@@ -31,11 +32,12 @@ def safe_members(z):
         names.add(n);total+=i.file_size
         need(total<=768<<20 and len(names)<=20000,"Expanded artifact budget")
     return names
-def artifact(record,prefix,wanted,out,expected_id=None,expected_digest=None):
+def artifact(record,prefix,wanted,out,expected_id=None,expected_digest=None,expected_name=None):
     spec=record["spec"];run=record["run"];attempt=run["run_attempt"]
     endpoint="repos/"+spec["repository"]+"/actions/runs/"+str(spec["run"])+"/artifacts"
     rows=pages(endpoint,"artifacts")
     matches=[a for a in rows if a["name"].startswith(prefix) and not a["expired"]]
+    if expected_name is not None:matches=[a for a in matches if a["name"]==expected_name]
     if expected_id is not None:matches=[a for a in matches if a["id"]==expected_id]
     else:
         suffixed=[a for a in matches if a["name"].endswith("-"+str(spec["run"])+"-"+str(attempt))]
@@ -63,6 +65,12 @@ def artifact(record,prefix,wanted,out,expected_id=None,expected_digest=None):
                     while b:=f.read(1<<20):d.write(b)
                 entries[leaf]={"sha256":filehash(dest),"bytes":dest.stat().st_size}
     return {"artifact_id":a["id"],"artifact_name":a["name"],"zip_sha256":expected[7:],"run":spec["run"],"attempt":attempt,"head":spec["head"],"entries":entries}
+def expanded_readiness(receipts):
+    required=LOCK["expanded_readiness"]["required"]
+    need(required==["historical","original","principal"],"Expanded campaign readiness contract differs")
+    missing=[k for k in required if k not in receipts]
+    return {"status":"WAITING_FOR_UPSTREAM_EVIDENCE" if missing else "READY_FOR_FRESH_EXPANDED_RESEARCH","required":required,"missing":missing,"production_acceptance":False}
+
 def collect(out):
     out.mkdir(parents=True,exist_ok=False)
     reports={};receipts={};errors=[]
@@ -92,19 +100,28 @@ def collect(out):
         try:
             rec=reports[key]
             need(rec["status"]=="EXACT_RUN_OBSERVED" and successful_job(rec,job),"Producer job not verified successful")
+            producer=next(j for j in rec["jobs"] if j["name"]==job and j["status"]=="completed" and j["conclusion"]=="success")
+            if pinned and "job" in pinned:need(producer["id"]==pinned["job"],"Pinned producer job differs")
             receipts[label]=artifact(rec,prefix,wanted,out/"inputs"/label,
                                      expected_id=pinned.get("artifact") if pinned else None,
-                                     expected_digest=pinned.get("archive_sha256") if pinned else None)
+                                     expected_digest=pinned.get("archive_sha256") if pinned else None,
+                                     expected_name=pinned.get("artifact_name") if pinned else None)
+            receipts[label]["producer_job"]=producer["id"]
         except Exception as ex:errors.append({"lane":label,"reason":str(ex)[:1000]})
-    take("external-repaired","verified-export-mining","extraction-original-proof-graph-",["original-dependencies.json"],"original")
+    take("external-repaired","verified-export-mining","extraction-original-proof-graph-",["original-dependencies.json"],"original",LOCK["evidence"]["mining"])
     take("external","principal-arithmetic-cut","extraction-principal-",["principal-receipt.json"],"principal",LOCK["evidence"]["old_principal"])
-    take("external-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
+    take("external-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-predecessor-join")
+    take("energy-repaired","native-typed-search","extraction-native-",["energy-receipt.json","native-retrieval.json","energy-independent-type.log"],"energy")
+    take("energy-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
     take("historical-review","review-old-receipts","opica-support-reviewed-old-comparison-",["reviewed-old-cross-pin-type-comparison.json"],"historical")
     take("canonical","canonical-candidate","opica-successor-canonical-review-",["receipt.json","generated-state.patch"],"canonical",LOCK["evidence"]["canonical"])
     take("registration","canonical-candidate","registration-canonical-",["receipt.json","generated-state.patch"],"registration",LOCK["evidence"]["registration"])
-    report={"schema":"OPICA_R2_AUTHENTICATED_HARVEST_V1","runs":reports,"artifact_receipts":receipts,"unavailable":errors,**CLAIMS}
+    report={"schema":"OPICA_R2_AUTHENTICATED_HARVEST_V1","runs":reports,"artifact_receipts":receipts,"unavailable":errors,"expanded_search_readiness":expanded_readiness(receipts),**CLAIMS}
     write(out/"harvest.json",report)
-    print(json.dumps({"runs_observed":sum(r["status"]=="EXACT_RUN_OBSERVED" for r in reports.values()),"artifacts":sorted(receipts),"unavailable":len(errors),**CLAIMS}))
+    print(json.dumps({"runs_observed":sum(r["status"]=="EXACT_RUN_OBSERVED" for r in reports.values()),"artifacts":sorted(receipts),"unavailable":len(errors),"expanded_search_readiness":report["expanded_search_readiness"],**CLAIMS}))
+    return report
 def main():
-    p=argparse.ArgumentParser();p.add_argument("--out",type=Path,required=True);a=p.parse_args();collect(a.out)
+    p=argparse.ArgumentParser();p.add_argument("--out",type=Path,required=True);p.add_argument("--require-expanded",action="store_true");a=p.parse_args()
+    report=collect(a.out)
+    if a.require_expanded:need(not report["expanded_search_readiness"]["missing"],"WAITING_FOR_UPSTREAM_EVIDENCE: "+",".join(report["expanded_search_readiness"]["missing"]))
 if __name__=="__main__":main()
