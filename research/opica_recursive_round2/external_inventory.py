@@ -71,6 +71,11 @@ def principal_goals(rows):
         need(len(bs)==1,"PrincipalConnected interface binder count drift")
         add("PrincipalConnectedNamed",subdag(e,int(e["nodes"][bs[0][1]][3])),r)
         add("RampWindowsNamed",subdag(e,last),r)
+    host=ns+"principal_connected_of_topG_host"
+    if host in by:
+        r=by[host];e=r["type_expression"];bs,_=peel(e)
+        need(len(bs)==2,"Principal host interface binder count drift")
+        add("PrincipalHostNamed",subdag(e,int(e["nodes"][bs[1][1]][3])),r)
     if m in by:
         r=by[m];e=r["type_expression"];bs,_=peel(e)
         need(len(bs)==2,"TopG/VWinAt interface binder count drift")

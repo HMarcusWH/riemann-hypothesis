@@ -48,7 +48,7 @@ def run(original,native,manifest,out):
     port.stage(original,native,stage,adapted,out/"port.json")
     p=read(out/"port.json")
     if not p["resolved"]:
-        write(out/"review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","status":"NO_PORTABLE_CANDIDATES","results":p["rejected"],**CLAIMS});return
+        write(out/"review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"mixed","native":manifest["native"],"status":"NO_PORTABLE_CANDIDATES","results":p["rejected"],**CLAIMS});return
     required=set(p["build_modules"]);needed=[x["module"] for x in p["adapter_order"]]
     need(not (required&port.DENIED),"Endpoint module in common-pin build")
     env=compiler_env();b=command(["lake","build",*["+"+m for m in sorted(required)]],original,env,out/"build.log",seconds=9000)
@@ -68,7 +68,12 @@ def run(original,native,manifest,out):
         need(r["status"]=="PASS","Common-pin adapter compile failed: "+m);built.add(m)
     for m in needed:compile(m)
     validate(original,native,work,p,out/"validation","mixed")
-    write(out/"review.json",read(out/"validation/review.json"))
+    report=read(out/"validation/review.json")
+    # Every selected ID receives an outcome, including source-port rejections.
+    report["results"]+=p["rejected"]
+    ids=[x["id"] for x in report["results"]]
+    need(len(ids)==len(set(ids)) and set(ids)=={x["id"] for x in manifest["selected"]},"Mixed result population differs")
+    write(out/"review.json",report)
 def main():
     p=argparse.ArgumentParser()
     for k in ("original","native","manifest","out"):p.add_argument("--"+k,type=Path,required=True)

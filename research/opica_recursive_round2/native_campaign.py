@@ -11,7 +11,7 @@ C1="Zeta23.OPICARound4.ArithmeticFrontier."
 MAIN_GOALS=[(C1+"CofinalMomentSliceVanishingErrorBounds","Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices"),
 (NS+"PositiveRawSubpower",NS+"SourceEnergies"),(NS+"NegativeRawSubpower",NS+"SourceEnergies"),(NS+"OnePolarityRawSubpower",NS+"SourceEnergies"),
 (DEF+"LargePrimeDeficitSubpower",DEF+"Source"),(DEF+"MissingPrimeDeficitToLiteralGBridge",DEF+"Source")]
-NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply"]
+NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply","AdaptiveOnePolarityOpposedSupply","AdaptiveBipolarSupply","BipolarRawSubpower"]
 BASE_MODULES=[NS+"BipolarTransfer",DEF+"Source","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","Zeta23.RHRC.OpicaComposition.Audit","Zeta23.RHRC.OpicaRound3AtlasExport"]
 class Campaign:
     def __init__(self,repo,epoch,harvest,out):
@@ -53,7 +53,7 @@ class Campaign:
         requests={r["declaration"]:{ "module":r["module"],"expected_type_sha256":r["type_sha256"],"cohort":"FROZEN_462_ATLAS"} for r in atlas}
         policy=read(self.repo/"research/RHRC/integration/opica_round6/bipolar_transfer/POLICY.json")
         for n in policy["roots"]:requests[n]={"module":NS+"BipolarTransfer","cohort":"BIPOLAR_16"}
-        for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_jointCofinalOpposedSupply","OPICAR2Targets")]:
+        for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_jointCofinalOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_jointCofinal","OPICAR2Targets"),("OPICAR2.bipolarRaw_of_adaptiveSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_bipolarRaw","OPICAR2Targets"),("OPICAR2.cofinalSubpower_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_fixed","OPICAR2Targets")]:
             requests.setdefault(n,{"module":m,"cohort":"ARITHMETIC_SUPPORT"})
         for n in ("even","odd","tendsto"):
             requests.setdefault(C1+"cofinal_moment_slice_bounds_of_"+n,{"module":"Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","cohort":"C1_CONSUMER_SUPPORT"})
