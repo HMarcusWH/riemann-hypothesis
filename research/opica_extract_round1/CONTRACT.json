@@ -1,0 +1,229 @@
+{
+  "schema": "OPICA_CROSS_REPOSITORY_EXTRACTION_R1",
+  "supplier": {
+    "repository": "HMarcusWH/riemann-hypothesis",
+    "head": "668e62327f5e2b65b20a8d7a98dcd901e29f6cd8",
+    "tree": "bc7e5eafda153227ebddff3a1523fcadd848b402",
+    "src_tree": "6e972745429bd501b15e5daa9db46c8a9feb85db",
+    "toolchain": "leanprover/lean4:v4.37.0-rc1",
+    "mathlib": "31ce06eaadf4a200c0e1407c5f10953cf606b8f8"
+  },
+  "native": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "4f81c784d3b330395507f6dcd1c8b0010b3835cc",
+    "tree": "84b235c455980cfd516a8c0ccaf7749bce3c5339",
+    "toolchain": "leanprover/lean4:v4.33.0-rc2",
+    "mathlib": "51e6992efd06126df61a496bebf8f49482a4e129"
+  },
+  "original": {
+    "head": "40e56bab026552e089d7afcfeff08d2defb9c005",
+    "toolchain": "leanprover/lean4:v4.33.1",
+    "mathlib": "0df444a360eaa60ab8c11dca51a86af692955474",
+    "evidence": "https://math.mit.edu/~drew/grh/",
+    "format": "3.1.0",
+    "solution": {
+      "url": "https://math.mit.edu/~drew/grh/solution.ndjson.zst",
+      "compressed_bytes": 7699933588,
+      "compressed_sha256": "61a8938ad5f5e57397c1c0e3b954916af546d9004ade01c3555744a681b05381",
+      "raw_bytes": 61570595788,
+      "raw_sha256": "5ea74b912147c5c93cc2b6d70cc727cf908df2f62ac6a20480a3fa02f6be244e",
+      "size_policy": "PUBLISHED_SHA256_AUTHORITATIVE_RECORD_LENGTH_DISCREPANCY",
+      "raw_size_slack": 1048576,
+      "compressed_size_slack": 1048576
+    },
+    "challenge": {
+      "url": "https://math.mit.edu/~drew/grh/challenge.ndjson.zst",
+      "raw_bytes": 350862311,
+      "raw_sha256": "bd484ac9886a96f26b1d9a7a59ebd45b7a70d102c015d4f31f9302bbdd6ab2b9",
+      "published_raw_bytes": 350862970,
+      "compressed_bytes": 46881299,
+      "compressed_sha256": "c24ef99dab3556a52c7fb886e03cf22a242f3b96f82ae4cc40539e5d2f678ac6",
+      "size_correction": {
+        "source_run": 45404424398,
+        "job": 138481413075,
+        "head": "92029b3f9ed0caf5e67b99189a91d1eac1a4f9bf",
+        "reason": "Published raw hash exact; decompressor exit 0; observed length 659 bytes smaller. Independent wc/sha256 replay required."
+      }
+    }
+  },
+  "catalog": [
+    {
+      "name": "Deduction.G",
+      "selector": "G",
+      "role": "DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "current": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "reason": "exact centered prime sum"
+    },
+    {
+      "name": "Deduction.Gm",
+      "selector": "Gm",
+      "role": "DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "current": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "reason": "positive family; principal singleton"
+    },
+    {
+      "name": "Deduction.WindowHyp",
+      "selector": "WindowHyp",
+      "role": "TARGET_DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "current": "src/Development/AutomorphicArithmetic/DedekindLFunctions/CharFamily.lean",
+      "reason": "complete cofinal integral majorant"
+    },
+    {
+      "name": "UpperTheory.Top.TopG",
+      "selector": "TopG",
+      "role": "TARGET_DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "reason": "connectedness target; not a proof"
+    },
+    {
+      "name": "UpperTheory.Top.VWinAt",
+      "selector": "VWinAt",
+      "role": "TARGET_DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/ExistsPageN.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ExistsPageN.lean",
+      "reason": "principal window; retains auxiliary growing fields"
+    },
+    {
+      "name": "UpperTheory.Top.VWin",
+      "selector": "VWin",
+      "role": "TARGET_DEFINITION",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/ExistsPageN.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ExistsPageN.lean",
+      "reason": "all character input"
+    },
+    {
+      "name": "Formalism.HC.Level.cyc",
+      "selector": "Level.cyc",
+      "role": "DEFINITION",
+      "original": "src/Formalism/SharpRestriction/RamificationFrobenius/TotientGaloisClasses/ExplicitFormulaErrorOfHostConditions.lean",
+      "current": "src/Formalism/SharpRestriction/RamificationFrobenius/TotientGaloisClasses/ExplicitFormulaErrorOfHostConditions.lean",
+      "reason": "principal level"
+    },
+    {
+      "name": "Formalism.HC.Level.Gm",
+      "selector": "Gm",
+      "role": "DEFINITION",
+      "original": "src/Formalism/SharpRestriction/RamificationFrobenius/TotientGaloisClasses/ExplicitFormulaErrorOfHostConditions.lean",
+      "current": "src/Formalism/SharpRestriction/RamificationFrobenius/TotientGaloisClasses/ExplicitFormulaErrorOfHostConditions.lean",
+      "reason": "compare actual prime source"
+    },
+    {
+      "name": "UpperTheory.Top.supplyChi",
+      "selector": "UpperTheory.Top.supplyChi",
+      "role": "CONDITIONAL_HOST",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/SupplyChi.lean",
+      "current": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopPlug.lean",
+      "reason": "VWinAt 401 to complete host windows"
+    },
+    {
+      "name": "UpperTheory.Comparison₂.core_gm",
+      "selector": "UpperTheory.Comparison₂.core_gm",
+      "role": "CONDITIONAL_ARITHMETIC",
+      "original": "src/Development/AutomorphicArithmetic/PrimitiveCosets/CoreGm.lean",
+      "current": "src/Development/AutomorphicArithmetic/PrimitiveCosets/LevelGmLeOnFamilyScales.lean",
+      "reason": "actual upper exponent 1/2+(eD+eL+7)eps"
+    },
+    {
+      "name": "UpperTheory.Comparison₂.level_gm_le_on_family_scales",
+      "selector": "level_gm_le_on_family_scales",
+      "role": "CONDITIONAL_ARITHMETIC",
+      "original": "src/Development/AutomorphicArithmetic/PrimitiveCosets/LevelGmLeOnFamilyScales.lean",
+      "current": "src/Development/AutomorphicArithmetic/PrimitiveCosets/LevelGmLeOnFamilyScales.lean",
+      "reason": "complete windows from tied core and error inputs"
+    },
+    {
+      "name": "UpperTheory.Top.shape_closed_link_n_of_green",
+      "selector": "UpperTheory.Top.shape_closed_link_n_of_green",
+      "role": "CONDITIONAL_CONNECTEDNESS",
+      "original": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopShape.lean",
+      "current": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopShape.lean",
+      "reason": "producer of TopG shape; inspect hypotheses"
+    },
+    {
+      "name": "GlobalTheory.Fc.goal_of_shape_of_hyps",
+      "selector": "GlobalTheory.Fc.goal_of_shape_of_hyps",
+      "role": "CONDITIONAL_CONNECTEDNESS",
+      "original": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/ShapeOf.lean",
+      "current": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopPlug.lean",
+      "reason": "instantiate actual HypsAlt"
+    },
+    {
+      "name": "UpperTheory.One.vwin_of_row",
+      "selector": "UpperTheory.One.vwin_of_row",
+      "role": "CONDITIONAL_COHOMOLOGY",
+      "original": "src/Development/AutomorphicArithmetic/AutomorphicVarieties/ModularityArgument/ThresholdArguments/DenseThresholdCases/VwinOfRow.lean",
+      "current": "src/Development/AutomorphicArithmetic/AutomorphicVarieties/ModularityArgument/ThresholdArguments/DenseThresholdCases/VwinOfRow.lean",
+      "reason": "row and definite base change to VWin"
+    },
+    {
+      "name": "UpperTheory.Gal.Int.galoisLocalGlobalStrong_recParameter",
+      "selector": "galoisLocalGlobalStrong_recParameter",
+      "role": "PRODUCER_LEAD",
+      "original": "src/Development/AutomorphicArithmetic/Foundations/GaloisRepresentations/IntegralStructures/RowSrc.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/MainConclusion.lean",
+      "reason": "trace row to theta lift"
+    },
+    {
+      "name": "Deduction.zeroFree_of_rpow_window",
+      "selector": "zeroFree_of_rpow_window",
+      "role": "CONSUMER_EXCLUDED",
+      "original": "src/Development/AutomorphicArithmetic/DedekindLFunctions/LandauTheorems/ZeroFreeOfRpowWindow.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "reason": "analytic consumer, not independent supply"
+    },
+    {
+      "name": "UpperTheory.Comparison₂.formB",
+      "selector": "UpperTheory.Comparison₂.formB",
+      "role": "CONSUMER_EXCLUDED",
+      "original": "src/Development/AutomorphicArithmetic/PrimitiveCosets/Imports.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "reason": "zero-free from windows; compare only"
+    },
+    {
+      "name": "UpperTheory.Top.zeroFreeAll_of_topG",
+      "selector": "zeroFreeAll_of_topG",
+      "role": "ENDPOINT_EXCLUDED",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/ZeroFreeAllOfTopG.lean",
+      "reason": "zero exclusion endpoint"
+    },
+    {
+      "name": "UpperTheory.Top.zero_free_all_of_green_v_win",
+      "selector": "UpperTheory.Top.zero_free_all_of_green_v_win",
+      "role": "ENDPOINT_EXCLUDED",
+      "original": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopPlug.lean",
+      "current": "src/Development/AutomorphicArithmetic/ThetaCorrespondence/ThetaPairLifts/ThirdPlaceSeries/TopPlug.lean",
+      "reason": "inspect proof body for suppliers only"
+    },
+    {
+      "name": "UpperTheory.FinalTheorems.everyCharacter",
+      "selector": "UpperTheory.FinalTheorems.everyCharacter",
+      "role": "ENDPOINT_EXCLUDED",
+      "original": "src/Development/AutomorphicArithmetic/CharacterBoxes/MainConclusion.lean",
+      "current": "src/Development/AutomorphicArithmetic/CharacterBoxes/MainConclusion.lean",
+      "reason": "GRH baseline"
+    },
+    {
+      "name": "riemannHypothesis",
+      "selector": "riemannHypothesis",
+      "role": "ENDPOINT_EXCLUDED",
+      "original": "src/Main.lean",
+      "current": "src/Main.lean",
+      "reason": "RH baseline"
+    }
+  ],
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "claims": {
+    "C1": "OPEN",
+    "independent_step4": "OPEN",
+    "proof_acceptance": false
+  }
+}
