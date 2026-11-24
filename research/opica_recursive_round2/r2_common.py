@@ -29,26 +29,43 @@ def read(path,limit=256<<20):
 def write(path,value):
     path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
     with path.open("x",encoding="utf-8") as f: json.dump(value,f,ensure_ascii=False,indent=2,allow_nan=False);f.write("\n")
+def dependency_key(row):
+    return digest([row["world"],row["declaration"],row["type_sha256"]])
+
 def compact_dependency_row(row,folder):
     """Store the full checked dependency set separately, not 978 MB of
     repeated names in the search inventory. Search retains counts and hashes."""
     row=dict(row);deps=row.pop("dependencies")
     need(type(deps) is list and all(isinstance(x,str) for x in deps),"Invalid dependency list")
-    key=digest([row["world"],row["declaration"],row["type_sha256"]])
+    key=dependency_key(row)
     rel="dependency-closures/"+key+".json.gz";p=Path(folder)/rel
     p.parent.mkdir(parents=True,exist_ok=True)
     raw=json.dumps(deps,ensure_ascii=False,separators=(",",":"),allow_nan=False).encode()
     with p.open("xb") as f:
         with gzip.GzipFile(filename="",mode="wb",fileobj=f,mtime=0,compresslevel=6) as z:z.write(raw)
-    row.update(closure_count=len(deps),dependency_sha256=hashlib.sha256(raw).hexdigest(),dependency_file=rel,dependency_archive_sha256=filehash(p),dependency_archive_bytes=p.stat().st_size)
+    row.update(closure_count=row.get("closure_count",len(deps)),dependency_count=len(deps),dependency_sha256=hashlib.sha256(raw).hexdigest(),dependency_file=rel,dependency_archive_sha256=filehash(p),dependency_archive_bytes=p.stat().st_size)
     return row
 def verify_dependency_row(row,folder):
     rel=row["dependency_file"];need(re.fullmatch(r"dependency-closures/[0-9a-f]{64}\.json\.gz",rel) is not None,"Bad closure path")
-    p=Path(folder)/rel;need(p.is_file() and not p.is_symlink() and p.stat().st_size==row["dependency_archive_bytes"] and filehash(p)==row["dependency_archive_sha256"],"Closure archive drift")
+    need(rel=="dependency-closures/"+dependency_key(row)+".json.gz","Closure is not bound to declaration/type/world")
+    p=Path(folder)/rel;need(p.resolve().is_relative_to(Path(folder).resolve()) and not p.parent.is_symlink() and p.is_file() and not p.is_symlink() and p.stat().st_size==row["dependency_archive_bytes"] and filehash(p)==row["dependency_archive_sha256"],"Closure archive drift")
     with gzip.open(p,"rb") as z:raw=z.read(64<<20)
     need(len(raw)<64<<20 and hashlib.sha256(raw).hexdigest()==row["dependency_sha256"],"Closure digest/size")
-    deps=json.loads(raw);need(type(deps) is list and len(deps)==row["closure_count"] and all(isinstance(x,str) and not forbidden(x) for x in deps),"Closure inventory or endpoint")
+    deps=json.loads(raw);need(type(deps) is list and len(deps)==row.get("dependency_count",row["closure_count"]) and all(isinstance(x,str) and not forbidden(x) for x in deps),"Closure inventory or endpoint")
     return True
+
+def verify_inventory(inventory,folder):
+    """Fail closed before using the on-disk inventory in any feedback pass."""
+    need(inventory.get("schema")=="OPICA_R2_QUALIFIED_RESEARCH_INVENTORY_V2","Unexpected inventory schema")
+    rows=inventory["native_rows"]+inventory["external_research_rows"]
+    seen=set()
+    for row in rows:
+        key=dependency_key(row)
+        need(key not in seen,"Duplicate inventory identity")
+        seen.add(key)
+        verify_dependency_row(row,folder)
+    return len(seen)
+
 def git(repo,*args):
     return subprocess.check_output(["git","-C",str(repo),*args],text=True,timeout=180).strip()
 def check_pin(repo,pin,clean=True):

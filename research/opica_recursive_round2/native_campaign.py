@@ -140,15 +140,28 @@ class Campaign:
                 roots.append(self.goal(n,"OPICAExtractionR1."+n,"OPICAExtractionEnergy"))
         ext,rejected=load_external(self.harvest)
         roots.extend(principal_goals(ext))
+        # Original membership bytes remain in the authenticated harvest.
+        # Preserve their identity without repeating the base64 payloads.
+        compact=[]
+        for row in ext:
+            row=dict(row)
+            member=row.pop("membership",None)
+            if member is not None:
+                row["original_membership_receipt"]={k:v for k,v in member.items() if k!="data"}
+                row["original_membership_source"]="harvest/inputs/original/original-dependencies.json"
+            row["dependency_kind"]="ORIGINAL_EXPORT_ENDPOINT_NAMES_ONLY" if row["world"]=="ORIGINAL_EXPORT" else "COMPILER_TRANSITIVE_NAMES"
+            compact.append(compact_dependency_row(row,self.out))
+        ext=compact
         inventory={"schema":"OPICA_R2_QUALIFIED_RESEARCH_INVENTORY_V2","epoch":self.epoch,"requested_native_roots":requested,"native_rows":self.rows,"external_research_rows":ext,"exclusions":self.failures+rejected,"production_admission":"NOT_ESTABLISHED",**CLAIMS}
         write(self.out/"inventory.json",inventory)
+        need(verify_inventory(read(self.out/"inventory.json"),self.out)==len(self.rows)+len(ext),"Inventory readback failed")
         graph=explore(roots,self.rows+ext,self.register)
         write(self.out/"graph.json",graph)
         for mode,cap in (("native",BUDGET["attempts_native"]),("mixed",BUDGET["attempts_mixed"])):
             selected,omitted=select(graph,mode,cap)
             write(self.out/(mode+"-candidates.json"),{"schema":"OPICA_R2_CANDIDATE_MANIFEST_V1","mode":mode,"native":self.epoch["native"],"original_head":R1_PIN["original"]["head"],"selected":selected,"omitted_budget":omitted,**CLAIMS})
         write(self.out/"compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED","compiles":self.compiles,"failures":self.failures,**CLAIMS})
-        print(json.dumps({"native_rows":len(self.rows),"external_research_rows":len(ext),"goals":len(graph["nodes"]),"queries":len(graph["queries"]),**CLAIMS}))
+        print(json.dumps({"inventory_bytes":(self.out/"inventory.json").stat().st_size,"dependency_shards":len(list((self.out/"dependency-closures").glob("*.json.gz"))),"native_rows":len(self.rows),"external_research_rows":len(ext),"goals":len(graph["nodes"]),"queries":len(graph["queries"]),**CLAIMS}))
 def main():
     p=argparse.ArgumentParser()
     for k in ("repo","epoch","harvest","out"):p.add_argument("--"+k,type=Path,required=True)

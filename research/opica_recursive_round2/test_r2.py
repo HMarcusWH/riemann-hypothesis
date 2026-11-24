@@ -37,6 +37,32 @@ class Controls(unittest.TestCase):
             self.assertTrue(verify_dependency_row(c,p))
             with (p/c["dependency_file"]).open("ab") as f:f.write(b"x")
             with self.assertRaises(RuntimeError):verify_dependency_row(c,p)
+    def test_dependency_identity_swap_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);r={"world":"NATIVE_COMPILER","declaration":"A","type_sha256":"a"*64,"dependencies":["Nat.add"]}
+            row=compact_dependency_row(r,p)
+            with self.assertRaises(RuntimeError):verify_dependency_row({**row,"declaration":"B"},p)
+    def test_external_compact_dependency_count(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d);r={"world":"ORIGINAL_EXPORT","declaration":"A","type_sha256":"a"*64,"dependencies":[],"closure_count":120000}
+            row=compact_dependency_row(r,p)
+            self.assertEqual(row["closure_count"],120000);self.assertEqual(row["dependency_count"],0)
+            self.assertTrue(verify_dependency_row(row,p))
+    def test_compiler_incomplete_is_not_no_match(self):
+        with tempfile.TemporaryDirectory() as d:
+            x=Path(d);i=x/"inputs"
+            write(i/"harvest/harvest.json",{"artifact_receipts":{"original":{"id":1},"historical":{"id":2}}})
+            pin=LOCK["native"]
+            write(i/"native/epoch.json",{"native":pin,"historical_status":"HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH"})
+            write(i/"native/search/inventory.json",{"native_rows":[]})
+            write(i/"native/search/compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED","failures":[{"status":"MODULE_BUILD_FAILED"}]})
+            node={"id":"g","declaration":"A","type_sha256":"a"*64,"label":"A"}
+            write(i/"native/search/graph.json",{"nodes":[node],"roots":["g"],"edges":[],"queries":[{"goal":"g","bounded_complete":True,"plans":[]}]})
+            write(i/"native/validation/review.json",{"mode":"native","native":pin,"results":[]})
+            packet(i,x/"out",{"head":"f"*40})
+            r=read(x/"out/STEP4_VERDICT.json")
+            self.assertEqual(r["outcome"],"INCOMPLETE_EXECUTION")
+            self.assertIn("COMPILER_INVENTORY_INCOMPLETE",r["research_missing_gates"])
     def test_no_mixed_candidates_no_source_required(self):
         from mixed_campaign import run
         with tempfile.TemporaryDirectory() as d:

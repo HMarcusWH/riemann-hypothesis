@@ -14,7 +14,7 @@ def packet(inputs,out,controller):
     epoch=load("native/epoch.json",{})
     inventory=load("native/search/inventory.json",{})
     if inventory:
-        for row in inventory.get("native_rows",[]):
+        for row in inventory.get("native_rows",[])+inventory.get("external_research_rows",[]):
             try:
                 verify_dependency_row(row,inputs/"native/search")
                 artifacts["native/search/"+row["dependency_file"]]=row["dependency_archive_sha256"]
@@ -50,7 +50,10 @@ def packet(inputs,out,controller):
             try:
                 cand=manifests[r["id"]];goal=goals[cand["goal_id"]]
                 need(r["goal_id"]==cand["goal_id"] and goal["declaration"]==cand["target"]["declaration"] and goal["type_sha256"]==cand["expected_type_sha256"] and goal.get("world","NATIVE_QUERY")==cand["target"].get("world","NATIVE_QUERY"),"Candidate not bound to exact graph goal")
-                need(receipt.get("native")==epoch.get("native") and r["target"]==cand["target"] and r["expected_type_sha256"]==cand["expected_type_sha256"] and r["candidate_plan_sha256"]==digest(cand["plan"]),"Candidate type/plan/epoch drift")
+                need(receipt.get("schema")=="OPICA_R2_VALIDATION_V1" and receipt.get("proof_acceptance") is False and receipt.get("native")==epoch.get("native") and r["target"]==cand["target"] and r["expected_type_sha256"]==cand["expected_type_sha256"] and r["candidate_plan_sha256"]==digest(cand["plan"]),"Candidate type/plan/epoch drift")
+                need(r.get("actual_local_kernel_proof") is True and set(r["axioms"])<=ALLOWED and all(r["stages"][k]["status"]=="PASS" for k in ("actual_types","kernel","independent_type","fresh_stock_kernel")),"Incomplete local proof gates")
+                if receipt["mode"]=="native":need(r["actual_type_sha256"]==cand["expected_type_sha256"] and r["cross_pin_definition_equivalence"]=="SAME_NATIVE_PIN","Native actual target differs")
+                else:need(receipt["mode"]=="mixed" and r["cross_pin_definition_equivalence"]=="REVIEW_REQUIRED","Mixed semantic disposition differs")
                 local.append({**r,"validation_mode":receipt["mode"]})
             except Exception as ex:errors.append({"input":r.get("id"),"reason":str(ex)[:500]})
     local_keys={(identity(r),r["validation_mode"]) for r in local}
@@ -59,7 +62,7 @@ def packet(inputs,out,controller):
         for r in receipt.get("results",[]):
             if r.get("status")!="PASS_ALTERNATE_SELECTED_CLOSURE_ONLY":continue
             try:
-                need(receipt.get("native")==epoch.get("native") and (identity(r),receipt.get("mode")) in local_keys,"Alternate receipt not bound to local candidate")
+                need(receipt.get("schema")=="OPICA_R2_ALTERNATE_KERNEL_V2" and receipt.get("proof_acceptance") is False and receipt.get("status")=="CHECKED_SELECTED_CLOSURES" and receipt.get("negative_controls")=="PASS" and receipt.get("native")==epoch.get("native") and (identity(r),receipt.get("mode")) in local_keys,"Alternate receipt not bound to complete checker/epoch/local candidate")
                 alternate.append({**r,"validation_mode":receipt["mode"]})
             except Exception as ex:errors.append({"input":r.get("id"),"reason":str(ex)[:500]})
     alt_ids={identity(r) for r in alternate}
@@ -75,6 +78,8 @@ def packet(inputs,out,controller):
     if epoch.get("historical_status")!="HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH":missing.append("HISTORICAL_NATIVE_INTEGRATION_PENDING")
     if graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs):missing.append("BOUNDED_SEARCH_OR_FRONTIER_INCOMPLETE")
     if not validations:missing.append("NO_KERNEL_VALIDATION_RECEIPT")
+    if compiler.get("status")!="COMPILER_RESEARCH_INVENTORY_EXPORTED" or compiler.get("failures"):missing.append("COMPILER_INVENTORY_INCOMPLETE")
+    if any(r.get("status") in ("RESOURCE_EXHAUSTED","INDEPENDENT_REPLAY_FAILED","INDEPENDENT_CHECKER_UNAVAILABLE","ADAPTER_REQUIRED","UNRESOLVED","INCOMPLETE","REJECTED_OR_INCOMPLETE") for r in allresults):missing.append("CANDIDATE_EXECUTION_INCOMPLETE")
     readiness=harvest.get("expanded_search_readiness",{})
     if readiness.get("status")=="WAITING_FOR_UPSTREAM_EVIDENCE":missing.append("WAITING_FOR_UPSTREAM_EVIDENCE")
     research_missing=list(missing)
@@ -83,7 +88,7 @@ def packet(inputs,out,controller):
     if not any(x.get("key")=="registration" for x in canonical):production_missing.append("DISPATCH_REGISTRATION_PATCH_REVIEW_PENDING")
     production_missing+=["CANONICAL_PRODUCTION_11_LANE_AND_3_GROUP_ACCEPTANCE_NOT_ESTABLISHED","MANUAL_DISPATCH_AND_SIGNED_SCALAR_GOVERNED_TARGET_RESULTS_PENDING_OR_UNADMITTED","EXTERNAL_TO_NATIVE_SEMANTIC_ADAPTER_REVIEW_REQUIRED"]
     missing+=production_missing
-    outcome="STEP4_CLOSURE_CANDIDATE" if terminal else "NEW_SUPPORTING_THEOREM" if any(identity(r) in alt_ids for r in local) else "INCOMPLETE_EXECUTION" if research_missing or errors or not qs else "NO_MATCH_IN_ENUMERATED_SCOPE"
+    outcome="INCOMPLETE_EXECUTION" if errors else "STEP4_CLOSURE_CANDIDATE" if terminal else "NEW_SUPPORTING_THEOREM" if any(identity(r) in alt_ids for r in local) else "INCOMPLETE_EXECUTION" if research_missing or not qs else "CANDIDATES_IN_ENUMERATED_SCOPE" if any(q.get("plans") for q in qs) else "NO_MATCH_IN_ENUMERATED_SCOPE"
     bounded="INCOMPLETE_SEARCH_SCOPE" if not qs or graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs) else "CANDIDATES_IN_ENUMERATED_SCOPE" if any(q.get("plans") for q in qs) else "NO_MATCH_IN_ENUMERATED_SCOPE"
     # All statuses stay scoped to the isolated research epoch. The release gate
     # is intentionally not callable from this hosted R2 workflow.
@@ -94,6 +99,7 @@ def packet(inputs,out,controller):
     candidate_rows=[]
     for q in qs:
         candidate_rows+=q.get("plans",[])
+    candidate_rows+=list(manifests.values())
     seen=set();unique=[]
     for c in candidate_rows:
         if c["id"] not in seen:seen.add(c["id"]);unique.append(c)
