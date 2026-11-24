@@ -30,7 +30,7 @@ def scope(head):
     need(not git(REPO,"diff","--name-only","HEAD"),"modified tracked source")
     need(not git(REPO,"ls-files","--others","--exclude-standard","--","src","comparator","verification/opica-v437"),"untracked proof source")
     need(not git(REPO,"ls-files","--others","--ignored","--exclude-standard","--","src","comparator","verification/opica-v437"),"ignored proof source")
-    allowed = {".github/workflows/opica-v437-qualification.yml"} | {"verification/opica-v437/"+n for n in ("SOURCE_PIN.json","README.md","source.py","test_source.py","verify.py","Ingress.lean","CombinedChallenge.lean")}
+    allowed = {".github/workflows/opica-v437-qualification.yml"} | {"verification/opica-v437/"+n for n in ("SOURCE_PIN.json","README.md","source.py","test_source.py","verify.py","Ingress.lean","CombinedChallenge.lean","smoke.py","RUNNER.md")}
     bridge = git(REPO,"ls-tree","-r","--name-only",head,"verification/opica-v437/native_bridge").splitlines()
     allowed |= set(bridge)
     changed = [x.split("\t") for x in git(REPO,"diff","--name-status","--no-renames",PIN["base_commit"],head).splitlines()]

@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """New execution candidate. Stock 4.37 Comparator and nanoda, not legacy con-leche receipts."""
 from __future__ import annotations
-import argparse, hashlib, json, os, pathlib, re, shutil, stat, subprocess, sys, time
+import argparse, hashlib, json, os, pathlib, re, shutil, signal, stat, subprocess, sys, time
 from source import HERE, REPO, PIN, PUBLIC, FC, ALLOWED, roots, scope, git, need, accepted, axiom_report, json_file
 P=pathlib.Path
 def write(path, data):
     path.write_text(json.dumps(data,indent=2,sort_keys=True)+"\n")
 def digest(path):
-    with path.open("rb") as f: return hashlib.file_digest(f,"sha256").hexdigest()
+    h=hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda:f.read(1024*1024),b""):h.update(block)
+    return h.hexdigest()
 def inventory(root):
     need(root.is_dir(),"missing inventory root: "+str(root))
     result={}
@@ -28,20 +31,24 @@ def copy_inputs(dst, with_source=False):
         shutil.copyfile(REPO/"src/Challenge.lean",dst/"src/Challenge.lean")
     shutil.copytree(REPO/"comparator",dst/"comparator")
     (dst/".lake/packages").mkdir(parents=True)
-def host_preflight(head):
+EVIDENCE_ROOT=P('/var/lib/opica-v437/runs')
+def host_preflight(head, output):
     e=os.environ
     need(e.get("GITHUB_ACTIONS")=="true" and e.get("GITHUB_REPOSITORY")=="HMarcusWH/riemann-hypothesis" and e.get("RUNNER_ENVIRONMENT")=="self-hosted" and e.get("GITHUB_EVENT_NAME")=="workflow_dispatch" and e.get("GITHUB_REF")=="refs/heads/"+PIN["topic"] and e.get("GITHUB_SHA")==head,"reviewed manual runner only")
     marker=P("/etc/opica/community-v437.json")
     st=marker.lstat()
     need(stat.S_ISREG(st.st_mode) and st.st_uid==0 and not st.st_mode&0o022 and st.st_size<=4096,"invalid root-owned runner marker")
-    need(json_file(marker)=={"schema":"OPICA_COMMUNITY_V437_EPHEMERAL_V1","runner_name":e["RUNNER_NAME"],"ephemeral":True,"no_private_data":True},"wrong runner marker")
+    need(json_file(marker)=={"schema":"OPICA_COMMUNITY_V437_EPHEMERAL_V2","runner_name":e["RUNNER_NAME"],"ephemeral":True,"no_private_data":True,"reviewed_head":head,"evidence_root":str(EVIDENCE_ROOT)},"wrong runner marker or unreviewed head")
+    need(EVIDENCE_ROOT.is_dir() and EVIDENCE_ROOT.resolve()==EVIDENCE_ROOT and output.parent==EVIDENCE_ROOT,"durable evidence root required")
+    need(output.name==e["GITHUB_RUN_ID"]+"-"+e["GITHUB_RUN_ATTEMPT"],"wrong execution directory")
+    need(not EVIDENCE_ROOT.stat().st_mode&0o002,"world-writable evidence directory")
     need(e["RUNNER_NAME"].startswith("opica-v437-") and os.geteuid()!=0 and os.uname().machine=="x86_64","wrong host")
     need(len(os.sched_getaffinity(0))>=8,"CPU budget")
     ram=int(next(l.split()[1] for l in P("/proc/meminfo").read_text().splitlines() if l.startswith("MemTotal:")))//1024
-    free=shutil.disk_usage(e["RUNNER_TEMP"]).free
+    free=shutil.disk_usage(EVIDENCE_ROOT).free
     need(ram>=192000 and free>=500*1024**3 and int(P("/proc/sys/vm/max_map_count").read_text())>=1048576,"resource preflight (192000 MiB RAM, 500 GiB disk, map count)")
     need(shutil.which("bwrap") and shutil.which("zstd"),"sandbox or zstd missing")
-    return {"ram_mib":ram,"free_bytes":free,"cpu":len(os.sched_getaffinity(0))}
+    return {"ram_mib":ram,"free_bytes":free,"cpu":len(os.sched_getaffinity(0)),"evidence_root":str(EVIDENCE_ROOT),"reviewed_head":head}
 class Campaign:
     def __init__(self,args):
         self.args=args; self.out=args.output.resolve()
@@ -64,12 +71,28 @@ class Campaign:
         print("BEGIN",name,flush=True)
         try:
             with dest.open("xb") as o,err.open("xb") as e:
-                rc=subprocess.run(list(map(str,argv)),cwd=cwd,env=self.env(),stdout=o,stderr=e,timeout=timeout,check=False).returncode
+                proc=subprocess.Popen(list(map(str,argv)),cwd=cwd,env=self.env(),stdout=o,stderr=e,start_new_session=True)
+                try:rc=proc.wait(timeout=timeout)
+                except BaseException:
+                    try:os.killpg(proc.pid,signal.SIGTERM)
+                    except ProcessLookupError:pass
+                    try:proc.wait(timeout=15)
+                    except subprocess.TimeoutExpired:
+                        try:os.killpg(proc.pid,signal.SIGKILL)
+                        except ProcessLookupError:pass
+                        proc.wait(timeout=15)
+                    # A descendant may outlive its group leader.
+                    try:os.killpg(proc.pid,signal.SIGKILL)
+                    except ProcessLookupError:pass
+                    raise
             row.update(exit=rc,seconds=time.monotonic()-start,stdout_bytes=dest.stat().st_size,stdout_sha256=digest(dest),stderr_sha256=digest(err))
             need(rc==expected,"unexpected exit in "+name)
             row["status"]="PASS";self.save();print("PASS",name,flush=True)
         except BaseException:
-            row.update(status="FAIL_OR_INCOMPLETE",seconds=time.monotonic()-start);self.save();raise
+            row.update(status="FAIL_OR_INCOMPLETE",seconds=time.monotonic()-start)
+            if dest.exists():row.update(stdout_bytes=dest.stat().st_size,stdout_sha256=digest(dest))
+            if err.exists():row["stderr_sha256"]=digest(err)
+            self.save();raise
         return dest
     def box(self,project,command,*,extra=(),lean_path=None,writable=True):
         a=["bwrap","--unshare-all","--die-with-parent","--new-session","--clearenv","--ro-bind","/usr","/usr"]
@@ -102,8 +125,7 @@ class Campaign:
         except BaseException:
             self.report["stages"][name]["status"]="FAIL_OR_INCOMPLETE";self.save();raise
         self.report["stages"][name]["actual_comparator_receipt"]="PASS_SANDBOXED_THREE_KERNELS";self.save()
-    def prepare(self):
-        self.report["source"]=scope(self.args.head);self.report["host"]=host_preflight(self.args.head);self.save()
+    def install_runtime(self):
         archive=self.out/"runtime.tar.zst"
         self.run("download_runtime",["curl","--fail","--silent","--show-error","--location","--retry","3","-o",archive,PIN["runtime_url"]],self.out,timeout=1800)
         need(archive.stat().st_size==PIN["runtime_bytes"] and digest(archive)==PIN["runtime_sha256"],"runtime archive mismatch")
@@ -113,6 +135,10 @@ class Campaign:
         self.report["runtime_binaries"]={n:digest(self.rt/"bin"/n) for n in ("lean","lake","leanexport","leanchecker","leanchecker-paranoid","nanoda_bin")}
         v=self.run("runtime_version",[self.rt/"bin/lean","--version"],self.out,timeout=60).read_text()
         need("version 4.37.0-rc1" in v,"runtime version mismatch")
+        self.save()
+    def prepare(self):
+        self.report["source"]=scope(self.args.head);self.report["host"]=host_preflight(self.args.head,self.out);self.save()
+        self.install_runtime()
         # Only the Mathlib dependency preparation has network. It sees no supplier proof source.
         prep=self.out/"dependency-prep";copy_inputs(prep)
         (prep/"src/Challenge.lean").unlink()
@@ -127,7 +153,7 @@ class Campaign:
             need(not git(self.deps/d["name"],"diff","--name-only","HEAD"),"modified dependency source")
         self.report["dependency_pins"]={x["name"]:x["rev"] for x in json_file(REPO/"lake-manifest.json")["packages"]}
         self.dep_roots={n:self.deps/n/".lake/build/lib/lean" for n in self.report["dependency_pins"] if (self.deps/n/".lake/build/lib/lean").is_dir()}
-        need("mathlib" in self.dep_roots,"missing Mathlib object root")
+        need(set(self.dep_roots)==set(self.report["dependency_pins"]),"missing pinned dependency object root")
         self.report["dependency_object_inventories"]={n:inventory_digest(p) for n,p in self.dep_roots.items()}
         self.report["runtime_library_inventory"]=inventory_digest(self.rt/"lib/lean")
         self.report["source_file_inventory"]=inventory_digest(REPO/"src")
@@ -187,22 +213,24 @@ class Campaign:
             actual=set(git(native,"diff","--name-only","HEAD").splitlines())|set(git(native,"ls-files","--others","--exclude-standard").splitlines())
             need(actual==allowed,"unexpected native source change")
         native_integrity()
+        need(not git(native,"ls-files","--others","--ignored","--exclude-standard","--","Zeta23","OPICAStep4","comparator"),"ignored native proof source")
         initial={n:digest(native/n) for n in allowed}
         self.inside("native_only_build",native,["/opt/lean/bin/lake","--no-cache","build","OPICAStep4.NativeValidated"],timeout=21600)
         np=self.path("native_path",native)
         self.inside("native_only_stock_replay",native,["/opt/lean/bin/leanchecker","--fresh","--verbose","OPICAStep4.NativeValidated"],lean_path=np,timeout=14400,writable=False)
         no=native/".lake/build/lib/lean";co=ch/".lake/build/lib/lean";so=sol/".lake/build/lib/lean"
+        self.report["native_only_object_inventory"]=inventory_digest(no);self.save()
         for other in (co,so):
             need(not ({p.relative_to(no) for p in no.rglob("*.olean")} & {p.relative_to(other) for p in other.rglob("*.olean")}),"native/supplier module collision")
         (native/".lake/combined-challenge/OPICAStep4").mkdir(parents=True)
         cpath="/work/.lake/combined-challenge:"+np+":/supplier-challenge"
-        cextra=((co,"/supplier-challenge"),)
+        cextra=((co,"/supplier-challenge"),(no,"/work/.lake/build/lib/lean"))
         self.inside("combined_expected_types",native,["/opt/lean/bin/lean","--root=/work","-o",".lake/combined-challenge/OPICAStep4/CombinedChallenge.olean","OPICAStep4/CombinedChallenge.lean"],lean_path=cpath,extra=cextra)
         rr,mr,_=roots()
         cexp=self.export("combined_challenge_50",native,"OPICAStep4.CombinedChallenge",rr,lean_path=cpath,extra=cextra)
         (native/".lake/combined-solution/OPICAStep4").mkdir(parents=True)
         spath="/work/.lake/combined-solution:"+np+":/supplier"
-        sextra=((so,"/supplier"),)
+        sextra=((so,"/supplier"),(no,"/work/.lake/build/lib/lean"))
         for m in ("ImportGuard","MainClosedBridge"):
             p=self.inside("combined_"+m,native,["/opt/lean/bin/lean","-DwarningAsError=true","--root=/work","-o",".lake/combined-solution/OPICAStep4/"+m+".olean","OPICAStep4/"+m+".lean"],lean_path=spath,extra=sextra)
             if m=="ImportGuard":need("OPICA20_NEW_NAMES_ABSENT" in p.read_text(),"missing guard")
@@ -214,6 +242,8 @@ class Campaign:
         cfg=json_file(REPO/"comparator.json");cfg.update(challenge_module="OPICAStep4.CombinedChallenge",solution_module="OPICAStep4.MainClosedBridge",theorem_names=mr)
         self.judge("combined_comparator_50",cfg,cexp,sexp)
         native_integrity();need(all(digest(native/n)==s for n,s in initial.items()),"native staged bytes drift")
+        need(inventory_digest(no)==self.report["native_only_object_inventory"],"native-only object bytes changed")
+        self.report["combined_object_inventory"]=inventory_digest(native/".lake/combined-solution")
         self.report["combined_50"]="PASS_SAME_V437_PIN_CANDIDATE_ONLY";self.save()
     def execute(self):
         try:

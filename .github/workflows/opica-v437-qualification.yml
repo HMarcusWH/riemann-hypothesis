@@ -46,8 +46,44 @@ jobs:
           python3 -B -O verification/opica-v437/source.py "$EXPECTED_HEAD"
           (cd verification/opica-v437 && python3 -B -m unittest -v test_source)
           (cd verification/opica-v437 && python3 -B -O -m unittest -v test_source)
-  full:
+  execution-smoke:
     needs: source
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-community-v437-qualification-20261124') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/research/opica-community-v437-qualification-20261124' && inputs.verify_head == github.sha))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /verification/opica-v437/
+            /export-targets.txt
+            /comparator/
+            /comparator.json
+          sparse-checkout-cone-mode: false
+      - name: Install isolated fixture runtime prerequisites
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap zstd
+      - name: Real tiny stock replay, sandbox and Comparator rejection controls
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python3 -B verification/opica-v437/smoke.py --head "$EXPECTED_HEAD" --output "$RUNNER_TEMP/opica-v437-smoke"
+      - name: Retain bounded execution evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-v437-smoke-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/opica-v437-smoke/evidence/
+          if-no-files-found: error
+          retention-days: 90
+  full:
+    needs: [source, execution-smoke]
     if: github.event_name == 'workflow_dispatch' && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-community-v437-qualification-20261124' && inputs.verify_head == github.sha
     runs-on: [self-hosted, Linux, X64, opica-v437]
     timeout-minutes: 1200
@@ -64,13 +100,13 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --depth=1 --no-tags origin 668e62327f5e2b65b20a8d7a98dcd901e29f6cd8
-          python3 -B verification/opica-v437/verify.py --head "$REVIEWED_HEAD" --include-native "$INCLUDE_NATIVE" --output "$RUNNER_TEMP/opica-v437-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          python3 -B verification/opica-v437/verify.py --head "$REVIEWED_HEAD" --include-native "$INCLUDE_NATIVE" --output "/var/lib/opica-v437/runs/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
       - name: Preserve small receipts and logs; large exports remain in operator-owned runner storage
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: opica-v437-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            ${{ runner.temp }}/opica-v437-${{ github.run_id }}-${{ github.run_attempt }}/evidence/
+            /var/lib/opica-v437/runs/${{ github.run_id }}-${{ github.run_attempt }}/evidence/
           if-no-files-found: error
           retention-days: 90

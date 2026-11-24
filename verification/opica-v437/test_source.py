@@ -4,6 +4,9 @@ class Controls(unittest.TestCase):
     def setUp(self):
         self.cfg={"challenge_module":"Challenge","solution_module":"Main","theorem_names":PUBLIC,"permitted_axioms":["propext","Quot.sound","Classical.choice"],"external_kernels":{"Lean paranoid":["leanchecker-paranoid","--silent","--from-export"],"nanoda":["nanoda_bin"]}}
         self.d={"sandboxed":True,"judgement":"accepted","report":{"compare_statements":{"judgement":"success"},"check_axioms":{"judgement":"success"},"kernel_reports":{n:{"judgement":"success"} for n in KERNELS},"config":copy.deepcopy(self.cfg)}}
+    def test_smoke_import(self):
+        import smoke
+        self.assertTrue(callable(smoke.run))
     def test_executor_import(self):
         import verify
         self.assertTrue(callable(verify.Campaign.execute))
