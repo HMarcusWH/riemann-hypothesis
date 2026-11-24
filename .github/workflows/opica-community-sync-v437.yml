@@ -6,7 +6,8 @@ permissions:
   contents: read
 jobs:
   source:
-    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository
+    # This is a one-epoch admission gate, not a permanent rule for future PRs.
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.number == 10 && github.head_ref == 'research/community-v437-sync-20261124'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
