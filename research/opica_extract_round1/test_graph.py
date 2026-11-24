@@ -23,6 +23,12 @@ class TestGraph(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             ix=Index(pathlib.Path(d),2**20)
             with self.assertRaises(RuntimeError):feed(ix,fixture()+[{"unknown":{}}])
+    def test_hash_bound_size_discrepancy(self):
+        with tempfile.TemporaryDirectory() as d:
+            ix=Index(pathlib.Path(d),2**20)
+            raw=b"".join((json.dumps(r)+"\n").encode() for r in fixture())
+            ix.consume(io.BytesIO(raw),len(raw)+2,hashlib.sha256(raw).hexdigest(),slack=2)
+            self.assertEqual(ix.bytes,len(raw))
     def test_wrong_hash(self):
         with tempfile.TemporaryDirectory() as d:
             ix=Index(pathlib.Path(d),2**20);raw=b"".join((json.dumps(r)+"\n").encode() for r in fixture())

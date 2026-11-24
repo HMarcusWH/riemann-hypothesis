@@ -20,7 +20,7 @@ def main():
     energy=find("energy-receipt.json","extraction-native")
     nr=find("adapter-receipt.json","extraction-native")
     er=find("adapter-receipt.json","external-small-adapter")
-    statuses={"source":bool(cuts and cuts.get("nodes")),"original_export":bool(graph and graph.get("raw_sha256")==PIN["original"]["solution"]["raw_sha256"]),
+    statuses={"source":bool(cuts and cuts.get("nodes")),"original_export":bool(graph and graph.get("raw_sha256")==PIN["original"]["solution"]["raw_sha256"] and abs(graph.get("raw_bytes",0)-PIN["original"]["solution"]["raw_bytes"])<=PIN["original"]["solution"].get("raw_size_slack",0)),
               "native_types":bool(native and native.get("targets")),"native_adapter":bool(nr and nr.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY"),
               "external_adapter":bool(er and er.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY"),
               "principal_conditional_cut":bool(principal and principal.get("status")=="PASS_CONDITIONAL_PRINCIPAL_CUT_ONLY"),

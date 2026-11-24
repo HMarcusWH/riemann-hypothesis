@@ -75,3 +75,6 @@ end OPICAExtractionR1.Audit
 run_cmd OPICAExtractionR1.Audit.emit `OPICAExtractionR1.principal_ramp_windows_of_topG_vwin
 run_cmd OPICAExtractionR1.Audit.emit `OPICAExtractionR1.principal_ramp_windows_of_topG_host
 run_cmd OPICAExtractionR1.Audit.emit `OPICAExtractionR1.principal_vwin_of_all
+
+run_cmd OPICAExtractionR1.Audit.emit `OPICAExtractionR1.principal_connected_of_topG_host
+run_cmd OPICAExtractionR1.Audit.emit `OPICAExtractionR1.principal_ramp_windows_of_connected

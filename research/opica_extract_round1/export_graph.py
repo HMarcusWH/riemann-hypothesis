@@ -22,7 +22,7 @@ class Index:
         self.file=(folder/"expr.edges").open("xb",buffering=1024*1024)
         self.want={x["name"] for x in PIN["catalog"]}|{"riemannHypothesis","LFunction_ne_zero_of_half_lt_re"}
         self.levels=[["zero"]];self.us=[()];self.us_ids={():0};self.literals=[];self.lit_ids={}
-        self.leaves={x.split(".")[-1] for x in self.want};self.selected={};self.hash=hashlib.sha256()
+        self.leaves={x.split(".")[-1] for x in self.want};self.selected={};self.hash=hashlib.sha256();self.verified_digest=None;self.root_cache={}
     def name(self,i):
         parts=[]
         while i:
@@ -105,16 +105,16 @@ class Index:
             for s in ("types","ctors","recs"):
                 for q in p[s]:self.decl(s,q,group)
         else:raise RuntimeError("unknown declaration tag "+k)
-    def consume(self,raw,expected_bytes,expected_hash):
+    def consume(self,raw,expected_bytes,expected_hash,slack=0):
         try:
             for line in raw:
                 self.lines+=1;self.bytes+=len(line)
-                need(self.bytes<=expected_bytes,"uncompressed size exceeds pin")
+                need(self.bytes<=expected_bytes+slack,"uncompressed size exceeds reviewed cap")
                 self.hash.update(line);self.row(json.loads(line))
                 if self.lines%10000000==0:print("INDEX_PROGRESS",self.lines,self.bytes,self.nexpr,len(self.decls),flush=True)
             # Validate only after transport/decompressor exit has also been authenticated.
             self.actual_raw={"bytes":self.bytes,"sha256":self.hash.hexdigest()}
-            need(self.bytes==expected_bytes and self.hash.hexdigest()==expected_hash,
+            need(abs(self.bytes-expected_bytes)<=slack and self.hash.hexdigest()==expected_hash,
                  "raw export mismatch expected="+str((expected_bytes,expected_hash))+" observed="+str((self.bytes,self.hash.hexdigest())))
             need(self.meta is not None and self.nexpr and self.decls,"empty export")
         finally:self.file.close()
@@ -199,6 +199,7 @@ class Index:
             ns.update(constants);stack.extend(children)
         return {"status":status,"expression_nodes":len(seen),"constants":sorted(self.name(z) for z in ns)}
     def closure(self,mp,root,limit,seconds):
+        if root in self.root_cache:return self.root_cache[root]
         seen=bytearray((self.nexpr+7)//8);decls=set();missing=set();axioms=set();stack=[-root-1];count=0;start=time.monotonic();status="COMPLETE"
         while stack:
             x=stack.pop()
@@ -229,10 +230,12 @@ class Index:
             raw=array.array("I",sorted(decls))
             if sys.byteorder!="little":raw.byteswap()
             membership={"encoding":"LE_U32_SORTED_ZLIB_BASE64_V1","count":len(raw),"sha256":hashlib.sha256(raw.tobytes()).hexdigest(),"data":base64.b64encode(zlib.compress(raw.tobytes(),6)).decode()}
-        return {"status":status if not missing else "UNRESOLVED_REFERENCES_OR_"+status,"membership":membership,"endpoint_like_dependencies":blocked,
+        result={"status":status if not missing else "UNRESOLVED_REFERENCES_OR_"+status,"membership":membership,"endpoint_like_dependencies":blocked,
                 "declarations":len(decls),"expression_nodes":count,"missing_count":len(missing),
                 "missing_sample":sorted(self.name(z) for z in list(missing)[:30]),"axioms":sorted(self.name(z) for z in axioms),
                 "selected_roots_reached":selected_inside,"seconds":round(time.monotonic()-start,3)}
+        if membership:self.root_cache[root]=result
+        return result
     def report(self,mode,limit,seconds):
         self.quot_names=[n for n,(k,*_) in self.decls.items() if k=="quot"]
         roles={r["name"]:r["role"] for r in PIN["catalog"]}
@@ -245,6 +248,11 @@ class Index:
             for name in sorted(self.want):
                 if name not in self.selected:
                     out.append({"name":name,"status":"NOT_PRESENT_IN_EXPORT","role":roles.get(name,"ENDPOINT_EXCLUDED")});continue
+                if getattr(self,"checkpoint",False):
+                    from index_checkpoint import load_root
+                    cached=load_root(self,name,limit,seconds)
+                    if cached is not None:
+                        out.append(cached);print("REUSED_ROOT",name,flush=True);continue
                 idx,p=self.selected[name];kind,t,v,group,es=self.decls[idx]
                 role=roles.get(name,"DISCOVERED_PRODUCER_LEAD" if name in discovery["selected"] else "ENDPOINT_EXCLUDED")
                 row={"name":name,"role":role,"kind":kind,
@@ -261,10 +269,13 @@ class Index:
                     row["type_status"]="TYPE_CONVERSION_INCOMPLETE";row["type_error"]=str(ex)
                 row["excluded_dependencies"]=sorted(set(x for x in row["closure"]["selected_roots_reached"] if x in excluded)|set(row["closure"]["endpoint_like_dependencies"]))
                 out.append(row);print("ROOT",name,row["closure"]["status"],row["closure"]["declarations"],flush=True)
+                if getattr(self,"checkpoint",False):
+                    from index_checkpoint import save_root
+                    save_root(self,name,row,limit,seconds)
         candidates=[x for x in out if x.get("status")=="INDEXED" and x["role"].startswith(("CONDITIONAL_","PRODUCER_","DISCOVERED_")) and x["closure"]["status"]=="COMPLETE" and not x["excluded_dependencies"] and set(x["closure"]["axioms"])<=set(PIN["allowed_axioms"])]
         candidates.sort(key=lambda x:(x["closure"]["declarations"],x["name"]))
         return {"schema":"OPICA_AUTHENTICATED_EXPORT_DEPENDENCIES_V1","mode":mode,"meta":self.meta,
-                "raw_sha256":self.hash.hexdigest(),"raw_bytes":self.bytes,"names":len(self.parts),"expressions":self.nexpr,"declarations":len(self.decls),
+                "raw_sha256":self.verified_digest or self.hash.hexdigest(),"raw_bytes":self.bytes,"names":len(self.parts),"expressions":self.nexpr,"declarations":len(self.decls),
                 "roots":out,"discovery":discovery,"ranked_complete_closure_leads":[{"name":x["name"],"role":x["role"],"declarations":x["closure"]["declarations"]} for x in candidates],
                 "scope":"ELABORATED_DEPENDENCY_EDGES_WITH_CONSERVATIVE_STRUCTURAL_GROUPS_NOT_A_KERNEL_CHECK",
                 "proof_acceptance":False,"C1":"OPEN","independent_step4":"OPEN"}
@@ -284,7 +295,7 @@ def remote(index,spec):
         if feed_error:raise RuntimeError(feed_error)
         if rc!=0:raise RuntimeError("zstd failed: "+diagnostics["zstd_stderr"])
         if error:raise error
-    if "compressed_bytes" not in spec:
+    if spec["url"].endswith("/challenge.ndjson.zst"):
         # Small challenge: eliminate pipe/download races and retain the actual HTTP
         # response. Retry only the whole file, never concatenate partial attempts.
         archive=index.folder/"challenge.zst"
@@ -297,7 +308,15 @@ def remote(index,spec):
         with archive.open("rb") as f:
             for b in iter(lambda:f.read(1024*1024),b""):h.update(b)
         diagnostics.update(compressed_bytes=archive.stat().st_size,compressed_sha256=h.hexdigest())
-        need(0<archive.stat().st_size<=200*1024**2,"challenge compressed size outside cap")
+        need(archive.stat().st_size==spec["compressed_bytes"] and h.hexdigest()==spec["compressed_sha256"],"challenge compressed identity mismatch")
+        # Separate from Index.consume: independent command-line byte and digest measurements.
+        p=subprocess.Popen(["zstd","-d","-c",str(archive)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        count=subprocess.check_output(["wc","-c"],stdin=p.stdout);p.stdout.close()
+        need(p.wait()==0 and int(count)==expected,"independent challenge length mismatch")
+        p=subprocess.Popen(["zstd","-d","-c",str(archive)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        digest=subprocess.check_output(["sha256sum"],stdin=p.stdout).decode().split()[0];p.stdout.close()
+        need(p.wait()==0 and digest==spec["raw_sha256"],"independent challenge digest mismatch")
+        diagnostics.update(independent_wc=int(count),independent_sha256=digest)
         with stderr.open("wb") as err:
             proc=subprocess.Popen(["zstd","-d","-c","--long=27",str(archive)],stdout=subprocess.PIPE,stderr=err)
             try:check_raw(proc,err)
@@ -318,14 +337,14 @@ def remote(index,spec):
                     diagnostics.update(http_status=src.status,http_content_length=src.headers.get("Content-Length"),http_content_range=src.headers.get("Content-Range"),final_url=src.geturl())
                     need(src.status==200,"partial HTTP response refused")
                     if src.headers.get("Content-Length"):
-                        need(int(src.headers["Content-Length"])==spec["compressed_bytes"],"HTTP content length differs from published archive")
+                        need(abs(int(src.headers["Content-Length"])-spec["compressed_bytes"])<=spec.get("compressed_size_slack",0),"HTTP length outside reviewed cap")
                     while True:
                         b=src.read(1024*1024)
                         if not b:break
                         n+=len(b);h.update(b)
-                        need(n<=spec["compressed_bytes"],"compressed size exceeds pin")
+                        need(n<=spec["compressed_bytes"]+spec.get("compressed_size_slack",0),"compressed size exceeds reviewed cap")
                         dst.write(b)
-                need(n==spec["compressed_bytes"] and h.hexdigest()==spec["compressed_sha256"],"compressed artifact mismatch")
+                need(abs(n-spec["compressed_bytes"])<=spec.get("compressed_size_slack",0) and h.hexdigest()==spec["compressed_sha256"],"compressed artifact mismatch")
             except BaseException as ex:
                 errors.append(repr(ex))
                 try:proc.stdin.close()
@@ -334,7 +353,7 @@ def remote(index,spec):
         t=threading.Thread(target=feed,daemon=True);t.start()
         failure=None
         try:
-            try:index.consume(proc.stdout,expected,spec["raw_sha256"])
+            try:index.consume(proc.stdout,expected,spec["raw_sha256"],spec.get("raw_size_slack",0))
             except BaseException as ex:failure=ex
             proc.stdout.close()
             t.join(timeout=180)
@@ -343,18 +362,32 @@ def remote(index,spec):
             need(not t.is_alive() and not errors,"compressed transport failed: "+str(errors))
             need(rc==0,"zstd failure: "+diagnostics["zstd_stderr"])
             if failure:raise failure
+            diagnostics["published_size_deltas"]={"raw":index.bytes-expected,"compressed":stats["compressed_bytes"]-spec["compressed_bytes"]}
             return diagnostics
         finally:
             if proc.poll() is None:proc.kill();proc.wait()
 def main():
     p=argparse.ArgumentParser();p.add_argument("--mode",choices=("challenge","solution"),required=True);p.add_argument("--output",type=pathlib.Path,required=True);p.add_argument("--scratch",type=pathlib.Path,required=True);p.add_argument("--closure-budget",type=int,default=100000000);p.add_argument("--root-seconds",type=int,default=300)
-    a=p.parse_args();need(a.closure_budget>0 and a.root_seconds>0,"invalid budget");a.scratch.mkdir(parents=True,exist_ok=False)
+    p.add_argument("--keep-index",action="store_true")
+    p.add_argument("--resume-index",action="store_true")
+    a=p.parse_args();need(a.closure_budget>0 and a.root_seconds>0,"invalid budget")
+    need(not a.output.exists(),"fresh output required")
+    need(not a.resume_index or a.keep_index,"resume requires keep-index")
+    if not a.resume_index:a.scratch.mkdir(parents=True,exist_ok=False)
     ix=None
     try:
-        ix=Index(a.scratch,10*1024**3)
-        ix.want.update(["UpperTheory.FinalTheorems.riemannHypothesis","riemannZeta_eq_zero_re","LFunction_eq_zero_re","LFunction_eq_zero_re_of_isPrimitive"])
-        ix.leaves={x.split(".")[-1] for x in ix.want}
-        st=remote(ix,PIN["original"][a.mode]);report=ix.report(a.mode,a.closure_budget,a.root_seconds);report["download"]=st
+        from index_checkpoint import save_index,load_index
+        if a.resume_index:
+            ix,st=load_index(a.scratch,a.mode,Index)
+        else:
+            ix=Index(a.scratch,10*1024**3)
+            ix.want.update(["UpperTheory.FinalTheorems.riemannHypothesis","riemannZeta_eq_zero_re","LFunction_eq_zero_re","LFunction_eq_zero_re_of_isPrimitive"])
+            ix.leaves={x.split(".")[-1] for x in ix.want}
+            st=remote(ix,PIN["original"][a.mode])
+            ix.verified_digest=ix.hash.hexdigest()
+            if a.keep_index:save_index(ix,a.mode,st)
+        ix.checkpoint=a.keep_index
+        report=ix.report(a.mode,a.closure_budget,a.root_seconds);report["download"]=st
         if a.mode=="solution":
             essential=("riemannHypothesis","LFunction_ne_zero_of_half_lt_re","Deduction.G","UpperTheory.Top.TopG","UpperTheory.Top.VWinAt")
             report["missing_essential_roots"]=[n for n in essential if not any(x["name"]==n and x["status"]=="INDEXED" for x in report["roots"])]
@@ -368,5 +401,5 @@ def main():
         if not a.output.exists():write(a.output,{"schema":"OPICA_AUTHENTICATED_EXPORT_DEPENDENCIES_V1","status":"INCOMPLETE_OR_REJECTED","mode":a.mode,"reason":str(ex)[:2000],"transport":getattr(ix,"transport",{}),"observed_raw_bytes":getattr(ix,"bytes",None),"observed_raw_sha256":ix.hash.hexdigest() if ix is not None else None,"proof_acceptance":False,"C1":"OPEN"})
         print("INDEX_FAILURE",repr(ex),json.dumps(getattr(ix,"transport",{})),flush=True);raise
     finally:
-        shutil.rmtree(a.scratch)
+        if not a.keep_index:shutil.rmtree(a.scratch)
 if __name__=="__main__":main()

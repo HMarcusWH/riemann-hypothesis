@@ -46,7 +46,7 @@ run_cmd do
     lean=subprocess.check_output(["lake","env","which","lean"],cwd=repo,text=True).strip()
     proc=subprocess.run([lean,str(driver)],cwd=repo,env=env,capture_output=True,timeout=1800)
     (work/("native-atlas-"+mode+".log")).write_bytes(proc.stdout+proc.stderr)
-    if proc.returncode:print((proc.stdout+proc.stderr).decode(errors="replace")[-5000:])
+    if proc.returncode:print((proc.stdout+proc.stderr).decode(errors="replace")[-12000:])
     need(proc.returncode==0,"native atlas compile failed")
     statements={};targets=[];proofs=[];closure={}
     for line in proc.stdout.splitlines():
@@ -74,8 +74,8 @@ run_cmd do
         plans=[]
         for x in batch.candidates:
             ids=used_constant_ids(x["term_plan"]);need(set(ids)<=set(constants),"unapproved source")
-            plans.append({"term_plan":x["term_plan"],"used":[constants[z] for z in sorted(ids)],"kind":"BARE_SEED" if x["term_plan"].get("tag")=="const" else "UNVERIFIED_COMPOSITION","kernel_acceptance":False})
-        results.append({"target":name,"type_sha256":expression_hash(e),"compiler_expression":e,"proof_constants":proofs[len(MENU)+i],"plans":plans,"disposition":batch.disposition,"bounded_complete":batch.complete})
+            plans.append({"action_id":x["action_id"],"term_plan":x["term_plan"],"constant_ids":{z:constants[z] for z in sorted(ids)},"used":[constants[z] for z in sorted(ids)],"kind":"BARE_SEED" if x["term_plan"].get("tag")=="const" else "UNVERIFIED_COMPOSITION","kernel_acceptance":False})
+        results.append({"target":name,"module":module,"target_kind":"value","type_sha256":expression_hash(e),"compiler_expression":e,"proof_constants":proofs[len(MENU)+i],"plans":plans,"disposition":batch.disposition,"bounded_complete":batch.complete})
     write(out,{"schema":"OPICA_CROSS_REPO_R1_NATIVE_TYPES_AND_RETRIEVAL","generation":generation,"native":n,"actual_source_theorems":[{**x.to_dict(),"closure_count":closure[x.declaration],"proof_constants":proofs[j]} for j,x in enumerate(typed)],"targets":results,"external_approved_proof_constants":[],"proof_acceptance":False,"C1":"OPEN","independent_step4":"OPEN"})
     print(json.dumps({"status":"NATIVE_TYPED_RETRIEVAL_NOT_PROOF","targets":len(results),"nontrivial":[sum(x["kind"]=="UNVERIFIED_COMPOSITION" for x in a["plans"]) for a in results],"proof_acceptance":False}))
 if __name__=="__main__":

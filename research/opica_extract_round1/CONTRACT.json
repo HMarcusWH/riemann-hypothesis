@@ -26,12 +26,24 @@
       "compressed_bytes": 7699933588,
       "compressed_sha256": "61a8938ad5f5e57397c1c0e3b954916af546d9004ade01c3555744a681b05381",
       "raw_bytes": 61570595788,
-      "raw_sha256": "5ea74b912147c5c93cc2b6d70cc727cf908df2f62ac6a20480a3fa02f6be244e"
+      "raw_sha256": "5ea74b912147c5c93cc2b6d70cc727cf908df2f62ac6a20480a3fa02f6be244e",
+      "size_policy": "PUBLISHED_SHA256_AUTHORITATIVE_RECORD_LENGTH_DISCREPANCY",
+      "raw_size_slack": 1048576,
+      "compressed_size_slack": 1048576
     },
     "challenge": {
       "url": "https://math.mit.edu/~drew/grh/challenge.ndjson.zst",
-      "raw_bytes": 350862970,
-      "raw_sha256": "bd484ac9886a96f26b1d9a7a59ebd45b7a70d102c015d4f31f9302bbdd6ab2b9"
+      "raw_bytes": 350862311,
+      "raw_sha256": "bd484ac9886a96f26b1d9a7a59ebd45b7a70d102c015d4f31f9302bbdd6ab2b9",
+      "published_raw_bytes": 350862970,
+      "compressed_bytes": 46881299,
+      "compressed_sha256": "c24ef99dab3556a52c7fb886e03cf22a242f3b96f82ae4cc40539e5d2f678ac6",
+      "size_correction": {
+        "source_run": 45404424398,
+        "job": 138481413075,
+        "head": "92029b3f9ed0caf5e67b99189a91d1eac1a4f9bf",
+        "reason": "Published raw hash exact; decompressor exit 0; observed length 659 bytes smaller. Independent wc/sha256 replay required."
+      }
     }
   },
   "catalog": [

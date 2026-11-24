@@ -110,7 +110,7 @@ def run(repo,inputs,out):
         if n in FORBIDDEN or n in table:
             rejected.append({"name":n,"world":w,"reason":"FORBIDDEN_OR_DUPLICATE"});return
         table[n]={"declaration":n,"module":w,"world":w,"type_expression":e,"type_sha256":h,"proof_constants":proofs,**meta}
-    if gr and gr.get("raw_sha256")==PIN["original"]["solution"]["raw_sha256"] and gr.get("raw_bytes")==PIN["original"]["solution"]["raw_bytes"]:
+    if gr and gr.get("raw_sha256")==PIN["original"]["solution"]["raw_sha256"] and abs(gr.get("raw_bytes",0)-PIN["original"]["solution"]["raw_bytes"])<=PIN["original"]["solution"].get("raw_size_slack",0):
         for x in gr["roots"]:
             cl=x.get("closure",{})
             if x["name"]=="riemannHypothesis" and cl.get("membership"):baseline=membership(cl["membership"])
@@ -122,7 +122,7 @@ def run(repo,inputs,out):
         for x in nr["actual_source_theorems"]:
             need(set(x["axioms"])<=set(PIN["allowed_axioms"]),"native unapproved axiom")
             need(expression_hash(x["type_expression"])==x["type_sha256"],"native actual type hash")
-            add(x["declaration"],x["type_expression"],"NATIVE_COMPILER",x.get("proof_constants",[]),closure_count=x["closure_count"])
+            add(x["declaration"],x["type_expression"],"NATIVE_COMPILER",x.get("proof_constants",[]),closure_count=x["closure_count"],source_module=x["module"])
     if er and er.get("head")==PIN["original"]["head"] and er.get("status")=="PASS_CONDITIONAL_PRINCIPAL_CUT_ONLY" and adapter and er["shared_source_sha256"]==adapter.get("shared_source_sha256"):
         for x in er["rows"]:
             need(set(x["axioms"])<=set(PIN["allowed_axioms"]),"principal adapter axiom")
@@ -131,20 +131,29 @@ def run(repo,inputs,out):
     report["research_menu"]=[{"name":n,"world":x["world"],"type_sha256":x["type_sha256"]} for n,x in sorted(table.items())]
     report["rejected_menu_rows"]=rejected
     report["status"]="RESEARCH_QUERIES_EXECUTED_NOT_PROOF"
-    def query(label,e,menu):
+    def query(label,e,menu,target=None,proof_constants=()):
+        # Rigid actual native target or explicitly synthetic conditional query.
+        # No binder is invented or silently dropped.
         try:target_hash=expression_hash(e)
         except Exception as exc:return {"label":label,"status":"DEPENDENT_OR_UNSUPPORTED_QUERY","reason":str(exc)[:300],"proof_acceptance":False}
         ids={sha([x["world"],x["declaration"],x["type_sha256"]]):x["declaration"] for x in menu}
         byname={x["declaration"]:x for x in menu}
         spec=SimpleNamespace(allowed_constants=ids,expected_type_hash=target_hash,declaration="RESEARCH_QUERY."+label,forbidden_constants=sorted(FORBIDDEN))
-        rows,complete,provenance=retrieve(SimpleNamespace(statements=menu),spec,GrammarProfile(sorted(FORBIDDEN),[]),SearchBudget(candidates=8,term_nodes=2048,term_depth=16,wall_seconds=45,heartbeats=800000),e)
+        rows,complete,provenance=retrieve(SimpleNamespace(statements=menu),spec,GrammarProfile(sorted(FORBIDDEN),[]),SearchBudget(candidates=8,term_nodes=2048,term_depth=16,wall_seconds=30,heartbeats=800000),e,proof_constants=proof_constants)
         plans=[]
         for x in rows:
             used=used_constant_ids(x["term_plan"]);need(set(used)<=set(ids),"research plan names not in menu")
             names=sorted(ids[i] for i in used)
-            plans.append({"term_plan":x["term_plan"],"used":names,"worlds":sorted({byname[n]["world"] for n in names}),"union":union_report([byname[n] for n in names],baseline),"kernel_acceptance":False,"required":"SAME_PIN_PORT_AND_INDEPENDENT_REPLAY"})
-        return {"label":label,"status":provenance["stopping_reason"],"query_type_sha256":target_hash,"query_expression":e,"plans":plans,"bounded_complete":complete,"proof_acceptance":False}
+            plans.append({"action_id":x["action_id"],"term_plan":x["term_plan"],"constant_ids":{i:ids[i] for i in sorted(used)},"used":names,"worlds":sorted({byname[n]["world"] for n in names}),"union":union_report([byname[n] for n in names],baseline),"kernel_acceptance":False,"required":"SAME_PIN_PORT_AND_INDEPENDENT_REPLAY"})
+        return {"label":label,"registered_target":target,"status":provenance["stopping_reason"],"query_type_sha256":target_hash,"query_expression":e,"plans":plans,"bounded_complete":complete,"proof_acceptance":False}
     menu=list(table.values())
+    # The existing engine does dependent meta substitution and rigid local
+    # matching. Use every actual registered native target, not only wrappers.
+    for j,x in enumerate((nr or {}).get("targets",[])):
+        e=x["compiler_expression"]
+        need(expression_hash(e)==x["type_sha256"],"native target digest mismatch")
+        target={"declaration":x["target"],"module":x.get("module"),"kind":"value"}
+        report["queries"].append(query("native_target_"+str(j),e,menu,target,x.get("proof_constants",[])))
     principal=table.get(NS+"principal_ramp_windows_of_topG_vwin")
     if principal:
         pe=principal["type_expression"];pb,pt=peel(pe)
@@ -168,8 +177,8 @@ def run(repo,inputs,out):
             extra=bs[:-1]
             for q,i in extra:expression_hash(subdag(q,int(q["nodes"][i][3])))
             conditional_goal=conditional(pb+extra,e,end)
-            report["queries"].append(query("conditional_"+target.split(".")[-1],conditional_goal,menu))
-            report["queries"].append(query("closed_"+target.split(".")[-1],subdag(e,end),menu))
+            report["queries"].append(query("conditional_"+target.split(".")[-1],conditional_goal,menu,{"declaration":"OPICAExtractionR1.Combined."+{"native_windows_of_ramp_windows":"ConditionalNativeWindows","native_energy_of_ramp_windows":"ConditionalEnergy","native_c1_of_ramp_windows_of_direct_bridge":"ConditionalC1"}[target.split(".")[-1]],"module":"OPICAExtractionCombinedTargets","kind":"value"}))
+            report["queries"].append(query("closed_"+target.split(".")[-1],subdag(e,end),menu,{"declaration":head(e,end),"module":"OPICAExtractionNative" if target.endswith("native_windows_of_ramp_windows") else "OPICAExtractionEnergy" if target.endswith("native_energy_of_ramp_windows") else "Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices","kind":"value"}))
         # Backward research frontier: actual terminal-head matches trigger
         # recursive typed searches of independently closed binder domains.
         # Dependent binders remain explicit, not silently discharged.
@@ -198,6 +207,10 @@ def run(repo,inputs,out):
         report["frontier_unvisited_count"]=len(queue)
     else:
         report["status"]="PARTIAL_NO_COMPILER_QUALIFIED_PRINCIPAL_INTERFACE"
+    report["cross_world_plans"]=sum(len(x.get("plans",[])) for x in report["queries"] if any(len(p["worlds"])>1 for p in x.get("plans",[])))
+    # Preserve actual source contracts for candidate validation, without
+    # treating research menu entries as native approved constants.
+    report["research_contracts"]=[{k:v for k,v in x.items() if k!="membership"} for x in menu]
     report["next_math"]=["Discharge exact principal TopG and VWinAt from upstream producers or simplify their hypotheses.","Port selected upstream proof source, not .olean files, and verify shared mathematical definitions.","Prove DirectEnergyToC1 or another actual native signed-source transfer; no RH-equivalent endpoint shortcut."]
     write(out,report)
     print(json.dumps({"status":report["status"],"menu":len(table),"queries":len(report["queries"]),"plans":sum(len(q.get("plans",[])) for q in report["queries"]),"frontier":len(report["premise_frontier"]),"proof_acceptance":False}))

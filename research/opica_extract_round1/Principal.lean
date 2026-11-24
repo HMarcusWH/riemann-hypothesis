@@ -33,13 +33,21 @@ theorem principal_level_eq_discreteG (y : ℝ) :
   rw [Level.Gm, hn, Finset.sum_empty, add_zero]
   rfl
 
+/-- Principal-only connectedness: no requirement for every other character.
+    This is a new OPEN supplier target, not a closed proof. -/
+def PrincipalConnected : Prop :=
+  FamilyClassConnected ((GChi PChar.one).cls (3 / 2 : ℝ))
+
+theorem principal_connected_of_topG_host
+    (hG : TopG) (hS : HostExW (3 / 2 : ℝ) (GChi PChar.one).req) :
+    PrincipalConnected :=
+  hG (3 / 2) (GChi PChar.one) (by norm_num) hS (hypV_of_cls PChar.one (3 / 2))
+
 /-- The complete original arithmetic window estimate, with the principal host
     and connectedness retained. The final zero exclusion is not used. -/
-theorem principal_ramp_windows_of_topG_host
-    (hG : TopG) (hS : HostExW (3 / 2 : ℝ) (GChi PChar.one).req) :
-    RampWindows := by
-  obtain ⟨eD, eL, ε₁, h₁, h₂⟩ :=
-    hG (3 / 2) (GChi PChar.one) (by norm_num) hS (hypV_of_cls PChar.one (3 / 2))
+theorem principal_ramp_windows_of_connected
+    (h : PrincipalConnected) : RampWindows := by
+  obtain ⟨eD, eL, ε₁, h₁, h₂⟩ := h
   intro θ hθ hθ₁
   obtain ⟨ε, hε, hε₁, hCe⟩ := exists_small_eps (eD + eL + 7) (sub_pos.mpr hθ) h₁
   obtain ⟨Fm, hc, hd⟩ := h₂ ε hε hε₁
@@ -56,6 +64,11 @@ theorem principal_ramp_windows_of_topG_host
   exact (hx₁ y hxy (hw y hy.1 hy.2)).trans
     (Real.rpow_le_rpow_of_exponent_le h1y (by linarith))
 
+theorem principal_ramp_windows_of_topG_host
+    (hG : TopG) (hS : HostExW (3 / 2 : ℝ) (GChi PChar.one).req) :
+    RampWindows :=
+  principal_ramp_windows_of_connected (principal_connected_of_topG_host hG hS)
+
 /-- Conditional two-premise supplier cut; principal specialization does not
     eliminate the auxiliary growing fields in VWinAt. -/
 theorem principal_ramp_windows_of_topG_vwin
@@ -70,3 +83,6 @@ end OPICAExtractionR1
 #print axioms OPICAExtractionR1.principal_level_eq_discreteG
 #print axioms OPICAExtractionR1.principal_ramp_windows_of_topG_host
 #print axioms OPICAExtractionR1.principal_ramp_windows_of_topG_vwin
+
+#print axioms OPICAExtractionR1.principal_connected_of_topG_host
+#print axioms OPICAExtractionR1.principal_ramp_windows_of_connected

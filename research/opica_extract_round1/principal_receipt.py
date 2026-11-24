@@ -2,7 +2,7 @@
 import argparse, hashlib, json, pathlib
 from scan import PIN, need, textgit, write
 from adapter_receipt import read_axioms,COMMON
-ROOTS=["OPICAExtractionR1.principal_ramp_windows_of_topG_vwin","OPICAExtractionR1.principal_ramp_windows_of_topG_host","OPICAExtractionR1.principal_vwin_of_all"]
+ROOTS=["OPICAExtractionR1.principal_ramp_windows_of_topG_vwin","OPICAExtractionR1.principal_ramp_windows_of_topG_host","OPICAExtractionR1.principal_vwin_of_all","OPICAExtractionR1.principal_connected_of_topG_host","OPICAExtractionR1.principal_ramp_windows_of_connected"]
 NAMES=ROOTS+["OPICAExtractionR1.principal_kept_singleton","OPICAExtractionR1.principal_level_eq_discreteG"]
 def main():
     p=argparse.ArgumentParser();p.add_argument("--repo",type=pathlib.Path,required=True);p.add_argument("--work",type=pathlib.Path,required=True)
