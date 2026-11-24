@@ -36,6 +36,8 @@ jobs:
           (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_cross)
           (cd research/opica_extract_round1 && python3 -B -m unittest -v test_final)
           (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_final)
+          (cd research/opica_extract_round1 && python3 -B -m unittest -v test_reuse_mining)
+          (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_reuse_mining)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -86,17 +88,16 @@ jobs:
           gh api repos/HMarcusWH/riemann-hypothesis/actions/runs/45472802058 > "$RUNNER_TEMP/mining-run.json"
           gh api repos/HMarcusWH/riemann-hypothesis/actions/jobs/138745091804 > "$RUNNER_TEMP/mining-job.json"
           python3 -B research/opica_extract_round1/reuse_mining.py --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --identity-only
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: extraction-original-proof-graph-f413bc3030c20617988aca46556cabda6373a4a0
-          repository: HMarcusWH/riemann-hypothesis
-          run-id: 45472802058
-          github-token: ${{ github.token }}
-          path: ${{ runner.temp }}/reused-mining
-      - name: Authenticate unchanged graph and preserve original producer identity
+      - name: Authenticate predecessor archive and preserve graph bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          python3 -B research/opica_extract_round1/reuse_mining.py --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --graph "$RUNNER_TEMP/reused-mining/original-dependencies.json" --receipt "$RUNNER_TEMP/reused-mining/original-proof-producer-receipt.json"
+          gh api 'repos/HMarcusWH/riemann-hypothesis/actions/runs/45472802058/artifacts?per_page=100' > "$RUNNER_TEMP/mining-artifacts.json"
+          script=research/opica_extract_round1/reuse_mining.py
+          artifact="$(python3 -B "$script" --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --artifacts "$RUNNER_TEMP/mining-artifacts.json" --select-artifact)"
+          gh api "repos/HMarcusWH/riemann-hypothesis/actions/artifacts/$artifact/zip" > "$RUNNER_TEMP/mining-artifact.zip"
+          python3 -B "$script" --repo "$PWD" --run "$RUNNER_TEMP/mining-run.json" --job "$RUNNER_TEMP/mining-job.json" --artifacts "$RUNNER_TEMP/mining-artifacts.json" --archive "$RUNNER_TEMP/mining-artifact.zip" --graph "$RUNNER_TEMP/reused-mining/original-dependencies.json" --receipt "$RUNNER_TEMP/reused-mining/original-proof-producer-receipt.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: extraction-original-proof-graph-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
