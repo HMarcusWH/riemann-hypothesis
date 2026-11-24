@@ -65,6 +65,33 @@ def artifact(record,prefix,wanted,out,expected_id=None,expected_digest=None,expe
                     while b:=f.read(1<<20):d.write(b)
                 entries[leaf]={"sha256":filehash(dest),"bytes":dest.stat().st_size}
     return {"artifact_id":a["id"],"artifact_name":a["name"],"zip_sha256":expected[7:],"run":spec["run"],"attempt":attempt,"head":spec["head"],"entries":entries}
+def saved_window_disposition(folder,receipt,*,historical):
+    # A green research job is not a successful proof attempt.
+    spec=LOCK["evidence"]["saved_window"]
+    files=("mixed-candidate-manifest.json","validation.json","ActualTypes.log")
+    for leaf in files:
+        need(filehash(folder/leaf)==receipt["entries"][leaf]["sha256"],"Saved-window member differs")
+    manifest=read(folder/files[0]);validation=read(folder/files[1])
+    need(manifest["proof_acceptance"] is False and manifest["mode"]=="mixed" and len(manifest["selected"])==1,"Saved candidate scope")
+    c=manifest["selected"][0]
+    need(c["id"]==spec["candidate"] and c["target"]["declaration"]=="OPICAExtractionR1.Combined.ConditionalNativeWindows","Saved candidate identity")
+    need(validation["schema"]=="OPICA_R1_CANDIDATE_VALIDATION_V1" and validation["mode"]=="mixed" and validation["proof_acceptance"] is False and validation["native"]==manifest["native"] and validation["original"]==manifest["original_head"],"Saved validation scope")
+    need(len(validation["results"])==1 and validation["results"][0]["id"]==c["id"],"Saved result population")
+    row=validation["results"][0]
+    need(row["stages"]["actual_types"]["status"]=="PASS" and row["stages"]["actual_types"]["log_sha256"]==filehash(folder/files[2]),"Saved actual-types log binding")
+    actual=marker_rows(folder/files[2],"OPICA_TARGET")
+    expected=[c["expected_expression"]]+[s["type_expression"] for s in c["sources"]]
+    need(len(actual)==len(expected),"Saved type population")
+    if str(R1) not in sys.path:sys.path.insert(0,str(R1))
+    from candidate_validate import fingerprint
+    comparisons=[{"declaration":n,"actual_nodes":len(a["nodes"]),"expected_nodes":len(e["nodes"]),
+                  "raw_equal":a==e,"fingerprint_equal":fingerprint(a)==fingerprint(e)}
+                 for n,a,e in zip([c["target"]["declaration"]]+[s["declaration"] for s in c["sources"]],actual,expected)]
+    if historical:
+        need(receipt["artifact_id"]==spec["artifact"] and receipt["zip_sha256"]==spec["archive_sha256"],"Pinned saved diagnostic differs")
+        need(row["status"]=="ADAPTER_REQUIRED" and not comparisons[0]["fingerprint_equal"] and all(x["raw_equal"] for x in comparisons[1:]),"Frozen saved-window disposition changed")
+    return {"status":row["status"],"candidate":c["id"],"type_comparisons":comparisons,"historical_diagnostic":historical,"stages":row["stages"],"local_pin_proof_only":row["status"]=="PROVED_CONDITIONAL_LOCAL_PIN_REVIEW_REQUIRED","cross_pin_definition_equivalence":"NOT_ESTABLISHED","proof_acceptance":False}
+
 def expanded_readiness(receipts):
     required=LOCK["expanded_readiness"]["required"]
     need(required==["historical","original","principal"],"Expanded campaign readiness contract differs")
@@ -110,13 +137,20 @@ def collect(out):
         except Exception as ex:errors.append({"lane":label,"reason":str(ex)[:1000]})
     take("external-repaired","verified-export-mining","extraction-original-proof-graph-",["original-dependencies.json"],"original",LOCK["evidence"]["mining"])
     take("external","principal-arithmetic-cut","extraction-principal-",["principal-receipt.json"],"principal",LOCK["evidence"]["old_principal"])
+    take("external-repaired","saved-window-validation","extraction-saved-window-validation-",["mixed-candidate-manifest.json","validation.json","ActualTypes.log"],"saved-window-diagnostic",LOCK["evidence"]["saved_window"])
+    take("saved-window-repaired","saved-window-validation","extraction-saved-window-validation-",["mixed-candidate-manifest.json","validation.json","ActualTypes.log"],"saved-window-repaired")
     take("external-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-predecessor-join")
     take("energy-repaired","native-typed-search","extraction-native-",["energy-receipt.json","native-retrieval.json","energy-independent-type.log"],"energy")
     take("energy-repaired","research-join","extraction-research-join-",["extraction-research-join.json","research-feedback.json"],"r1-join")
     take("historical-review","review-old-receipts","opica-support-reviewed-old-comparison-",["reviewed-old-cross-pin-type-comparison.json"],"historical")
     take("canonical","canonical-candidate","opica-successor-canonical-review-",["receipt.json","generated-state.patch"],"canonical",LOCK["evidence"]["canonical"])
     take("registration","canonical-candidate","registration-canonical-",["receipt.json","generated-state.patch"],"registration",LOCK["evidence"]["registration"])
-    report={"schema":"OPICA_R2_AUTHENTICATED_HARVEST_V1","runs":reports,"artifact_receipts":receipts,"unavailable":errors,"expanded_search_readiness":expanded_readiness(receipts),**CLAIMS}
+    window_results={}
+    for label in ("saved-window-diagnostic","saved-window-repaired"):
+        if label in receipts:
+            try:window_results[label]=saved_window_disposition(out/"inputs"/label,receipts[label],historical=label.endswith("diagnostic"))
+            except Exception as ex:errors.append({"lane":label+"-disposition","reason":str(ex)[:1000]})
+    report={"schema":"OPICA_R2_AUTHENTICATED_HARVEST_V1","saved_window_dispositions":window_results,"runs":reports,"artifact_receipts":receipts,"unavailable":errors,"expanded_search_readiness":expanded_readiness(receipts),**CLAIMS}
     write(out/"harvest.json",report)
     print(json.dumps({"runs_observed":sum(r["status"]=="EXACT_RUN_OBSERVED" for r in reports.values()),"artifacts":sorted(receipts),"unavailable":len(errors),"expanded_search_readiness":report["expanded_search_readiness"],**CLAIMS}))
     return report

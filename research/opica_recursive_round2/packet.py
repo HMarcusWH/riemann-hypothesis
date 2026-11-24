@@ -43,10 +43,28 @@ def packet(inputs,out,controller):
         if p.is_file():canonical.append({"key":key,"receipt":load("canonical/"+key+".json",{})})
     goals={n["id"]:n for n in graph["nodes"]}
     need(len(goals)==len(graph["nodes"]),"Duplicate graph goal")
-    manifests={}
-    for rel in ("native/search/native-candidates.json","native/search/mixed-candidates.json","native/feedback-candidates.json"):
+    manifests={};coverage=[]
+    pairs=(("native/search/native-candidates.json","native/validation/review.json","native"),
+           ("native/search/mixed-candidates.json","mixed/review.json","mixed"),
+           ("native/feedback-candidates.json","native/feedback-validation/review.json","native"))
+    for rel,review_path,mode in pairs:
         if (inputs/rel).is_file():
             m=load(rel,{})
+            try:
+                need(m["schema"]=="OPICA_R2_CANDIDATE_MANIFEST_V1" and m["proof_acceptance"] is False and m["mode"]==mode and m["native"]==epoch.get("native"),"Candidate manifest scope differs")
+                ids=[c["id"] for c in m["selected"]]
+                need(len(ids)==len(set(ids)),"Duplicate selected candidate")
+                records=[v["receipt"] for v in validations if v["path"]==review_path]
+                need(len(records)<=1,"Duplicate validation receipt")
+                observed=[]
+                if records:
+                    v=records[0]
+                    need(v["schema"]=="OPICA_R2_VALIDATION_V1" and v["mode"]==mode and v["native"]==m["native"] and v["proof_acceptance"] is False,"Validation receipt scope differs")
+                    observed=[r["id"] for r in v["results"]]
+                    need(len(observed)==len(set(observed)) and set(observed)<=set(ids),"Unselected or duplicate result")
+                coverage.append({"manifest":rel,"selected":len(ids),"observed":len(observed),"missing":sorted(set(ids)-set(observed)),"receipt_present":bool(records),"omitted_budget":m.get("omitted_budget",0)})
+            except Exception as ex:
+                errors.append({"input":rel,"reason":str(ex)[:500]})
             for cand in m.get("selected",[]):
                 old=manifests.get(cand["id"])
                 need(old is None or old==cand,"Conflicting candidate identity")
@@ -90,6 +108,7 @@ def packet(inputs,out,controller):
     if epoch.get("historical_status")!="HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH":missing.append("HISTORICAL_NATIVE_INTEGRATION_PENDING")
     if graph.get("truncation") or graph.get("failures") or any(not q.get("bounded_complete") for q in qs):missing.append("BOUNDED_SEARCH_OR_FRONTIER_INCOMPLETE")
     if not validations:missing.append("NO_KERNEL_VALIDATION_RECEIPT")
+    if any(x["missing"] or (x["selected"] and not x["receipt_present"]) or x["omitted_budget"] for x in coverage):missing.append("CANDIDATE_POPULATION_INCOMPLETE_OR_BUDGETED")
     # Deliberately excluded endpoints/non-proof rows are part of the admissible
     # inventory boundary, not failed compilation. Every other failure is blocking.
     intentional={"EXCLUDED_ENDPOINT","NON_PROOF_OR_CONTAMINATED"}
@@ -111,7 +130,7 @@ def packet(inputs,out,controller):
     # All statuses stay scoped to the isolated research epoch. The release gate
     # is intentionally not callable from this hosted R2 workflow.
     write(out/"RUN_MANIFEST.json",{"schema":"OPICA_R2_RUN_MANIFEST_V1","controller":controller,"lock_sha256":filehash(HERE/"LOCK.json"),"epoch":epoch,"input_sha256":artifacts,"workflow_results":os.environ.get("R2_WORKFLOW_RESULTS","UNAVAILABLE"),**CLAIMS})
-    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"recursive_feedback":feedback,"native_math_cut":math_cut,"cross_repository_evidence":evidence_sync,"errors":errors,**CLAIMS})
+    write(out/"WORKFLOW_HARVEST.json",{"prior_campaigns":harvest,"canonical_patch_reviews":canonical,"compiler":compiler,"recursive_feedback":feedback,"candidate_coverage":coverage,"native_math_cut":math_cut,"cross_repository_evidence":evidence_sync,"errors":errors,**CLAIMS})
     write(out/"QUALIFIED_THEOREM_INVENTORY.json",{"scope":"FRESH_RESEARCH_INVENTORY_ONLY","native_rows":inventory.get("native_rows",[]),"external_research_rows":inventory.get("external_research_rows",[]),"requested_native_roots":inventory.get("requested_native_roots"),"production_admission":"NOT_ESTABLISHED",**CLAIMS})
     write(out/"PROOF_OBLIGATION_GRAPH.json",{"nodes":graph["nodes"],"edges":graph["edges"],"roots":graph["roots"],"queries":[{k:v for k,v in q.items() if k!="plans"}|{"candidate_ids":[p["id"] for p in q.get("plans",[])]} for q in qs],"truncation":graph.get("truncation",[]),"authority":"RESEARCH_CONTACTS_NOT_PROOFS",**CLAIMS})
     candidate_rows=[]
@@ -121,7 +140,7 @@ def packet(inputs,out,controller):
     seen=set();unique=[]
     for c in candidate_rows:
         if c["id"] not in seen:seen.add(c["id"]);unique.append(c)
-    write(out/"CANDIDATE_COMPOSITIONS.json",{"candidates":unique,"scope":"BOUNDED_TYPED_PLANS_NOT_PROOF","validation_attempts":len([r for r in allresults if "expected_type_sha256" in r and r.get("status")!="PASS_ALTERNATE_SELECTED_CLOSURE_ONLY"]),"local_successes":len(local),**CLAIMS})
+    write(out/"CANDIDATE_COMPOSITIONS.json",{"candidates":unique,"scope":"BOUNDED_TYPED_PLANS_NOT_PROOF","validation_coverage":coverage,"validation_attempts":len([r for r in allresults if "expected_type_sha256" in r and r.get("status")!="PASS_ALTERNATE_SELECTED_CLOSURE_ONLY"]),"local_successes":len(local),**CLAIMS})
     write(out/"KERNEL_VALIDATION.json",{"receipts":validations,"local_exact_proof_count":len(local),"alternate_root_count":len(alternate),"terminal_candidates":terminal,**CLAIMS})
     write(out/"CIRCULARITY_AND_FALSIFICATION.json",{"inventory_exclusions":inventory.get("exclusions",[]),"query_failures":graph.get("failures",[]),"rejected_candidates":[r for r in allresults if r.get("status") not in ("PROVED_CONDITIONAL_LOCAL_PIN_REVIEW_REQUIRED","PASS_ALTERNATE_SELECTED_CLOSURE_ONLY")],"claim":"No claim of mathematical falsification follows from a failed or incomplete search.",**CLAIMS})
     nextgoals=[n for n in graph["nodes"] if goal_key(n) not in verified_targets]

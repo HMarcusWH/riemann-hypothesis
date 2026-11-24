@@ -50,10 +50,10 @@ jobs:
             /research/opica_extract_round1/
             /research/opica_recursive_round2/
           sparse-checkout-cone-mode: false
-      - name: Exact run and artifact harvest
+      - name: Exact run and artifact harvest (partial inputs stay explicitly incomplete)
         env:
           GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
-        run: python -B controller/research/opica_recursive_round2/harvest.py --out "$RUNNER_TEMP/harvest" --require-expanded
+        run: python -B controller/research/opica_recursive_round2/harvest.py --out "$RUNNER_TEMP/harvest"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -296,6 +296,7 @@ jobs:
       - name: Exact local research epoch
         run: |
           mkdir -p "$RUNNER_TEMP/native"
+          cp -a harvest/principal-suppliers "$RUNNER_TEMP/native/principal-suppliers"
           python -B controller/research/opica_recursive_round2/native_epoch.py --native native --historical historical --harvest harvest --output "$RUNNER_TEMP/native/epoch.json"
       - name: Actual compiler inventory and recursive typed search
         run: python -B controller/research/opica_recursive_round2/native_campaign.py --repo native --epoch "$RUNNER_TEMP/native/epoch.json" --harvest harvest --out "$RUNNER_TEMP/native/search"
@@ -320,6 +321,7 @@ jobs:
           name: opica-r2-native-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/native/epoch.json
+            ${{ runner.temp }}/native/principal-suppliers/
             ${{ runner.temp }}/native/search/*.json
             ${{ runner.temp }}/native/search/dependency-closures/
             ${{ runner.temp }}/native/search/work/*.lean

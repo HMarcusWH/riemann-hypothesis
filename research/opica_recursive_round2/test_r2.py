@@ -148,4 +148,20 @@ class Controls(unittest.TestCase):
         self.assertFalse(safe_dependency("UpperTheory.Lit.everyE₂"))
         self.assertTrue(safe_dependency("UpperTheory.One.vwin_of_row"))
         self.assertEqual(sum(len(x[2]) for x in MODULES.values()),7)
+    def test_missing_candidate_result_not_complete(self):
+        with tempfile.TemporaryDirectory() as d:
+            x=Path(d);i=x/"inputs";pin=LOCK["native"]
+            write(i/"harvest/harvest.json",{"artifact_receipts":{"original":{"id":1},"historical":{"id":2}}})
+            write(i/"native/epoch.json",{"native":pin,"historical_status":"HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH"})
+            write(i/"native/search/inventory.json",{"native_rows":[]})
+            write(i/"native/search/compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED","failures":[]})
+            node={"id":"g","declaration":"A","type_sha256":"a"*64,"label":"A"}
+            cand={"id":"c","goal_id":"g","target":{"declaration":"A","world":"NATIVE_QUERY"},"expected_type_sha256":"a"*64,"plan":{"tag":"const","constant_id":"x"}}
+            write(i/"native/search/graph.json",{"nodes":[node],"roots":["g"],"edges":[],"queries":[{"goal":"g","bounded_complete":True,"plans":[cand]}]})
+            write(i/"native/search/native-candidates.json",{"schema":"OPICA_R2_CANDIDATE_MANIFEST_V1","mode":"native","proof_acceptance":False,"selected":[cand],"native":pin})
+            write(i/"native/validation/review.json",{"schema":"OPICA_R2_VALIDATION_V1","mode":"native","proof_acceptance":False,"native":pin,"results":[]})
+            packet(i,x/"out",{"head":"f"*40})
+            v=read(x/"out/STEP4_VERDICT.json")
+            self.assertEqual(v["outcome"],"INCOMPLETE_EXECUTION")
+            self.assertIn("CANDIDATE_POPULATION_INCOMPLETE_OR_BUDGETED",v["research_missing_gates"])
 if __name__=="__main__":unittest.main()

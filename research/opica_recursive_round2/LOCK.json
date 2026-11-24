@@ -2,8 +2,8 @@
   "schema": "OPICA_RECURSIVE_R2_LOCK_V1",
   "controller": {
     "repository": "HMarcusWH/riemann-hypothesis",
-    "parent": "2c5d21f86e0af85dc8312aa228733dd81264160d",
-    "tree": "60c898f4ddc813b27a899a0862f23eecf790557e"
+    "parent": "810a25d62a1561cd8d93a5035b937bf550136be3",
+    "tree": "26ba306afdb2873f2941f6b44cf1eb12821c6eeb"
   },
   "native": {
     "repository": "HMarcusWH/zeta-23-lean",
@@ -110,6 +110,14 @@
       "head": "426b320afd596bcb1099ff5617c7278fd20c532d",
       "run": 45477682450,
       "workflow": ".github/workflows/opica-dispatch-registration-review.yml"
+    },
+    {
+      "key": "saved-window-repaired",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "810a25d62a1561cd8d93a5035b937bf550136be3",
+      "run": 45500971805,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
     }
   ],
   "budget": {
@@ -195,6 +203,13 @@
         "round4_run": 45477698694,
         "changed_count": 17
       }
+    },
+    "saved_window": {
+      "job": 138727616125,
+      "artifact": 14970561125,
+      "archive_sha256": "32aea9318a0afc194828a3da9bed21241cf0d5b70ba43c411d63a8936958832e",
+      "artifact_name": "extraction-saved-window-validation-ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+      "candidate": "fe1421c8ea4743f4c3508a3f802e53d2ab24d612c7f270b35dc56721a55a6c68"
     }
   },
   "expanded_readiness": {
