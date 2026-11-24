@@ -36,7 +36,7 @@ def extract(repo,report,mode,limit=6):
             used=[{**contracts[name],"id":cid} for cid,name in sorted(ids.items())]
             if any(expression_hash(x["type_expression"])!=x["type_sha256"] for x in used):raise RuntimeError("source type digest")
             worlds={x["world"] for x in used}
-            if mode=="mixed" and (not worlds-{"NATIVE_COMPILER"} and target["module"]!="OPICAExtractionCombinedTargets"):continue
+            if mode=="mixed" and (not worlds-{"NATIVE_COMPILER"} and target["module"] not in {"OPICAExtractionCombinedTargets","OPICAExtractionEnergyTargets"}):continue
             if mode=="native" and worlds-{"NATIVE_COMPILER"}:continue
             key=digest([target,eh,plan,ids])
             if key in seen:continue

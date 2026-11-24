@@ -1,5 +1,7 @@
 import hashlib, io, json, pathlib, tempfile, unittest
-from export_graph import Index
+from export_graph import Index, encode_record, decode_record, REC
+from unittest.mock import patch
+import random
 def feed(ix,rows):
     raw=b"".join((json.dumps(r)+"\n").encode() for r in rows)
     ix.consume(io.BytesIO(raw),len(raw),hashlib.sha256(raw).hexdigest())
@@ -13,6 +15,26 @@ def fixture():
 def root(ix,limit=1000):
     return next(x for x in ix.report("fixture",limit,30)["roots"] if x["name"]=="riemannHypothesis")
 class TestGraph(unittest.TestCase):
+    def test_compact_records_lossless(self):
+        rng=random.Random(271828)
+        rows=[(3<<28,2**31-1,2**31-1,0),(3<<28,2**31,2**32-1,0),
+              (0xffffffff,2**30-1,0,0),(0xffffffff,2**30,0,0),(7<<28,1,2,3)]
+        rows += [tuple(rng.getrandbits(32) for _ in range(4)) for _ in range(1000)]
+        rows += [(3<<28,rng.getrandbits(31),rng.getrandbits(31),0) for _ in range(1000)]
+        base=bytearray();extra=bytearray()
+        for row in rows:
+            b,e=encode_record(*row,len(extra)//REC.size);base.extend(b);extra.extend(e)
+        self.assertEqual([decode_record(base,extra,i+1) for i in range(len(rows))],rows)
+    def test_capacity_is_causal(self):
+        with tempfile.TemporaryDirectory() as d:
+            ix=Index(pathlib.Path(d),8)
+            with self.assertRaisesRegex(RuntimeError,"INDEX_CAPACITY_EXHAUSTED"):
+                feed(ix,fixture())
+            self.assertEqual(ix.nexpr,1)
+    def test_compact_invalid_overflow(self):
+        b,e=encode_record(7<<28,1,2,3,1)
+        with self.assertRaisesRegex(RuntimeError,"invalid overflow"):
+            decode_record(b,e,1)
     def test_transitive_axiom(self):
         with tempfile.TemporaryDirectory() as d:
             ix=Index(pathlib.Path(d),2**20);feed(ix,fixture());x=root(ix)

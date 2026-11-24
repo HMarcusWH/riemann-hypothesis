@@ -7,6 +7,7 @@ on:
       - '.github/workflows/opica-extraction-r1.yml'
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: opica-extraction-r1-${{ github.ref }}
   cancel-in-progress: false
@@ -77,16 +78,25 @@ jobs:
             /research/opica_extract_round1/
           sparse-checkout-cone-mode: false
       - name: Stream original verified proof — elaborated dependencies, no compilation
+        timeout-minutes: 310
         run: |
           set -euo pipefail
           command -v zstd
-          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300
+          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300 --index-gib 20 --keep-index
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: extraction-original-proof-graph-${{ github.sha }}
           path: ${{ runner.temp }}/original-dependencies.json
-          if-no-files-found: error
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-completed-root-checkpoints-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/original-index/INDEX_READY.json
+            ${{ runner.temp }}/original-index/root-checkpoints/
+          if-no-files-found: warn
   native-typed-search:
     needs: source-cuts
     runs-on: ubuntu-24.04
@@ -313,6 +323,7 @@ jobs:
           if-no-files-found: warn
   common-pin-candidate-validation:
     needs: cross-world-typed-search
+    if: always() && !cancelled() && needs.cross-world-typed-search.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     steps:
@@ -382,14 +393,15 @@ jobs:
           cd "$original"
           export LAKE_ARTIFACT_CACHE=false LEAN_NUM_THREADS=2
           mapfile -t mods < <(python3 -c 'import json,sys;print("\n".join("+"+x for x in json.load(open(sys.argv[1]))["build_modules"]))' "$work/port.json")
-          lake build "${mods[@]}" +Development.AutomorphicArithmetic.CharacterBoxes.SupplyChi +Development.AutomorphicArithmetic.CharacterBoxes.ZeroFreeAllOfTopG +Zeta23.OPICARound6.PrimeDeficit.Source +Zeta23.OPICARound6.NextSearch.SourceEnergies +Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure 2>&1 | tee "$work/port-build.log"
+          lake build "${mods[@]}" 2>&1 | tee "$work/port-build.log"
           lean="$(lake env which lean)"
           lp="$(lake env printenv LEAN_PATH)"
           export LEAN_PATH="$work:$lp"
-          for pair in Common:Common Native:Native Energy:Energy Principal:Principal CombinedTargets:CombinedTargets; do
-            stem="${pair%%:*}"
-            cp "$controller/$stem.lean" "$work/OPICAExtraction$stem.lean"
-            "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtraction$stem.olean" "$work/OPICAExtraction$stem.lean" 2>&1 | tee "$work/$stem.log"
+          mapfile -t adapters < <(python3 -c 'import json,sys;print(chr(10).join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
+          for pair in "${adapters[@]}"; do
+            module="${pair%%:*}"; file="${pair#*:}"
+            cp "$controller/$file" "$work/$module.lean"
+            "$lean" --root="$work" -DwarningAsError=true -o "$work/$module.olean" "$work/$module.lean" 2>&1 | tee "$work/$module.log"
           done
           python3 -B "$controller/candidate_validate.py" --mode mixed --repo "$original" --engine "$engine" --work "$work" --manifest "$work/port.json" --output "$work/validation" --limit 4
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -403,8 +415,127 @@ jobs:
             ${{ runner.temp }}/mixed-work/*.lean
             ${{ runner.temp }}/mixed-work/validation/
           if-no-files-found: warn
+  saved-window-validation:
+    needs: source-cuts
+    if: always() && !cancelled() && needs.source-cuts.result == 'success' && github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          path: controller
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - name: Authenticate saved exact-head conditional window candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api repos/HMarcusWH/riemann-hypothesis/actions/runs/45411269329 > "$RUNNER_TEMP/saved-run.json"
+          gh api repos/HMarcusWH/riemann-hypothesis/actions/artifacts/14942528122 > "$RUNNER_TEMP/saved-artifact.json"
+          gh api repos/HMarcusWH/riemann-hypothesis/actions/artifacts/14942528122/zip > "$RUNNER_TEMP/saved-candidate.zip"
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib,zipfile
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])
+          def require(x,msg):
+              if not x: raise RuntimeError(msg)
+          run=json.loads((root/"saved-run.json").read_text()); art=json.loads((root/"saved-artifact.json").read_text())
+          require(run["id"]==45411269329 and run["head_sha"]=="574f6e070e401a0f0b096df4fa5bdba7954ce640","Wrong saved run")
+          require(run["repository"]["full_name"]=="HMarcusWH/riemann-hypothesis" and run["path"].split("@")[0]==".github/workflows/opica-extraction-r1.yml","Wrong saved workflow")
+          require(art["id"]==14942528122 and art["workflow_run"]["id"]==run["id"] and not art["expired"],"Wrong artifact")
+          raw=(root/"saved-candidate.zip").read_bytes()
+          require(hashlib.sha256(raw).hexdigest()=="a3ba92bd24424f578c5c630a65c9fc21bd6471019180a4c34b595b8b9d13339b","Saved artifact digest")
+          with zipfile.ZipFile(root/"saved-candidate.zip") as z:
+              names=[n for n in z.namelist() if pathlib.PurePosixPath(n).name=="cross-candidates.json"]
+              require(len(names)==1,"Ambiguous manifest")
+              x=json.loads(z.read(names[0]))
+          require(x["proof_acceptance"] is False and x["mode"]=="mixed" and len(x["selected"])==1,"Saved manifest scope")
+          c=x["selected"][0]
+          require(c["id"]=="fe1421c8ea4743f4c3508a3f802e53d2ab24d612c7f270b35dc56721a55a6c68" and c["target"]["declaration"]=="OPICAExtractionR1.Combined.ConditionalNativeWindows","Saved candidate identity")
+          dest=root/"mixed-inputs";dest.mkdir()
+          (dest/"cross-candidates.json").write_text(json.dumps(x))
+          PY
+      - name: Decide whether an actual candidate exists
+        id: menu
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,json,pathlib
+          root=pathlib.Path(os.environ["RUNNER_TEMP"])
+          rows=list((root/"mixed-inputs").rglob("cross-candidates.json"))
+          if len(rows)!=1: raise RuntimeError("exact candidate manifest required")
+          x=json.loads(rows[0].read_text())
+          (root/"mixed-candidate-manifest.json").write_text(json.dumps(x))
+          with open(os.environ["GITHUB_OUTPUT"],"a") as f: f.write("has_candidates="+str(bool(x["selected"])).lower()+"\n")
+          if not x["selected"]: print("NO_ELIGIBLE_MIXED_CANDIDATE; NOT A PROOF")
+          PY
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
+        with:
+          ref: 40e56bab026552e089d7afcfeff08d2defb9c005
+          persist-credentials: false
+          path: original
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: steps.menu.outputs.has_candidates == 'true'
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 4f81c784d3b330395507f6dcd1c8b0010b3835cc
+          persist-credentials: false
+          path: native
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        if: steps.menu.outputs.has_candidates == 'true'
+        with:
+          lake-package-directory: original
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+      - name: Port only selected source modules and validate retrieved candidate plans
+        if: steps.menu.outputs.has_candidates == 'true'
+        run: |
+          set -euo pipefail
+          controller="$PWD/controller/research/opica_extract_round1"
+          engine="$PWD/native"
+          original="$PWD/original"
+          work="$RUNNER_TEMP/mixed-work"
+          mkdir -p "$work"
+          python3 -B "$controller/candidate_port.py" --repo "$original" --native "$engine" --controller "$controller" --manifest "$RUNNER_TEMP/mixed-candidate-manifest.json" --output "$work/port.json"
+          if ! python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["resolved"] else 1)' "$work/port.json"; then
+            echo "NO_RESOLVED_SOURCE_PORT; OPEN"
+            exit 0
+          fi
+          cd "$original"
+          export LAKE_ARTIFACT_CACHE=false LEAN_NUM_THREADS=2
+          mapfile -t mods < <(python3 -c 'import json,sys;print("\n".join("+"+x for x in json.load(open(sys.argv[1]))["build_modules"]))' "$work/port.json")
+          lake build "${mods[@]}" 2>&1 | tee "$work/port-build.log"
+          lean="$(lake env which lean)"
+          lp="$(lake env printenv LEAN_PATH)"
+          export LEAN_PATH="$work:$lp"
+          mapfile -t adapters < <(python3 -c 'import json,sys;print(chr(10).join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
+          for pair in "${adapters[@]}"; do
+            module="${pair%%:*}"; file="${pair#*:}"
+            cp "$controller/$file" "$work/$module.lean"
+            "$lean" --root="$work" -DwarningAsError=true -o "$work/$module.olean" "$work/$module.lean" 2>&1 | tee "$work/$module.log"
+          done
+          python3 -B "$controller/candidate_validate.py" --mode mixed --repo "$original" --engine "$engine" --work "$work" --manifest "$work/port.json" --output "$work/validation" --limit 4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-saved-window-validation-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/mixed-candidate-manifest.json
+            ${{ runner.temp }}/mixed-work/*.json
+            ${{ runner.temp }}/mixed-work/*.log
+            ${{ runner.temp }}/mixed-work/*.lean
+            ${{ runner.temp }}/mixed-work/validation/
+          if-no-files-found: warn
   research-join:
-    needs: [source-cuts, export-format-smoke, verified-export-mining, native-typed-search, external-small-adapter, principal-arithmetic-cut, cross-world-typed-search, common-pin-candidate-validation]
+    needs: [source-cuts, export-format-smoke, verified-export-mining, native-typed-search, external-small-adapter, principal-arithmetic-cut, cross-world-typed-search, common-pin-candidate-validation, saved-window-validation]
     if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-cross-repository-extraction-r1-20261124'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

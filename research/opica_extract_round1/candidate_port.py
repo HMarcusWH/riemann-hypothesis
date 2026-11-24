@@ -1,7 +1,7 @@
 """Stage a bounded original-pin source port, never mix compiled objects."""
 import argparse,hashlib,json,pathlib,re,shutil,subprocess
 from scan import PIN,need,textgit,write
-ADAPTERS={"OPICAExtractionCommon":"Common.lean","OPICAExtractionNative":"Native.lean","OPICAExtractionEnergy":"Energy.lean","OPICAExtractionPrincipal":"Principal.lean","OPICAExtractionCombinedTargets":"CombinedTargets.lean"}
+ADAPTERS={"OPICAExtractionCommon":"Common.lean","OPICAExtractionNative":"Native.lean","OPICAExtractionEnergy":"Energy.lean","OPICAExtractionPrincipal":"Principal.lean","OPICAExtractionCombinedTargets":"CombinedTargets.lean","OPICAExtractionEnergyTargets":"EnergyTargets.lean"}
 DENIED={"Main","Challenge","Solution","Development.AutomorphicArithmetic.CharacterBoxes.MainConclusion"}
 def filehash(p):
     h=hashlib.sha256()
@@ -55,7 +55,7 @@ def stage(repo,native,controller,manifest,out,budget=15000):
             rejected.append({"id":cand["id"],"status":"ADAPTER_REQUIRED","reason":str(e)[:1000]})
     # Account for imports before build: known repo source modules only.
     # Mathlib deps are separately pinned and intentionally outside this count.
-    pending=list(modules|{"OPICAExtractionCombinedTargets"});seen=set()
+    pending=list(modules);seen=set();required=set(modules)-set(ADAPTERS)
     while pending:
         m=pending.pop()
         if m in seen:continue
@@ -68,8 +68,20 @@ def stage(repo,native,controller,manifest,out,budget=15000):
             q=re.match(r"^\s*(?:public\s+)?import\s+([^\s]+)",line)
             if q:
                 target=q.group(1)
-                if target in ADAPTERS or (repo/"src"/(target.replace(".","/")+".lean")).is_file():pending.append(target)
-    write(out,{"schema":"OPICA_R1_COMMON_PIN_PORT_V1","mode":"mixed","original":PIN["original"]["head"],"native":PIN["native"],"compiler":PIN["original"]["toolchain"],"staged_native_files":files,"lakefile_sha256":filehash(lake),"resolved":resolved,"rejected":rejected,"source_import_closure_count":len(seen),"build_modules":sorted(m for m in modules if m not in ADAPTERS),"proof_acceptance":False,"C1":"OPEN"})
+                if target in ADAPTERS or (repo/"src"/(target.replace(".","/")+".lean")).is_file():
+                    pending.append(target)
+                    if m in ADAPTERS and target not in ADAPTERS:required.add(target)
+    order=[];visiting=set()
+    def visit(m):
+        if m not in ADAPTERS or m in order:return
+        need(m not in visiting,"adapter import cycle")
+        visiting.add(m)
+        for line in (controller/ADAPTERS[m]).read_text(encoding="utf8").splitlines():
+            q=re.match(r"^\s*(?:public\s+)?import\s+([^\s]+)",line)
+            if q:visit(q.group(1))
+        visiting.remove(m);order.append(m)
+    for m in sorted(modules):visit(m)
+    write(out,{"schema":"OPICA_R1_COMMON_PIN_PORT_V1","mode":"mixed","original":PIN["original"]["head"],"native":PIN["native"],"compiler":PIN["original"]["toolchain"],"staged_native_files":files,"lakefile_sha256":filehash(lake),"resolved":resolved,"rejected":rejected,"source_import_closure_count":len(seen),"build_modules":sorted(required),"adapter_order":[{"module":m,"file":ADAPTERS[m]} for m in order],"proof_acceptance":False,"C1":"OPEN"})
     print(json.dumps({"status":"PORT_STAGED_NOT_COMPILED","selected":len(resolved),"rejected":len(rejected),"source_modules":len(seen),"proof_acceptance":False}))
 def main():
     p=argparse.ArgumentParser();p.add_argument("--repo",type=pathlib.Path,required=True);p.add_argument("--native",type=pathlib.Path,required=True);p.add_argument("--controller",type=pathlib.Path,required=True);p.add_argument("--manifest",type=pathlib.Path,required=True);p.add_argument("--output",type=pathlib.Path,required=True)
