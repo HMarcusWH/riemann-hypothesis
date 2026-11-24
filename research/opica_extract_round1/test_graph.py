@@ -41,6 +41,11 @@ class TestGraph(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             ix=Index(pathlib.Path(d),2**20);feed(ix,fixture())
             self.assertEqual(root(ix,1)["closure"]["status"],"BUDGET_EXHAUSTED")
+    def test_actual_type_conversion(self):
+        with tempfile.TemporaryDirectory() as d:
+            ix=Index(pathlib.Path(d),2**20);feed(ix,fixture());x=root(ix)
+            self.assertEqual(x["type_expression"],{"format":"LEAN_EXPR_DAG_V1","root":"0","nodes":[["sort",["zero"]]]})
+            self.assertEqual(x["closure"]["membership"]["count"],2)
     def test_projection_and_let(self):
         with tempfile.TemporaryDirectory() as d:
             ix=Index(pathlib.Path(d),2**20)

@@ -56,6 +56,8 @@ def OneSidedWindows (g : ℝ → ℝ) : Prop :=
     ∀ Y₀ : ℝ, ∃ Y : ℝ, Y₀ ≤ Y ∧
       ∀ y ∈ Set.Icc Y (Y ^ (3 / 2 : ℝ)), g y ≤ C * y ^ θ
 
+def RampWindows : Prop := OneSidedWindows rampG
+
 theorem windows_congr {g h : ℝ → ℝ} (heq : ∀ y, g y = h y) :
     OneSidedWindows g → OneSidedWindows h := by
   rw [funext heq]

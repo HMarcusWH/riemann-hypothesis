@@ -11,7 +11,6 @@ theorem native_literalG_eq_rampG (y : ℝ) :
   change discreteG y = rampG y
   exact discreteG_eq_rampG y
 
-def RampWindows : Prop := OneSidedWindows rampG
 def NativeLiteralWindows : Prop := OneSidedWindows Zeta23.OPICARound6.PrimeDeficit.literalG
 
 /-- Actual arithmetic windows remain a hypothesis. -/

@@ -31,6 +31,8 @@ jobs:
           python3 -B research/opica_extract_round1/scan.py --repo "$PWD" --output "$RUNNER_TEMP/source-cuts.json"
           (cd research/opica_extract_round1 && python3 -B -m unittest -v test_graph)
           (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_graph)
+          (cd research/opica_extract_round1 && python3 -B -m unittest -v test_cross)
+          (cd research/opica_extract_round1 && python3 -B -O -m unittest -v test_cross)
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -130,7 +132,13 @@ jobs:
           "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionCommon.olean" "$work/OPICAExtractionCommon.lean" 2>&1 | tee "$work/common.log"
           "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionNative.olean" "$work/OPICAExtractionNative.lean" 2>&1 | tee "$work/native.log"
           python3 -B "$controller/adapter_receipt.py" --world native --work "$work"
-          python3 -B "$controller/native_search.py" --repo "$native" --work "$work" --output "$work/native-retrieval.json"
+          python3 -B "$controller/native_search.py" --mode base --repo "$native" --work "$work" --output "$work/native-retrieval-base.json"
+          cp "$controller/Energy.lean" "$work/OPICAExtractionEnergy.lean"
+          cp "$controller/EnergyCheck.lean" "$work/EnergyCheck.lean"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionEnergy.olean" "$work/OPICAExtractionEnergy.lean" 2>&1 | tee "$work/energy.log"
+          "$lean" --root="$work" -DwarningAsError=true "$work/EnergyCheck.lean" 2>&1 | tee "$work/energy-independent-type.log"
+          python3 -B "$controller/adapter_receipt.py" --world energy --work "$work"
+          python3 -B "$controller/native_search.py" --mode expanded --repo "$native" --work "$work" --output "$work/native-retrieval.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -184,8 +192,116 @@ jobs:
             ${{ runner.temp }}/extract-external/*.json
             ${{ runner.temp }}/extract-external/*.lean
           if-no-files-found: warn
+  principal-arithmetic-cut:
+    needs: source-cuts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          path: controller
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 40e56bab026552e089d7afcfeff08d2defb9c005
+          persist-credentials: false
+          path: original
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 4f81c784d3b330395507f6dcd1c8b0010b3835cc
+          path: native-codec
+          persist-credentials: false
+          sparse-checkout: |
+            /Zeta23/RHRC/OpicaTypeExprExport.lean
+          sparse-checkout-cone-mode: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: original
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+      - name: Compile only the arithmetic cut; do not build Main or the final proof
+        run: |
+          set -euo pipefail
+          controller="$PWD/controller/research/opica_extract_round1"
+          codec="$PWD/native-codec/Zeta23/RHRC/OpicaTypeExprExport.lean"
+          test "$(git -C native-codec rev-parse HEAD)" = "4f81c784d3b330395507f6dcd1c8b0010b3835cc"
+          work="$RUNNER_TEMP/extract-principal"
+          mkdir -p "$work/Zeta23/RHRC"
+          cd original
+          test "$(git rev-parse HEAD)" = "40e56bab026552e089d7afcfeff08d2defb9c005"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          lake build +Development.AutomorphicArithmetic.CharacterBoxes.SupplyChi +Development.AutomorphicArithmetic.CharacterBoxes.ZeroFreeAllOfTopG
+          cp "$controller/Common.lean" "$work/OPICAExtractionCommon.lean"
+          cp "$controller/Principal.lean" "$work/OPICAExtractionPrincipal.lean"
+          cp "$controller/PrincipalCheck.lean" "$work/PrincipalCheck.lean"
+          cp "$controller/PrincipalAudit.lean" "$work/PrincipalAudit.lean"
+          cp "$codec" "$work/Zeta23/RHRC/OpicaTypeExprExport.lean"
+          lean="$(lake env which lean)"
+          lp="$(lake env printenv LEAN_PATH)"
+          export LEAN_PATH="$work:$lp"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionCommon.olean" "$work/OPICAExtractionCommon.lean" 2>&1 | tee "$work/common.log"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/OPICAExtractionPrincipal.olean" "$work/OPICAExtractionPrincipal.lean" 2>&1 | tee "$work/principal.log"
+          "$lean" --root="$work" -DwarningAsError=true "$work/PrincipalCheck.lean" 2>&1 | tee "$work/principal-independent-type.log"
+          "$lean" --root="$work" -DwarningAsError=true -o "$work/Zeta23/RHRC/OpicaTypeExprExport.olean" "$work/Zeta23/RHRC/OpicaTypeExprExport.lean" > "$work/codec.log" 2>&1
+          "$lean" --root="$work" -DwarningAsError=true "$work/PrincipalAudit.lean" > "$work/principal-audit.log" 2>&1 || { tail -c 6000 "$work/principal-audit.log"; exit 1; }
+          python3 -B "$controller/principal_receipt.py" --repo "$PWD" --work "$work"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-principal-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/extract-principal/*.log
+            ${{ runner.temp }}/extract-principal/*.lean
+            ${{ runner.temp }}/extract-principal/*.json
+          if-no-files-found: warn
+  cross-world-typed-search:
+    needs: [source-cuts, verified-export-mining, native-typed-search, principal-arithmetic-cut]
+    if: always() && needs.source-cuts.result == 'success' && github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-cross-repository-extraction-r1-20261124'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          path: controller
+          sparse-checkout: |
+            /research/opica_extract_round1/
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 4f81c784d3b330395507f6dcd1c8b0010b3835cc
+          path: native
+          persist-credentials: false
+          sparse-checkout: |
+            /research/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: extraction-*
+          path: ${{ runner.temp }}/cross-inputs
+      - name: Run actual original OPICA retrieval on the combined research-only type menu
+        run: |
+          set -euo pipefail
+          python3 -B controller/research/opica_extract_round1/cross_search.py --repo "$PWD/native" --inputs "$RUNNER_TEMP/cross-inputs" --output "$RUNNER_TEMP/cross-world-retrieval.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-cross-world-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/cross-world-retrieval.json
+          if-no-files-found: warn
   research-join:
-    needs: [source-cuts, export-format-smoke, verified-export-mining, native-typed-search, external-small-adapter]
+    needs: [source-cuts, export-format-smoke, verified-export-mining, native-typed-search, external-small-adapter, principal-arithmetic-cut, cross-world-typed-search]
     if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-cross-repository-extraction-r1-20261124'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -197,7 +313,7 @@ jobs:
           sparse-checkout: |
             /research/opica_extract_round1/
           sparse-checkout-cone-mode: false
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           pattern: extraction-*
           path: ${{ runner.temp }}/extract-join-inputs

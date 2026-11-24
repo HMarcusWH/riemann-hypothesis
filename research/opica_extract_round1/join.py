@@ -14,11 +14,18 @@ def main():
     cuts=find("source-cuts.json","source-cuts")
     graph=find("original-dependencies.json","original-proof-graph")
     native=find("native-retrieval.json","extraction-native")
+    if native is None:native=find("native-retrieval-base.json","extraction-native")
+    principal=find("principal-receipt.json","extraction-principal")
+    cross=find("cross-world-retrieval.json","extraction-cross-world")
+    energy=find("energy-receipt.json","extraction-native")
     nr=find("adapter-receipt.json","extraction-native")
     er=find("adapter-receipt.json","external-small-adapter")
     statuses={"source":bool(cuts and cuts.get("nodes")),"original_export":bool(graph and graph.get("raw_sha256")==PIN["original"]["solution"]["raw_sha256"]),
               "native_types":bool(native and native.get("targets")),"native_adapter":bool(nr and nr.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY"),
-              "external_adapter":bool(er and er.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY")}
+              "external_adapter":bool(er and er.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY"),
+              "principal_conditional_cut":bool(principal and principal.get("status")=="PASS_CONDITIONAL_PRINCIPAL_CUT_ONLY"),
+              "energy_conditional_bridge":bool(energy and energy.get("status")=="PASS_LOCAL_PIN_NORMALIZATION_ONLY"),
+              "cross_world_search":bool(cross and cross.get("status")=="RESEARCH_QUERIES_EXECUTED_NOT_PROOF")}
     norm=statuses["native_adapter"] and statuses["external_adapter"] and nr["shared_source_sha256"]==er["shared_source_sha256"]
     gmap={x["name"]:x for x in (graph or {}).get("roots",[])} if statuses["original_export"] else {}
     cmap={x["name"]:x for x in (cuts or {}).get("nodes",[])}
@@ -37,6 +44,8 @@ def main():
     result={"schema":"OPICA_CROSS_REPO_R1_RESEARCH_JOIN","status":"EVIDENCE_AVAILABLE_NOT_CLOSURE" if all(statuses.values()) else "PARTIAL_RESEARCH_EVIDENCE",
             "available":statuses,"shared_normalization_both_pins":norm,"cross_pin_kernel_equality":"NOT_ESTABLISHED",
             "ranked_leads":ranked,"all_leads":leads,
+            "cross_world_queries":[{"label":x["label"],"status":x["status"],"plans":len(x.get("plans",[]))} for x in (cross or {}).get("queries",[])],
+            "cross_world_frontier":(cross or {}).get("premise_frontier",[]),
             "native_targets":[{"name":x["target"],"type_sha256":x["type_sha256"],"disposition":x["disposition"],"nontrivial_plans":sum(p["kind"]=="UNVERIFIED_COMPOSITION" for p in x["plans"])} for x in (native or {}).get("targets",[])],
             "remaining":[
              {"id":"PRINCIPAL_LEVEL","target":"(Level.cyc PChar.one).Gm = Deduction.G","needs":"literal principal-level singleton and exact source identity"},

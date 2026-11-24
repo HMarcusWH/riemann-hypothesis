@@ -4,10 +4,14 @@ from scan import PIN, need, textgit, write
 PREFIX="Zeta23.OPICARound6.PrimeDeficit."
 SIGNED="Zeta23.OPICARound6.NextSearch."
 C1="Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds"
-TARGETS=[("OPICAExtractionR1.NativeLiteralWindows","OPICAExtractionNative"),(PREFIX+"LargePrimeDeficitSubpower",PREFIX+"Source"),(PREFIX+"MissingPrimeDeficitToLiteralGBridge",PREFIX+"Source"),(SIGNED+"OnePolarityRawSubpower",SIGNED+"SourceEnergies"),(C1,"Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices")]
-MENU=[("OPICAExtractionR1.native_windows_of_ramp_windows","OPICAExtractionNative"),(PREFIX+"positiveDeficitEnergy_nonneg",PREFIX+"Source"),(SIGNED+"rawPositiveEnergy_le_full_components",SIGNED+"SourceEnergies"),(SIGNED+"rawPositiveEnergy_le_of_component_budgets",SIGNED+"SourceEnergies"),*[(f"Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_{s}","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure") for s in ("even","odd","tendsto")]]
+TARGETS=[("OPICAExtractionR1.NativeEnergySubpower","OPICAExtractionEnergy"),("OPICAExtractionR1.DirectEnergyToC1","OPICAExtractionEnergy"),("OPICAExtractionR1.NativeLiteralWindows","OPICAExtractionNative"),(PREFIX+"LargePrimeDeficitSubpower",PREFIX+"Source"),(PREFIX+"MissingPrimeDeficitToLiteralGBridge",PREFIX+"Source"),(SIGNED+"OnePolarityRawSubpower",SIGNED+"SourceEnergies"),(C1,"Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices")]
+MENU=[("OPICAExtractionR1.native_energy_of_ramp_windows","OPICAExtractionEnergy"),("OPICAExtractionR1.native_energy_of_literal_windows","OPICAExtractionEnergy"),("OPICAExtractionR1.native_c1_of_ramp_windows_of_direct_bridge","OPICAExtractionEnergy"),("OPICAExtractionR1.native_windows_of_ramp_windows","OPICAExtractionNative"),(PREFIX+"positiveDeficitEnergy_nonneg",PREFIX+"Source"),(SIGNED+"rawPositiveEnergy_le_full_components",SIGNED+"SourceEnergies"),(SIGNED+"rawPositiveEnergy_le_of_component_budgets",SIGNED+"SourceEnergies"),*[(f"Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_{s}","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure") for s in ("even","odd","tendsto")]]
 FORBIDDEN=["riemannHypothesis","_root_.riemannHypothesis","UpperTheory.FinalTheorems.riemannHypothesis","UpperTheory.FinalTheorems.everyCharacter","LFunction_ne_zero_of_half_lt_re","Zeta23.OPICARound4.ArithmeticFrontier.cofinal_moment_slice_bounds_of_riemannHypothesis","Zeta23.OPICARound4.ArithmeticFrontier.riemannHypothesis_iff_cofinal_moment_slice_bounds"]
-def run(repo,work,out):
+def run(repo,work,out,mode):
+    global MENU,TARGETS
+    if mode=="base":
+        MENU=[x for x in MENU if x[1]!="OPICAExtractionEnergy"]
+        TARGETS=[x for x in TARGETS if x[1]!="OPICAExtractionEnergy"]
     n=PIN["native"]
     need(textgit(repo,"rev-parse","HEAD")==n["head"] and textgit(repo,"rev-parse","HEAD^{tree}")==n["tree"],"native pin")
     sys.path.insert(0,str(repo))
@@ -30,18 +34,18 @@ run_cmd do
   let banned : List String := """+json.dumps(FORBIDDEN)+"""
   let roots : List Name := ["""+",".join(chr(96)+a for a,_ in MENU)+"""]
   for root in roots do
-    let closure ← Zeta23.RHRC.OpicaComposition.dependencyClosure root
+    let closure : Array Name ← liftTermElabM <| Zeta23.RHRC.OpicaComposition.dependencyClosure root
     for name in closure do
-      if banned.contains name.toString then
+      if banned.contains name.toString || name.toString.endsWith ".riemannHypothesis" then
         throwError "forbidden native proof dependency"
     liftIO <| IO.println ("OPICA_R1_CLOSURE\\t" ++ root.toString ++ "\\t" ++ toString closure.size)
 """
-    driver=work/"NativeTargetAtlas.lean";driver.write_text(code)
+    driver=work/("NativeTargetAtlas-"+mode+".lean");driver.write_text(code)
     env=dict(os.environ);lp=subprocess.check_output(["lake","env","printenv","LEAN_PATH"],cwd=repo,text=True).strip()
     env["LEAN_PATH"]=str(work)+os.pathsep+lp
     lean=subprocess.check_output(["lake","env","which","lean"],cwd=repo,text=True).strip()
     proc=subprocess.run([lean,str(driver)],cwd=repo,env=env,capture_output=True,timeout=1800)
-    (work/"native-atlas.log").write_bytes(proc.stdout+proc.stderr)
+    (work/("native-atlas-"+mode+".log")).write_bytes(proc.stdout+proc.stderr)
     if proc.returncode:print((proc.stdout+proc.stderr).decode(errors="replace")[-5000:])
     need(proc.returncode==0,"native atlas compile failed")
     statements={};targets=[];proofs=[];closure={}
@@ -71,9 +75,10 @@ run_cmd do
         for x in batch.candidates:
             ids=used_constant_ids(x["term_plan"]);need(set(ids)<=set(constants),"unapproved source")
             plans.append({"term_plan":x["term_plan"],"used":[constants[z] for z in sorted(ids)],"kind":"BARE_SEED" if x["term_plan"].get("tag")=="const" else "UNVERIFIED_COMPOSITION","kernel_acceptance":False})
-        results.append({"target":name,"type_sha256":expression_hash(e),"compiler_expression":e,"plans":plans,"disposition":batch.disposition,"bounded_complete":batch.complete})
-    write(out,{"schema":"OPICA_CROSS_REPO_R1_NATIVE_TYPES_AND_RETRIEVAL","generation":generation,"native":n,"actual_source_theorems":[{**x.to_dict(),"closure_count":closure[x.declaration]} for x in typed],"targets":results,"external_approved_proof_constants":[],"proof_acceptance":False,"C1":"OPEN","independent_step4":"OPEN"})
+        results.append({"target":name,"type_sha256":expression_hash(e),"compiler_expression":e,"proof_constants":proofs[len(MENU)+i],"plans":plans,"disposition":batch.disposition,"bounded_complete":batch.complete})
+    write(out,{"schema":"OPICA_CROSS_REPO_R1_NATIVE_TYPES_AND_RETRIEVAL","generation":generation,"native":n,"actual_source_theorems":[{**x.to_dict(),"closure_count":closure[x.declaration],"proof_constants":proofs[j]} for j,x in enumerate(typed)],"targets":results,"external_approved_proof_constants":[],"proof_acceptance":False,"C1":"OPEN","independent_step4":"OPEN"})
     print(json.dumps({"status":"NATIVE_TYPED_RETRIEVAL_NOT_PROOF","targets":len(results),"nontrivial":[sum(x["kind"]=="UNVERIFIED_COMPOSITION" for x in a["plans"]) for a in results],"proof_acceptance":False}))
 if __name__=="__main__":
     p=argparse.ArgumentParser();p.add_argument("--repo",type=pathlib.Path,required=True);p.add_argument("--work",type=pathlib.Path,required=True);p.add_argument("--output",type=pathlib.Path,required=True)
-    a=p.parse_args();run(a.repo.resolve(),a.work.resolve(),a.output)
+    p.add_argument("--mode",choices=("base","expanded"),default="expanded")
+    a=p.parse_args();run(a.repo.resolve(),a.work.resolve(),a.output,a.mode)
