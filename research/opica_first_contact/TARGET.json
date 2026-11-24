@@ -1,0 +1,99 @@
+{
+  "schema": "OPICA_COMMUNITY_SUPPLIER_FIRST_CONTACT_V1",
+  "authority": "RESEARCH_TARGET_ONLY",
+  "status": "UNEXECUTED",
+  "repository": "HMarcusWH/riemann-hypothesis",
+  "upstream_repository": "leanprover-community/riemann-hypothesis",
+  "upstream_commit": "1b894f7511841e6607bc0398cf2657526bbb29d9",
+  "upstream_tree": "cbdabcd1a4e3fa24c0173356f32385b54f5a57ce",
+  "upstream_source_tree": "69b331ce0e429c7632dac6aa642e5875a50b1218",
+  "toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_commit": "fc4f59e577feb1a4956671bc04ac18aaaf8cd842",
+  "native_opica_source_repo": "HMarcusWH/zeta-23-lean",
+  "native_opica_inspected_head": "bb7c8184a135b2823c6296917c5ac893bebf2a71",
+  "old_native_compiled_pin": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "native_target": {
+    "formal_type_name": "Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentSliceVanishingErrorBounds",
+    "defined_in": "Zeta23/OPICARound4/ArithmeticFrontier/MomentSlices.lean",
+    "native_theorem": "Zeta23.OPICARound4.ArithmeticFrontier.riemannHypothesis_iff_cofinal_moment_slice_bounds",
+    "native_equivalence_file": "Zeta23/OPICARound4/ArithmeticFrontier/ZeroFreeFloor.lean",
+    "alternative_arithmetic_goal": "Find an independently proved eventual even/odd physical-moment lower bound with errors tending to zero and the original detector cutoff, not assuming RH."
+  },
+  "search_question": "What is the smallest exact, trusted Lean 4.36 supplier ingress for Mathlib RiemannHypothesis to the native OPICA C1 statement, and what source-level constraints could avoid the full Main import?",
+  "search_target": "OPICA_C1_SHORTENED_SUPPLIER_FRONTIER",
+  "seam": [
+    {
+      "module": "Development.AutomorphicArithmetic.CharacterBoxes.MainConclusion",
+      "name": "UpperTheory.FinalTheorems.everyCharacter",
+      "expected_type": "UpperTheory.EveryCharacter",
+      "source_blob": "af9f2e3c4481f8696f08c6dd554ac6e2df4862d4"
+    },
+    {
+      "module": "Development.AutomorphicArithmetic.CharacterBoxes.ClaimStrip",
+      "name": "Claim.zeta",
+      "expected_type": "Claim.HalfPlane → Claim.Zeta",
+      "source_blob": "5527ddf26c002dce6ad79e44bdc0a498488da2ab"
+    },
+    {
+      "module": "Main",
+      "name": "LFunction_ne_zero_of_half_lt_re",
+      "expected_type": "DirichletLNonvanishingRightOfHalf",
+      "source_blob": "e7f23b5fd1266af2226316ad94b6d80636092f83"
+    },
+    {
+      "module": "Main",
+      "name": "riemannHypothesis",
+      "expected_type": "RiemannHypothesis",
+      "source_blob": "e7f23b5fd1266af2226316ad94b6d80636092f83"
+    }
+  ],
+  "exact_proof_source_blobs": {
+    "src/Main.lean": "e7f23b5fd1266af2226316ad94b6d80636092f83",
+    "src/Statements.lean": "23b01f745b80075e377c415abae96ece3570d0b0",
+    "src/Development/AutomorphicArithmetic/CharacterBoxes/HalfPlane.lean": "ba38ed1e1be2287027a8a0baab005e274473d764",
+    "src/Development/AutomorphicArithmetic/CharacterBoxes/ClaimStrip.lean": "5527ddf26c002dce6ad79e44bdc0a498488da2ab",
+    "src/Development/AutomorphicArithmetic/CharacterBoxes/MainConclusion.lean": "af9f2e3c4481f8696f08c6dd554ac6e2df4862d4",
+    "src/Supplements/Kernels/MainTheorems.lean": "f03b4c8a341899645b8a8833ed9426e50abcb7aa"
+  },
+  "source_terms": [
+    "riemannHypothesis",
+    "RiemannHypothesis",
+    "UpperTheory.FinalTheorems.everyCharacter",
+    "UpperTheory.EveryCharacter",
+    "DirichletLNonvanishingRightOfHalf",
+    "Claim.zeta",
+    "Claim.strip",
+    "CofinalMomentSliceVanishingErrorBounds",
+    "evenMomentSliceLowerBound",
+    "oddMomentSliceLowerBound",
+    "Zeta23.OPICARound4",
+    "OPICA"
+  ],
+  "frontier_roots": [
+    "Main",
+    "Development.AutomorphicArithmetic.CharacterBoxes.MainConclusion",
+    "Development.AutomorphicArithmetic.CharacterBoxes.ClaimStrip",
+    "Supplements.Kernels.MainTheorems"
+  ],
+  "candidate_dispositions": [
+    "SCANNED_SOURCE_ONLY",
+    "CANDIDATE_SMALLEST_IMPORT",
+    "NOT_PROOF_ACCEPTANCE"
+  ],
+  "falsification": [
+    "Cross-compiler .olean incompatibility: native 4.33.1 and supplier 4.36.0 cannot be mixed",
+    "One-direction RH -> C1 is circular as an independent proof of RH",
+    "Similar names/definitions do not imply stock-kernel equivalence",
+    "Source import closure is an approximation, not a compiled proof dependency graph",
+    "A source-only grep does not establish any Lean declaration or axiom set",
+    "Unused modules deleted upstream change export digests and invalidate original source/certificate pins"
+  ],
+  "required_to_promote": [
+    "Build native OPICA under exact 4.36/Mathlib pin or prove a separately typed bridge",
+    "Fresh Lean declarations and no-sorry/no-project-axiom checks",
+    "Definition-sensitive type equality and complete kernel proof closure",
+    "Exact new supplier proof source/certificate identity, all required independent checks"
+  ],
+  "proof_acceptance": false,
+  "rh_status": "OPEN"
+}

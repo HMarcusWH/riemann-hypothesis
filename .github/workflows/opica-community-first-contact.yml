@@ -1,0 +1,64 @@
+name: OPICA read-only community proof first-contact search
+run-name: OPICA first-contact source scan at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-community-first-contact-20261122]
+    paths:
+      - .github/workflows/opica-community-first-contact.yml
+      - research/opica_first_contact/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: opica-community-first-contact-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Reject drift from pinned supplier source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD:src)" = "69b331ce0e429c7632dac6aa642e5875a50b1218"
+          test "$(git rev-parse 1b894f7511841e6607bc0398cf2657526bbb29d9:src)" = "$(git rev-parse HEAD:src)"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.36.0"
+          git diff --quiet HEAD -- src
+          git diff --check 1b894f7511841e6607bc0398cf2657526bbb29d9 HEAD
+      - name: Test read-only source-scanner and safety controls
+        run: |
+          set -euo pipefail
+          (cd research/opica_first_contact && python3 -m unittest -v test_scan)
+          (cd research/opica_first_contact && python3 -O -m unittest -v test_scan)
+      - name: Execute the pinned source-wide OPICA first-contact scan
+        run: |
+          set -euo pipefail
+          output="$RUNNER_TEMP/OPICA_COMMUNITY_SOURCE_SEARCH.json"
+          python3 research/opica_first_contact/scan.py --output "$output"
+          sha256sum "$output" "$RUNNER_TEMP/OPICA_COMMUNITY_SOURCE_SEARCH.md"
+          python3 - "$output" <<'PY'
+          import json, sys
+          d=json.load(open(sys.argv[1]))
+          assert d["source_identity"]["proof_source_preserved"]
+          assert d["source_identity"]["supplier_source_tree"] == "69b331ce0e429c7632dac6aa642e5875a50b1218"
+          assert d["lean_source_files"] > 100_000
+          assert d["source_import_frontier"]["Main"]["source_module_count"] > 100_000
+          assert not d["proof_acceptance"]
+          assert d["rh_status"] == "OPEN"
+          print("SEARCH_SOURCE_ONLY_VALIDATED", d["source_import_frontier"]["Main"]["source_module_count"])
+          PY
+      - name: Preserve source-search results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-community-first-contact-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/OPICA_COMMUNITY_SOURCE_SEARCH.json
+            ${{ runner.temp }}/OPICA_COMMUNITY_SOURCE_SEARCH.md
+          if-no-files-found: warn
+          retention-days: 90
