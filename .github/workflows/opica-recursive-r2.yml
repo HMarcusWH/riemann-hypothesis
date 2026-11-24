@@ -31,6 +31,7 @@ jobs:
       - run: |
           cd controller
           python -B -c 'import sys;sys.path.insert(0,"research/opica_recursive_round2");from r2_common import *;print(controller_scope(Path.cwd()))'
+          python -B -c 'import ast,pathlib;[ast.parse(p.read_text(),filename=str(p)) for d in ("research/opica_extract_round1","research/opica_recursive_round2") for p in pathlib.Path(d).glob("*.py")]'
           cd research/opica_recursive_round2
           python -B -m unittest -v test_r2
           python -B -O -m unittest -v test_r2

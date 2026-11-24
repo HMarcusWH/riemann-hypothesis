@@ -43,6 +43,41 @@ class Controls(unittest.TestCase):
             p=Path(d);m={"schema":"OPICA_R2_CANDIDATE_MANIFEST_V1","mode":"mixed","native":LOCK["native"],"original_head":R1_PIN["original"]["head"],"selected":[],"proof_acceptance":False}
             run(p/"missing-original",p/"missing-native",m,p/"out")
             self.assertEqual(read(p/"out/review.json")["status"],"NO_SHORTLISTED_MIXED_CANDIDATES")
+    def test_completed_bounded_negative_separate_from_production(self):
+        with tempfile.TemporaryDirectory() as d:
+            x=Path(d);i=x/"inputs"
+            # Nonempty receipt placeholders are isolated unit-test data only.
+            write(i/"harvest/harvest.json",{"artifact_receipts":{"original":{"id":1},"historical":{"id":2}}})
+            pin=LOCK["native"]
+            write(i/"native/epoch.json",{"native":pin,"historical_status":"HISTORICAL_PORT_CANDIDATE_SOURCE_ADMITTED_FOR_FRESH_NATIVE_RESEARCH"})
+            write(i/"native/search/inventory.json",{"native_rows":[]})
+            write(i/"native/search/compiler.json",{"status":"COMPILER_RESEARCH_INVENTORY_EXPORTED"})
+            node={"id":"g","declaration":"A","type_sha256":"a"*64,"label":"A"}
+            write(i/"native/search/graph.json",{"nodes":[node],"roots":["g"],"edges":[],"queries":[{"goal":"g","bounded_complete":True,"plans":[]}]})
+            write(i/"native/validation/review.json",{"mode":"native","native":pin,"results":[]})
+            packet(i,x/"out",{"head":"f"*40})
+            r=read(x/"out/STEP4_VERDICT.json")
+            self.assertEqual(r["outcome"],"NO_MATCH_IN_ENUMERATED_SCOPE")
+            self.assertEqual(r["bounded_search_outcome"],"NO_MATCH_IN_ENUMERATED_SCOPE")
+            self.assertTrue(r["production_missing_gates"]);self.assertFalse(r["proof_acceptance"])
+
+    def test_wrong_goal_receipt_cannot_discharge(self):
+        with tempfile.TemporaryDirectory() as d:
+            x=Path(d);i=x/"inputs";pin=LOCK["native"]
+            write(i/"harvest/harvest.json",{})
+            write(i/"native/epoch.json",{"native":pin})
+            write(i/"native/search/inventory.json",{"native_rows":[]})
+            write(i/"native/search/compiler.json",{})
+            node={"id":"g","declaration":"A","type_sha256":"a"*64,"label":"A"}
+            target={"declaration":"A","world":"NATIVE_QUERY"}
+            cand={"id":"c","goal_id":"g","target":target,"expected_type_sha256":"a"*64,"plan":{"tag":"const","constant_id":"x"}}
+            write(i/"native/search/graph.json",{"nodes":[node],"roots":["g"],"edges":[],"queries":[{"goal":"g","bounded_complete":True,"plans":[cand]}]})
+            write(i/"native/search/native-candidates.json",{"selected":[cand],"native":pin})
+            write(i/"native/validation/review.json",{"mode":"native","native":pin,"results":[{"id":"c","goal_id":"wrong","target":target,"expected_type_sha256":"a"*64,"candidate_plan_sha256":digest(cand["plan"]),"actual_local_kernel_proof":True,"status":"PROVED_CONDITIONAL_LOCAL_PIN_REVIEW_REQUIRED"}]})
+            packet(i,x/"out",{"head":"f"*40})
+            r=read(x/"out/STEP4_VERDICT.json")
+            self.assertEqual(r["local_exact_proof_count"],0);self.assertTrue(r["input_errors"]);self.assertFalse(r["proof_acceptance"])
+
     def test_empty_packet_cannot_pass(self):
         with tempfile.TemporaryDirectory() as d:
             x=Path(d);(x/"inputs").mkdir()

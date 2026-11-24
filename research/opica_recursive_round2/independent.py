@@ -65,7 +65,7 @@ def run(repo,work,validation,historical,checker_code,out):
             need({str(p):digest(file_inventory(p)) for p in folders}==inventories,"Alternate checker input objects changed")
             return {"status":"PASS_ALTERNATE_SELECTED_CLOSURE_ONLY","root":root,"accepted_declaration_records":count,"selected_roots":names,"object_inventory_digests":inventories}
         for r in selected:
-            item={"id":r["id"],"target":r["target"],"expected_type_sha256":r["expected_type_sha256"],"candidate_plan_sha256":r["candidate_plan_sha256"],"status":"INCOMPLETE"}
+            item={"id":r["id"],"goal_id":r["goal_id"],"target":r["target"],"expected_type_sha256":r["expected_type_sha256"],"candidate_plan_sha256":r["candidate_plan_sha256"],"status":"INCOMPLETE"}
             result["results"].append(item)
             try:
                 candidate=validation/r["id"]

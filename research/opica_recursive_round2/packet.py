@@ -29,6 +29,8 @@ def packet(inputs,out,controller):
     for key in ("canonical","registration"):
         p=inputs/"canonical"/(key+".json")
         if p.is_file():canonical.append({"key":key,"receipt":load("canonical/"+key+".json",{})})
+    goals={n["id"]:n for n in graph["nodes"]}
+    need(len(goals)==len(graph["nodes"]),"Duplicate graph goal")
     manifests={}
     for rel in ("native/search/native-candidates.json","native/search/mixed-candidates.json","native/feedback-candidates.json"):
         if (inputs/rel).is_file():
@@ -40,13 +42,14 @@ def packet(inputs,out,controller):
     allresults=[r for v in validations for r in v["receipt"].get("results",[])]
     local=[];alternate=[]
     def identity(r):
-        return (r["id"],r["target"]["declaration"],r["expected_type_sha256"],r["candidate_plan_sha256"],r["target"].get("world","NATIVE_QUERY"))
+        return (r["id"],r["goal_id"],r["target"]["declaration"],r["expected_type_sha256"],r["candidate_plan_sha256"],r["target"].get("world","NATIVE_QUERY"))
     for v in validations:
         receipt=v["receipt"]
         for r in receipt.get("results",[]):
             if not (r.get("actual_local_kernel_proof") and r.get("status")=="PROVED_CONDITIONAL_LOCAL_PIN_REVIEW_REQUIRED"):continue
             try:
-                cand=manifests[r["id"]]
+                cand=manifests[r["id"]];goal=goals[cand["goal_id"]]
+                need(r["goal_id"]==cand["goal_id"] and goal["declaration"]==cand["target"]["declaration"] and goal["type_sha256"]==cand["expected_type_sha256"] and goal.get("world","NATIVE_QUERY")==cand["target"].get("world","NATIVE_QUERY"),"Candidate not bound to exact graph goal")
                 need(receipt.get("native")==epoch.get("native") and r["target"]==cand["target"] and r["expected_type_sha256"]==cand["expected_type_sha256"] and r["candidate_plan_sha256"]==digest(cand["plan"]),"Candidate type/plan/epoch drift")
                 local.append({**r,"validation_mode":receipt["mode"]})
             except Exception as ex:errors.append({"input":r.get("id"),"reason":str(ex)[:500]})
@@ -62,8 +65,8 @@ def packet(inputs,out,controller):
     alt_ids={identity(r) for r in alternate}
     terminal=[r for r in alternate if r["validation_mode"]=="native" and r.get("terminal_candidate",{}).get("status")=="PASS_ALTERNATE_SELECTED_CLOSURE_ONLY"]
     roots=set(graph["roots"])
-    def goal_key(n):return (n["declaration"],n["type_sha256"],n.get("world","NATIVE_QUERY"))
-    verified_targets={(r["target"]["declaration"],r["expected_type_sha256"],r["target"].get("world","NATIVE_QUERY")) for r in local}
+    def goal_key(n):return (n["id"],n["declaration"],n["type_sha256"],n.get("world","NATIVE_QUERY"))
+    verified_targets={(r["goal_id"],r["target"]["declaration"],r["expected_type_sha256"],r["target"].get("world","NATIVE_QUERY")) for r in local}
     frontier=[n for n in graph["nodes"] if n["id"] not in roots and goal_key(n) not in verified_targets]
     qs=graph["queries"]
     missing=[]

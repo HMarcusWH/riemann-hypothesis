@@ -32,7 +32,7 @@ def validate(repo,engine,work,manifest,out,mode):
     need(len(ids)==len(set(ids))==len(observed)==len(set(observed)) and set(ids)==set(observed),"Validation receipt ID bijection differs")
     for result,candidate in zip(raw["results"],rows):
         need(result["id"]==candidate["id"],"Validation result order differs")
-        r={**result,"target":candidate["target"],"expected_type_sha256":candidate["expected_type_sha256"],"candidate_plan_sha256":digest(candidate["plan"])}
+        r={**result,"goal_id":candidate["goal_id"],"target":candidate["target"],"expected_type_sha256":candidate["expected_type_sha256"],"candidate_plan_sha256":digest(candidate["plan"])}
         if r["status"]==SUCCESS:
             from research.RHRC.integration.opica_composition.executor import parse_native
             folder=out/r["id"]

@@ -56,7 +56,7 @@ def query(goal,rows,mode,partition=0):
         # proposer results, never the old bare-seed inventory entries.
         worlds=sorted({r["world"] for r in sources})
         ident=digest([goal["declaration"],goal["type_sha256"],plan,const])
-        plans.append({"id":ident,"label":goal["label"],"target":{"declaration":goal["declaration"],"module":goal["module"],"kind":"value","origin":goal.get("origin"),"world":goal.get("world","NATIVE_QUERY")},"expected_expression":goal["expression"],"expected_type_sha256":goal["type_sha256"],"plan":plan,"sources":sources,"worlds":worlds,"proof_acceptance":False})
+        plans.append({"id":ident,"goal_id":goal["id"],"label":goal["label"],"target":{"declaration":goal["declaration"],"module":goal["module"],"kind":"value","origin":goal.get("origin"),"world":goal.get("world","NATIVE_QUERY")},"expected_expression":goal["expression"],"expected_type_sha256":goal["type_sha256"],"plan":plan,"sources":sources,"worlds":worlds,"proof_acceptance":False})
     return {"goal":goal["id"],"mode":mode,"partition":partition,"selected_menu":sorted(ids.values()),"omitted_menu_roots":omitted,"provenance":provenance,"bounded_complete":complete and not omitted,"plans":plans,"status":"CANDIDATES_NOT_PROOFS" if plans else "NO_MATCH_IN_ENUMERATED_SCOPE" if complete and not omitted else "INCOMPLETE_SEARCH_SCOPE"}
 def premise_owners(goal,rows):
     h=target_head(goal["expression"])
