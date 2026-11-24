@@ -1,0 +1,273 @@
+{
+  "schema": "OPICA_RECURSIVE_R2_LOCK_V1",
+  "controller": {
+    "repository": "HMarcusWH/riemann-hypothesis",
+    "parent": "810a25d62a1561cd8d93a5035b937bf550136be3",
+    "tree": "26ba306afdb2873f2941f6b44cf1eb12821c6eeb"
+  },
+  "native": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "1eab1eb59e47d503ade1615a2c465f967fa65c6e",
+    "tree": "d3dfbc79c927426511bdf140603f8987761000d5",
+    "toolchain": "leanprover/lean4:v4.33.0-rc2",
+    "mathlib": "51e6992efd06126df61a496bebf8f49482a4e129"
+  },
+  "historical": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "983b6e78eccf9156ee7e2ec55f6772bd64cedccd",
+    "tree": "23b527570280afd56f51376cf843e243e32b1b03"
+  },
+  "checker": {
+    "repository": "HMarcusWH/riemann-hypothesis",
+    "head": "5601d19ff185d58376e109d82dd4512488295372"
+  },
+  "runs": [
+    {
+      "key": "external",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "574f6e070e401a0f0b096df4fa5bdba7954ce640",
+      "run": 45411269329,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
+    },
+    {
+      "key": "parent",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 311,
+      "head": "4f81c784d3b330395507f6dcd1c8b0010b3835cc",
+      "run": 45250786114,
+      "workflow": ".github/workflows/opica-next-source-epoch.yml"
+    },
+    {
+      "key": "canonical",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 312,
+      "head": "ff0c8185f55b7cf172570e702cb3e8d4d62bbca0",
+      "run": 45415104185,
+      "workflow": ".github/workflows/opica-next-acceptance.yml"
+    },
+    {
+      "key": "historical",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 313,
+      "head": "983b6e78eccf9156ee7e2ec55f6772bd64cedccd",
+      "run": 45409686092,
+      "workflow": ".github/workflows/opica-historical-support-port.yml"
+    },
+    {
+      "key": "registration",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 314,
+      "head": "1bf6242c0ba8033b076d3506189b90f1d382b5c9",
+      "run": 45415223581,
+      "workflow": ".github/workflows/opica-dispatch-registration-review.yml"
+    },
+    {
+      "key": "bipolar",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 315,
+      "head": "1eab1eb59e47d503ade1615a2c465f967fa65c6e",
+      "run": 45409447656,
+      "workflow": ".github/workflows/opica-bipolar-transfer.yml"
+    },
+    {
+      "key": "external-repaired",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+      "run": 45472802058,
+      "workflow": ".github/workflows/opica-extraction-r1.yml",
+      "attempt": 1
+    },
+    {
+      "key": "historical-review",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 313,
+      "head": "9180f489f39f4d807692b1da6871550bfdbbcbc5",
+      "run": 45473412897,
+      "workflow": ".github/workflows/opica-historical-support-port.yml"
+    },
+    {
+      "key": "energy-repaired",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "2c5d21f86e0af85dc8312aa228733dd81264160d",
+      "run": 45487195638,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
+    },
+    {
+      "key": "canonical-applied",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 312,
+      "head": "db485c5f5f9704da66a1cb8505ee1464a9f72da3",
+      "run": 45485535483,
+      "workflow": ".github/workflows/opica-next-acceptance.yml"
+    },
+    {
+      "key": "registration-applied",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 314,
+      "head": "426b320afd596bcb1099ff5617c7278fd20c532d",
+      "run": 45477682450,
+      "workflow": ".github/workflows/opica-dispatch-registration-review.yml"
+    },
+    {
+      "key": "saved-window-repaired",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "810a25d62a1561cd8d93a5035b937bf550136be3",
+      "run": 45500971805,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
+    }
+  ],
+  "budget": {
+    "atlas_batch": 16,
+    "atlas_roots": 700,
+    "goals": 64,
+    "frontier_depth": 4,
+    "frontier_alternatives": 4,
+    "menu_roots": 64,
+    "candidates_per_goal": 6,
+    "attempts_native": 8,
+    "attempts_mixed": 4,
+    "search_states": 16384,
+    "term_depth": 32,
+    "search_seconds": 30,
+    "root_menu_partitions": 2
+  },
+  "claim_boundary": {
+    "RH": "OPEN",
+    "C1": "OPEN",
+    "Step4": "OPEN",
+    "proof_acceptance": false
+  },
+  "historical_review": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "9180f489f39f4d807692b1da6871550bfdbbcbc5",
+    "tree": "71ecc1c926933df94fd92532659f467c563fa115"
+  },
+  "evidence": {
+    "old_principal": {
+      "run": 45411269329,
+      "artifact": 14936817041,
+      "archive_sha256": "530e4e87fb410b39a12f3ea073e9d6555e91ab51e9e85a46200ae976194c17f7",
+      "unchanged_controller_components": [
+        "Common.lean",
+        "Principal.lean",
+        "PrincipalCheck.lean",
+        "PrincipalAudit.lean",
+        "principal_receipt.py"
+      ]
+    },
+    "canonical": {
+      "artifact": 14951996827,
+      "archive_sha256": "521eda3d4caabbf376d3c9fb215069f73e8532083925ed6f47ae629e0522af50"
+    },
+    "registration": {
+      "artifact": 14951591655,
+      "archive_sha256": "68fa51d388b7de03d1ce8340f4ea6242965c43ed7e1fc745f1a753632017b09d"
+    },
+    "mining": {
+      "head": "ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+      "tree": "07c57bad8c54cf84d795fe3192fc15d8f82f1b87",
+      "run": 45472802058,
+      "attempt": 1,
+      "job": 138745091804,
+      "artifact_name": "extraction-original-proof-graph-f413bc3030c20617988aca46556cabda6373a4a0",
+      "unchanged_controller_components": [
+        "CONTRACT.json",
+        "scan.py",
+        "export_graph.py",
+        "index_checkpoint.py"
+      ],
+      "artifact": 14969784455,
+      "archive_sha256": "101da593316adfa704759230e76da53ee4e9016ada33ead0139b707b4ab9a28d",
+      "member_sha256": "8789b32167bb65fb80398d6b84ac161e98364b1648c616b730143803371275a4",
+      "expected_roots": 36,
+      "expected_declarations": 1484733,
+      "expected_expressions": 1065214335,
+      "complete_leads": [
+        "GlobalTheory.Fc.goal_of_shape_of_hyps",
+        "UpperTheory.Comparison₂.core_gm",
+        "UpperTheory.Comparison₂.level_gm_le_on_family_scales",
+        "UpperTheory.Comparison₂.windowInequality_of_artinInputs",
+        "UpperTheory.Top.supplyChi",
+        "UpperTheory.V.HV.Core.of_four_alt",
+        "UpperTheory.V.HV.vwin_of_counts",
+        "UpperTheory.V.vwinAt_of_joint",
+        "UpperTheory.V.vwin_of_joint"
+      ],
+      "complete_lead_union": 175534,
+      "complete_lead_sum": 828657
+    },
+    "energy_successor": {
+      "head": "2c5d21f86e0af85dc8312aa228733dd81264160d",
+      "tree": "60c898f4ddc813b27a899a0862f23eecf790557e",
+      "run": 45487195638,
+      "prior_diagnostic_run": 45472802058,
+      "prior_diagnostic_job": 138727616086
+    },
+    "canonical_applications": {
+      "canonical": {
+        "head": "db485c5f5f9704da66a1cb8505ee1464a9f72da3",
+        "tree": "3d5823f4998f6489efb3af30cb57f1a528b5ac2a",
+        "source_gate_run": 45485535483,
+        "round4_run": 45485535384,
+        "changed_count": 30
+      },
+      "registration": {
+        "head": "426b320afd596bcb1099ff5617c7278fd20c532d",
+        "tree": "1fa687cab816085b32da713e2e061a9a1e929d91",
+        "source_gate_run": 45477682450,
+        "round4_run": 45477698694,
+        "changed_count": 17
+      }
+    },
+    "saved_window": {
+      "job": 138727616125,
+      "artifact": 14970561125,
+      "archive_sha256": "32aea9318a0afc194828a3da9bed21241cf0d5b70ba43c411d63a8936958832e",
+      "artifact_name": "extraction-saved-window-validation-ea038dc8f3e86121ddea43213bf3bbeb015b23f3",
+      "candidate": "fe1421c8ea4743f4c3508a3f802e53d2ab24d612c7f270b35dc56721a55a6c68"
+    },
+    "historical_comparison": {
+      "job": 138743308264,
+      "artifact": 14971711337,
+      "archive_sha256": "22bf36ed465d460064b4dba34b7526af76e8283d031d360a4f450545e6d31496",
+      "artifact_name": "opica-support-reviewed-old-comparison-9180f489f39f4d807692b1da6871550bfdbbcbc5-45473412897-1"
+    },
+    "fresh_historical_native": {
+      "job": 138743308212,
+      "artifact": 14971937222,
+      "archive_sha256": "e95f4d884cf2683f1711753fac18c884c43dc735b743a1b36dde15f519acafe1",
+      "artifact_name": "opica-support-port-9180f489f39f4d807692b1da6871550bfdbbcbc5-45473412897-1"
+    },
+    "cross_world": {
+      "job": 138830395630,
+      "artifact": 14974359359,
+      "archive_sha256": "f965c8be45cc6bc7c94c0ff16763f044b1dc8891ba0d29ef96e46e37caca220a",
+      "artifact_name": "extraction-cross-world-ea038dc8f3e86121ddea43213bf3bbeb015b23f3"
+    }
+  },
+  "expanded_readiness": {
+    "required": [
+      "historical",
+      "original",
+      "principal"
+    ],
+    "missing_disposition": "WAITING_FOR_UPSTREAM_EVIDENCE",
+    "production_acceptance": false
+  },
+  "original_focus_budget": {
+    "goals": 28,
+    "frontier_depth": 3,
+    "frontier_alternatives": 3,
+    "menu_roots": 24,
+    "candidates_per_goal": 4,
+    "search_states": 16384,
+    "term_depth": 32,
+    "search_seconds": 20,
+    "root_menu_partitions": 1,
+    "attempts_mixed": 4
+  }
+}
