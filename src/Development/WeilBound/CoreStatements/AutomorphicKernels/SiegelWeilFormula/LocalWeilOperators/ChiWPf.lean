@@ -2,6 +2,48 @@ module
 
 public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.LocalWeilOperators.Imports
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.AdelicIntertwine
+import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.CayleyTransform.CompFinFinOne
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.LocalWeilOperators.ExistsInsW
+import Formalism.LocalToGlobal.IndefiniteReal.PHeisFC
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
 
 @[expose] public section
 
@@ -30,7 +72,6 @@ theorem uW_eq (w : InfinitePlace F) (z : ℂ) :
 
 theorem finOne_mul_self : finOne F * finOne F = finOne F := by
   first
-  | rfl
   | (show ((0 : Ainf F), (1 : Af F)) * ((0 : Ainf F), (1 : Af F)) = ((0 : Ainf F), (1 : Af F)); simp)
 
 theorem e_mul_e : (finOne F • (1 : AE F E)) * (finOne F • (1 : AE F E)) = finOne F • (1 : AE F E) := by
@@ -48,7 +89,7 @@ theorem update_mul (w : InfinitePlace F) (z z' : ℂ) :
   funext v
   by_cases h : v = w
   · subst h; simp
-  · simp [Function.update_apply, h]
+  · simp [h]
 
 theorem uW_mul (w : InfinitePlace F) (z z' : ℂ) : d.uW w (z * z') = d.uW w z * d.uW w z' := by
   rw [uW_eq, uW_eq, uW_eq, update_mul, (sec_spec d).2.2.2.2, add_mul, mul_add, mul_add, sec_mul_e, e_mul_sec, e_mul_e]
@@ -121,7 +162,7 @@ theorem chiW_pos_pf (w : InfinitePlace F) : ∀ r : ℝ, 0 < r → d.chiW w (r :
       rw [Place.piInf_cA d.cm, KC.uW_eq, map_add (f := _), (KC.sec_spec d).2.1, Place.piInf_finOne, add_zero]
       by_cases h : w' = w
       · subst h; simp
-      · simp [Function.update_apply, h]
+      · simp [h]
     · rw [← map_smul, KC.uW_eq, smul_add, (KC.sec_spec d).2.2.1, zero_add, smul_smul, KC.finOne_mul_self, map_smul,
         map_one]
   have huw : d.uW w (r : ℂ) = d.uW w t * cA σ (d.uW w t) := by

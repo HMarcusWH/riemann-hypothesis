@@ -1,7 +1,53 @@
 module
 
-public import Mathlib
-public import CompanionTheory.SpectralGeometry.CountingDefinitions.AdelicEulerProducts.IsEulerProd
+public import Formalism.UnipotentAdelicQuotients.SWXSDefs
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -42,8 +88,8 @@ theorem trace_entry [FiniteDimensional F E] (σ : E →ₐ[F] E) {d : ℕ} (b : 
         (algebraMap F R (Algebra.trace F E (σ (b k) * e * b l)) *
           (Algebra.TensorProduct.basis R b).repr v l) := by
   conv_lhs => rw [expand b R u, expand b R v]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, Finset.sum_mul, Finset.mul_sum]
+
+  simp only [map_sum, Finset.sum_mul, Finset.mul_sum]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
   have : sigR R σ (((Algebra.TensorProduct.basis R b).repr u k) ⊗ₜ[F] b k) =
@@ -88,21 +134,21 @@ theorem trGram_det_ne_zero {σ : E →ₐ[F] E} (h : IsCMExt F E σ) {M d : ℕ}
     have h0 := congrFun hBv (i, k)
     simp only [Matrix.mulVec, dotProduct, Fintype.sum_prod_type, trGram, Pi.zero_apply] at h0
     rw [← h0]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Matrix.mulVec, dotProduct, hy, Finset.mul_sum, map_sum]
+
+    simp only [Matrix.mulVec, dotProduct, hy, Finset.mul_sum, map_sum]
     refine Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun l _ => ?_
     rw [mul_smul_comm, mul_smul_comm, map_smul, smul_eq_mul, mul_comm, mul_assoc]
   have key2 : ∀ i (e : E), Algebra.trace F E (e * (J *ᵥ y) i) = 0 := by
     intro i e
     have he : e = ∑ k, (b.repr (σ e) k) • σ (b k) := by
       have h3 := congrArg σ (b.sum_repr (σ e))
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [sig_sig h, map_sum] at h3
+
+      rw [sig_sig h, map_sum] at h3
       exact h3.symm.trans (Finset.sum_congr rfl fun k _ => σ.toLinearMap.map_smul _ _)
     rw [he]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Finset.sum_mul, map_sum, smul_mul_assoc, map_smul, key, smul_zero,
-      Finset.sum_const_zero]
+
+    simp only [Finset.sum_mul, map_sum, smul_mul_assoc, map_smul, key, smul_zero,
+    Finset.sum_const_zero]
   have hw : J *ᵥ y = 0 := by
     funext i
     refine (traceForm_nondegenerate F E).1 _ fun e => ?_
@@ -131,8 +177,8 @@ theorem trace_form_coords : ∀ (F E : Type) [Field F] [NumberField F] [Field E]
   intro R _ _ x y
   have hh : hR R σ J x y = ∑ i, ∑ j, sigR R σ (x i) * ((1 : R) ⊗ₜ[F] J i j) * y j := rfl
   rw [hh]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, TraceFormGram.trace_entry σ b R]
+
+  simp only [map_sum, TraceFormGram.trace_entry σ b R]
   simp only [dotProduct, Matrix.mulVec, Fintype.sum_prod_type, Matrix.map_apply, TraceFormGram.trGram,
     Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => ?_

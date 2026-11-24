@@ -1,7 +1,52 @@
 module
 
-public import Mathlib
+public import GroundTheory.AutomorphicForms.CuspidalSplittingCoeff
+public import Mathlib.Order.CompletePartialOrder
 public import GroundTheory.AutomorphicForms.CuspidalSplittingProjective
+import GroundTheory.AutomorphicForms.JacquetAdmissible
+import GroundTheory.AutomorphicForms.SmoothRepSchur
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -265,7 +310,7 @@ theorem exists_sub_mem_isotypicKernel (u : U) :
           (Submodule.span ℂ (Set.range fun h => ρ h u)).comap (ρ g) := by
         refine Submodule.span_le.2 ?_
         rintro _ ⟨h, rfl⟩
-        exact Submodule.subset_span ⟨g * h, by simp [map_mul, Module.End.mul_apply]⟩
+        exact Submodule.subset_span ⟨g * h, by simp [map_mul]⟩
       exact hle hx⟩
   have huW0 : u ∈ W0.toSubmodule := Submodule.subset_span ⟨1, by simp⟩
   have hvanish : ∀ H : Representation.IntertwiningMap ρ π, H u = 0 →
@@ -323,8 +368,8 @@ theorem exists_sub_mem_isotypicKernel (u : U) :
     choose c hcx using hc
     have hΦ : ∀ y : Fin m → V, Φ y = ∑ i, c i • y i := fun y => by
       conv_lhs => rw [← Finset.univ_sum_single y]
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum]
+
+      rw [map_sum]
       exact Finset.sum_congr rfl fun i _ => hcx i (y i)
     have hzero : ∑ i, c i • bE i = 0 := by
       have h1 : Φ (Γ u) = 0 := hΦR _ ((hRmem _).2 ⟨⟨u, huW0⟩, rfl⟩)
@@ -345,8 +390,8 @@ theorem exists_sub_mem_isotypicKernel (u : U) :
   have hGu' : ∀ i, Gs i u' = Gs i u := by
     intro i
     have h2 : Γ0 (∑ k, s k (Gs k u)) = Γ u := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum]
+
+      rw [map_sum]
       have h3 : ∀ k, Γ0 (s k (Gs k u)) = Pi.single k (Gs k u) := fun k => by
         rw [← Representation.IntertwiningMap.comp_apply, hs]
         rfl

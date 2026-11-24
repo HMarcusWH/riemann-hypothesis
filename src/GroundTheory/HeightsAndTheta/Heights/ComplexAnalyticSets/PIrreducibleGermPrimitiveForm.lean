@@ -1,10 +1,58 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.StIrreducibleGermPrimitiveForm
 public import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.StFiniteFibreGermIntegral
 public import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.StZariskiAnalyticNormality
 public import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.StDiscrAdjoin
+public import GroundTheory.HeightsAndTheta.Heights.ComplexAnalyticSets.StGenericPrimitive
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.FieldTheory.PurelyInseparable.Exponent
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.HopfAlgebra.Basic
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Algebra.MvPolynomial.Funext
+public import Mathlib.FieldTheory.IntermediateField.Adjoin.Basic
 
 @[expose] public section
 
@@ -60,8 +108,8 @@ theorem primitive_with_resultant_denominator (hG : GroundTheory.Heights₂.Heigh
   set ℓs : S := ∑ j, algebraMap R S (c (cc j)) * z j with hℓs
   set ℓ' : L' := ∑ j, cc j • x j with hℓ'
   have hVℓ : V ℓ' = ι ℓs := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [hℓ', hℓs, map_sum, map_mul, Algebra.smul_def, hVx]
+
+    simp only [hℓ', hℓs, map_sum, map_mul, Algebra.smul_def, hVx]
     refine Finset.sum_congr rfl fun j _ => ?_
     congr 1
     rw [AlgHom.commutes, IsScalarTower.algebraMap_apply R (FractionRing R) (FractionRing S)]
@@ -275,8 +323,8 @@ theorem IrreducibleGermPrimitiveForm.proof (hF : FiniteFibreGermIntegral.Stateme
       alongOf X x ⟨ℓ, ℓ.analyticAt x⟩ := by
     have h1 : ∀ j, algebraMap (holGerms (A x)) (germsAlong X x) (c (cc j)) = alongOf X x (constAn x (cc j)) :=
       fun j => rfl
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [h1, ← map_mul, ← map_sum]
+
+    simp only [h1, ← map_mul, ← map_sum]
     congr 1
     apply Subtype.ext
     funext w
@@ -286,9 +334,9 @@ theorem IrreducibleGermPrimitiveForm.proof (hF : FiniteFibreGermIntegral.Stateme
   let a : Fin N → analyticAtRing (A x) := fun j => germRep (A x) (p.coeff j)
   have hPt : (Polynomial.X ^ N + ∑ j, C (a j) * Polynomial.X ^ (j : ℕ)).map (germOf (A x)) = p := by
     conv_rhs => rw [hpm.as_sum]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Polynomial.map_add (f := _), Polynomial.map_pow, Polynomial.map_X, Polynomial.map_sum,
-      Polynomial.map_mul, Polynomial.map_C, a, germOf_germRep]
+
+    simp only [Polynomial.map_add (f := _), Polynomial.map_pow, Polynomial.map_X, Polynomial.map_sum,
+    Polynomial.map_mul, Polynomial.map_C, a, germOf_germRep]
     rw [← hN, Fin.sum_univ_eq_sum_range (fun i => C (p.coeff i) * Polynomial.X ^ i) N]
   set Pt : (analyticAtRing (A x))[X] := Polynomial.X ^ N + ∑ j, C (a j) * Polynomial.X ^ (j : ℕ) with hPtdef
   let res : analyticAtRing (A x) := Pt.resultant (derivative Pt) N (N - 1)
@@ -299,9 +347,9 @@ theorem IrreducibleGermPrimitiveForm.proof (hF : FiniteFibreGermIntegral.Stateme
   have hQt : ∀ i, (∑ j, C (q i j) * Polynomial.X ^ (j : ℕ)).map (germOf (A x)) = f (e i) := by
     intro i
     conv_rhs => rw [as_sum_range' (f (e i)) N (hfdeg (e i))]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C, Polynomial.map_pow,
-      Polynomial.map_X, q, germOf_germRep]
+
+    simp only [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C, Polynomial.map_pow,
+    Polynomial.map_X, q, germOf_germRep]
     rw [Fin.sum_univ_eq_sum_range (fun k => C ((f (e i)).coeff k) * Polynomial.X ^ k) N]
     simp only [C_mul_X_pow_eq_monomial]
   have hPtdeg : Pt.natDegree ≤ N := by
@@ -328,8 +376,8 @@ theorem IrreducibleGermPrimitiveForm.proof (hF : FiniteFibreGermIntegral.Stateme
     let ev : analyticAtRing (A x) →+* ℂ :=
       (Pi.evalRingHom (fun _ : Fin d → ℂ => ℂ) y).comp (analyticAtRing (A x)).subtype
     have hmap : Pt.map ev = Polynomial.X ^ N + ∑ j, C ((a j).1 y) * Polynomial.X ^ (j : ℕ) := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp [hPtdef, Polynomial.map_sum, ev]
+
+      simp [hPtdef, Polynomial.map_sum, ev]
     have h2 := congrArg (Polynomial.map ev) huv
     rw [Polynomial.map_add (f := _), Polynomial.map_mul, Polynomial.map_mul, Polynomial.map_C, ← derivative_map,
       hmap] at h2

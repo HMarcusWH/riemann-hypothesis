@@ -1,7 +1,48 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.Statements
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -144,8 +185,8 @@ theorem sum_locMap_basis (I : Finset (Fin (N + 1))) (y : LocMod S N M I) :
       = ∑ j, locMap ((LinearMap.toSpanSingleton (Poly S N) M (b j)).comp (b.coord j)) I y :=
         Finset.sum_congr rfl fun j _ => h1 j
     _ = locMap (∑ j, (LinearMap.toSpanSingleton (Poly S N) M (b j)).comp (b.coord j)) I y := by
-        set_option synthInstance.maxHeartbeats 100000 in
-          simp only [locMap, map_sum]
+
+        simp only [locMap, map_sum]
         exact (LinearMap.sum_apply Finset.univ _ y).symm
     _ = y := by
         rw [h2]
@@ -257,8 +298,8 @@ theorem SerreFree.proof (hP : SerrePoly.Statement.{u}) : SerreFree.Statement.{u,
     have hsurj := fun j => (hpos (c - d j) (by linarith [hc j])).2.2
     choose p hp using fun j => hsurj j (freeCoord 𝓜 b d hb 0 c j y)
     refine ⟨∑ j, ⟨(p j : Poly S N) • b j, smul_basis_mem 𝓜 b d hb c j (p j)⟩, ?_⟩
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, ← sum_freeIncl_freeCoord 𝓜 b d hb 0 c y]
+
+    rw [map_sum, ← sum_freeIncl_freeCoord 𝓜 b d hb 0 c y]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [← hp j, freeInclusion_toH0]
 

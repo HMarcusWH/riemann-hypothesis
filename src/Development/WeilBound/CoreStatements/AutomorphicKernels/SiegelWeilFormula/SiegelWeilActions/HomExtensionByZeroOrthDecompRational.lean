@@ -1,6 +1,54 @@
 module
 
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.SiegelWeilActions.EllA
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.UnfoldingCompactness.IncMTranspose
+import Development.WeilBound.CoreStatements.AutomorphicKernels.EisensteinSeriesG2.G2HaarMeasure.ContinuousInFrame
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.EisensteinSeriesG2.G2HaarMeasure.CountableRationalPointsDoubled
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.SiegelWeilActions.ContinuousNilpotentFramePart
 public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.SiegelWeilActions.ProjectedBlockUpperSum
+import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.UnfoldingCompactness.MatrixOfUnipotentFrame
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -71,8 +119,8 @@ theorem pad_single_vecMul {M : Mt d} (hM : IsPad L M) (a : AE F E) :
   simp only [Pi.smul_apply, Matrix.row_apply, smul_eq_mul]
   rw [(hM _ (by simp) r).1]
   by_cases h : r = Sum.inr L.i₀
-  · subst h; simp [Matrix.one_apply]
-  · simp [Matrix.one_apply, h, Pi.single_apply, Ne.symm h]
+  · subst h; simp
+  · simp [h, Ne.symm h]
 
 def hN (L : LD d) (vf wf : Fin d.n ⊕ Fin d.n → AE F E) : Mt d :=
   1 + Matrix.vecMulVec (Pi.single (Sum.inl L.i₀) 1) vf + Matrix.vecMulVec wf (Pi.single (Sum.inr L.i₀) 1)
@@ -86,11 +134,8 @@ def W (R : RD d) : Mt d := kunf.jw d.n (((R.ε : ℤ) : AE F E))
 
 def cv (σ : E →ₐ[F] E) {ι : Type} (x : ι → AE F E) : ι → AE F E := fun r => cA σ (x r)
 
-theorem e_mul_e (R : RD d) : (((R.ε : ℤ) : AE F E)) * ((R.ε : ℤ) : AE F E) = 1 := by
-  rw [← Int.cast_mul, ← Units.val_mul, Int.units_mul_self, Units.val_one, Int.cast_one]
-
 theorem W_transpose (R : RD d) : (W R)ᵀ = (((R.ε : ℤ) : AE F E)) • W R := by
-  have he := e_mul_e R
+  have he := _root_.PositivityTheory.SiegelWeilFormula.Act.C5.eps_mul R
   ext (i | i) (j | j) <;> simp [W, kunf.jw, Matrix.one_apply] <;> split_ifs <;> simp_all [eq_comm]
 
 theorem W_mul_alt (R : RD d) : W R * W R = (((R.ε : ℤ) : AE F E)) • (1 : Mt d) := by
@@ -108,7 +153,7 @@ theorem W_mulVec_inr (R : RD d) (y : Fin d.n ⊕ Fin d.n → AE F E) (i : Fin d.
 
 theorem JW {R : RD d} {J K : Mt d} (hKJ : K * J = 1) (hK : Kᵀ * W R * K.map (cA σ) = W R) :
     J * W R = W R * (K.map (cA σ))ᵀ := by
-  have he : ((R.ε : ℤ) : AE F E) * ((R.ε : ℤ) : AE F E) = 1 := e_mul_e R
+  have he : ((R.ε : ℤ) : AE F E) * ((R.ε : ℤ) : AE F E) = 1 := _root_.PositivityTheory.SiegelWeilFormula.Act.C5.eps_mul R
   have hJt : Jᵀ * Kᵀ = 1 := by rw [← Matrix.transpose_mul, hKJ, Matrix.transpose_one]
   have h1 : W R * K.map (cA σ) = Jᵀ * W R := by
     calc W R * K.map (cA σ) = (Jᵀ * Kᵀ) * W R * K.map (cA σ) := by rw [hJt, Matrix.one_mul]
@@ -129,8 +174,8 @@ theorem JW {R : RD d} {J K : Mt d} (hKJ : K * J = 1) (hK : Kᵀ * W R * K.map (c
 
 theorem cv_vecMul (x : Fin d.n ⊕ Fin d.n → AE F E) (K : Mt d) : cv σ (x ᵥ* K) = (K.map (cA σ))ᵀ *ᵥ cv σ x := by
   funext s
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp [cv, Matrix.vecMul, Matrix.mulVec, dotProduct, map_sum, map_mul, mul_comm]
+
+  simp [cv, Matrix.vecMul, Matrix.mulVec, dotProduct, map_sum, map_mul, mul_comm]
 
 def qf (R : RD d) (x : Fin d.n ⊕ Fin d.n → AE F E) : AE F E := x ⬝ᵥ (W R *ᵥ cv σ x)
 
@@ -144,15 +189,12 @@ def hh (L : LD d) (u b : Fin L.n → AE F E) : AE F E := ∑ j, b j * cA σ (u j
 def wf (R : RD d) (L : LD d) (u b : Fin L.n → AE F E) : Fin d.n ⊕ Fin d.n → AE F E :=
   -(((R.ε : ℤ) : AE F E)) • (W R *ᵥ cv σ (vV L u b))
 
-theorem jeA_eq (R : RD d) : eA R = ((R.ε : ℤ) : AE F E) := by
-  simp [eA]
-
 theorem uA_apply (u : Fin L.n → AE F E) (i k : Fin d.n) :
     uA L u i k = (1 : Matrix (Fin d.n) (Fin d.n) (AE F E)) i k + if i = L.i₀ then ext0 L u k else 0 := by
   by_cases hi : i = L.i₀
   · subst hi
     simp [uA, ext0, Matrix.sum_apply, Matrix.single_apply]
-  · simp [uA, Matrix.sum_apply, Matrix.single_apply, Ne.symm hi, hi]
+  · simp [uA, Matrix.sum_apply, Ne.symm hi, hi]
 
 theorem D_apply (u : Fin L.n → AE F E) (l k : Fin d.n) :
     ((uA L (-u))ᵀ.map (cA σ)) l k = (1 : Matrix (Fin d.n) (Fin d.n) (AE F E)) l k +
@@ -160,18 +202,18 @@ theorem D_apply (u : Fin L.n → AE F E) (l k : Fin d.n) :
   rw [Matrix.map_apply, Matrix.transpose_apply, uA_apply]
   by_cases hk : k = L.i₀
   · subst hk
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [ext0, Matrix.one_apply, eq_comm, map_sum, Finset.sum_neg_distrib]
+
+    simp [ext0, Matrix.one_apply, eq_comm, map_sum, Finset.sum_neg_distrib]
   · simp [Matrix.one_apply, hk, eq_comm]
 
 theorem sB_apply (R : RD d) (b : Fin L.n → AE F E) (i l : Fin d.n) :
     sB R L b i l = (if i = L.i₀ then ext0 L b l else 0) +
       if l = L.i₀ then -(((R.ε : ℤ) : AE F E) * cA σ (ext0 L b i)) else 0 := by
   unfold sB
-  simp only [Matrix.sum_apply, Matrix.add_apply, Matrix.single_apply, Finset.sum_add_distrib, jeA_eq]
+  simp only [Matrix.sum_apply, Matrix.add_apply, Matrix.single_apply, Finset.sum_add_distrib, _root_.PositivityTheory.SiegelWeilFormula.Act.C5.eA_eq]
   rcases idx L i with rfl | ⟨p, rfl⟩ <;> rcases idx L l with rfl | ⟨q, rfl⟩ <;>
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [ext0, ComplexParameterFamilyContinuity.em_ne, (ComplexParameterFamilyContinuity.em_ne L _).symm, L.inj.eq_iff, map_sum, apply_ite, eq_comm]
+
+    simp [ext0, (ComplexParameterFamilyContinuity.em_ne L _).symm, L.inj.eq_iff, eq_comm]
 
 theorem aB_apply (δ : E) (a : AF F) (i k : Fin d.n) :
     aB L δ a i k = if i = L.i₀ ∧ k = L.i₀ then a • inclR (F := F) (AF F) δ else 0 := by
@@ -191,16 +233,16 @@ theorem frameN (h : Hyp L nb uM nb' w₁ cM δ) (u b : Fin L.n → AE F E) (a : 
     Matrix.fromBlocks_apply₂₂, hN, Matrix.add_apply, Matrix.vecMulVec_apply, Matrix.one_apply, Pi.add_apply, vV, wf,
     Pi.smul_apply, smul_eq_mul, W_mulVec_inl, W_mulVec_inr, cv, Sum.elim_inl, Sum.elim_inr]
   · rw [uA_apply]
-    by_cases hi : i = L.i₀ <;> simp [hi, Pi.single_apply, Matrix.one_apply]
+    by_cases hi : i = L.i₀ <;> simp [hi, Matrix.one_apply]
   · rw [aB_apply, Matrix.mul_apply, sum_split L]
     simp only [D_apply]
     rcases idx L i with rfl | ⟨p, rfl⟩ <;> rcases idx L k with rfl | ⟨q, rfl⟩ <;>
-      simp [sB_apply, D_apply, extend_zero_embedding, extend_zero_last_column, ComplexParameterFamilyContinuity.em_ne, (ComplexParameterFamilyContinuity.em_ne L _).symm, Pi.single_apply, Matrix.one_apply,
+      simp [sB_apply, extend_zero_embedding, extend_zero_last_column, ComplexParameterFamilyContinuity.em_ne, (ComplexParameterFamilyContinuity.em_ne L _).symm, Matrix.one_apply,
         L.inj.eq_iff, hh, Finset.sum_neg_distrib, sub_eq_add_neg]
-  · simp [Pi.single_apply]
+  · simp
   · rw [D_apply]
-    have he := e_mul_e R
-    by_cases hk : k = L.i₀ <;> simp [hk, Pi.single_apply, Matrix.one_apply, ← mul_assoc, he]
+    have he := _root_.PositivityTheory.SiegelWeilFormula.Act.C5.eps_mul R
+    by_cases hk : k = L.i₀ <;> simp [hk, Matrix.one_apply, ← mul_assoc, he]
 
 def cmp (L : LD d) (M : Mt d) (p : (Fin L.n → AE F E) × (Fin L.n → AE F E)) :
     (Fin L.n → AE F E) × (Fin L.n → AE F E) :=
@@ -284,8 +326,8 @@ theorem qf_vV (R : RD d) (u b : Fin L.n → AE F E) :
     qf R (vV L u b) = cA σ (hh L u b) + ((R.ε : ℤ) : AE F E) * hh L u b := by
   simp only [qf, dotProduct, Fintype.sum_sum_type, W_mulVec_inl, W_mulVec_inr, cv, vV, Sum.elim_inl, Sum.elim_inr]
   rw [sum_split L, sum_split L]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [extend_zero_last_column, extend_zero_embedding, map_zero, zero_mul, mul_zero, zero_add, hh, map_sum, map_mul, cc d, Finset.mul_sum]
+
+  simp only [extend_zero_last_column, extend_zero_embedding, map_zero, mul_zero, zero_add, hh, map_sum, map_mul, cc d, Finset.mul_sum]
   rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
   exact Finset.sum_congr rfl fun k _ => by ring
 

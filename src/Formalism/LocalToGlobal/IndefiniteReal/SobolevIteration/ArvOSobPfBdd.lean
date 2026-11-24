@@ -1,8 +1,50 @@
 module
 
-public import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.ArvOSobPfK
+import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.IsUnitDetOfCartan
+public import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.ArvOSobPfSt
 public import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.ArvOSobPfA
 public import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.ArvOSobPfAs
+public import Formalism.LocalToGlobal.IndefiniteReal.SobolevIteration.ArvOSobPfK
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -44,23 +86,7 @@ theorem inv_mem_UH {G g : Matrix (Fin n) (Fin n) ℂ} (hG : IsUnit G.det) (hg : 
 
 theorem conj_mem_lieG {G g X : Matrix (Fin n) (Fin n) ℂ} (hG : IsUnit G.det) (hg : g ∈ Formalism.QuantumDeterminants.UH G)
     (hX : X ∈ lieG G) : g⁻¹ * X * g ∈ lieG G := by
-  have hd := det_UH_unit hG hg
-  have h : gᴴ * G * g = G := hg
-  have hX' : Xᴴ * G + G * X = 0 := hX
-  have e0 : g * g⁻¹ = 1 := Matrix.mul_nonsing_inv g hd
-  have e1 : G * g⁻¹ = gᴴ * G := by
-    calc G * g⁻¹ = gᴴ * G * g * g⁻¹ := by rw [h]
-      _ = gᴴ * G := by rw [Matrix.mul_assoc, e0, Matrix.mul_one]
-  have e2 : (g⁻¹)ᴴ * G = G * g := by
-    calc (g⁻¹)ᴴ * G = (g⁻¹)ᴴ * (gᴴ * G * g) := by rw [h]
-      _ = (g * g⁻¹)ᴴ * G * g := by rw [Matrix.conjTranspose_mul]; simp only [Matrix.mul_assoc]
-      _ = G * g := by rw [e0, Matrix.conjTranspose_one, Matrix.one_mul]
-  show (g⁻¹ * X * g)ᴴ * G + G * (g⁻¹ * X * g) = 0
-  calc (g⁻¹ * X * g)ᴴ * G + G * (g⁻¹ * X * g) = gᴴ * Xᴴ * ((g⁻¹)ᴴ * G) + (G * g⁻¹) * X * g := by
-        simp only [Matrix.conjTranspose_mul, Matrix.mul_assoc]
-    _ = gᴴ * (Xᴴ * G + G * X) * g := by
-        rw [e1, e2]; simp only [Matrix.mul_add, Matrix.add_mul, Matrix.mul_assoc]
-    _ = 0 := by rw [hX', Matrix.mul_zero, Matrix.zero_mul]
+  apply Formalism.IndefR.Tow.SobPf.Avg.conj_mem_lieG <;> assumption
 
 variable {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
 

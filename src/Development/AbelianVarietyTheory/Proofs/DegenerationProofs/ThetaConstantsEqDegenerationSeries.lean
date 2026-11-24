@@ -1,14 +1,67 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.Definitions.Degenerations.AdmissibleBaseOfCompleteDvr
-public import Development.AbelianVarietyTheory.Definitions.Degenerations.HomExtSt
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.BCTools
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ThetaConstantEqSumThetaTermsOddMultiple
-public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueThetaConst
 public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.UnivIdentity
+public import Development.AbelianVarietyTheory.Definitions.Uniformization.AllDV
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsFrameRatio
+public import Development.AbelianVarietyTheory.Definitions.Degenerations.SepticCharacterInjective
+public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.NormalisingFactor
 public import Development.AbelianVarietyTheory.Proofs.ThetaFamilyOrigin.IsThetaPtOverOfSubsingleton
-public import Development.AbelianVarietyTheory.Proofs.DegenerationProofs.NormalisingFactorStatement
+public import Development.AbelianVarietyTheory.Proofs.ThetaShiftProofs.ExpansionBijectiveOverFields
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ExistsUniqueThetaConst
+public import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ThetaConstantEqSumThetaTermsOddMultiple
+public import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.WeilIsIffCommIsOfAndLiftSubsingleton
+public import Mathlib.Analysis.Normed.Group.Ultra
+import Development.AbelianVarietyTheory.Proofs.UniformizationProofs.ValueAtOrigin
+import Development.AbelianVarietyTheory.Statements.TorsionEndomorphisms.ExistsGeneratorOfIsField
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.AlgebraicGeometry.Modules.Sheaf
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Topology.Connected.Separation
+import Mathlib.Topology.MetricSpace.Ultra.TotallySeparated
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.ExistsZeroGt
 
 @[expose] public section
 
@@ -137,7 +190,6 @@ theorem val_nu (hG : GlobalFnsSt) {n : ℕ} {ν : LB.Gen (nuLB D n)} (hν : Norm
       simp only [ofMul_mul, ofMul_inv, ofMul_zpow, ofMul_pow, ofMul_one]
       module)
     (fun y J hJ => by
-      beta_reduce
       rw [Category.comp_id, normd_one hν hJ, step_one n hJ, inv_one, _root_.mul_one]) T b z J hJ
   beta_reduce at key
   rw [Category.comp_id] at key
@@ -151,7 +203,6 @@ theorem val_kap (hG : GlobalFnsSt) {n : ℕ} {κ : LB.Gen (kapLB D (𝟙 D.P.A ^
       simp only [ofMul_mul, ofMul_inv, ofMul_zpow, ofMul_pow, ofMul_one]
       module)
     (fun y J hJ => by
-      beta_reduce
       rw [Category.comp_id, normd_one hκ hJ, _root_.one_mul]
       exact Finset.prod_eq_one fun i _ => step_one i hJ) T b z J hJ
   beta_reduce at key
@@ -238,7 +289,7 @@ theorem val_frame [IsNoetherianRing R] (hL : Laws) {k : ℕ} (hk : Odd k) {p : Q
   rw [c₂, hu, eq_inv_of_mul_eq_one_left b₂] at a₂
   rw [hb, cubN_map _ (sU y) (cubV_eq ν y), dbl_map _ (sU y) (cubV_eq ν y) (sym_eq ν y)] at a₁
   rw [hb, mulq_map _ (sU y) (cubV_eq ν y) (sym_eq ν y)] at a₂
-  rw [hu, ((GlobalTheory.T.wQ_characterization_and_mul_relation F N k hk q q).1 u).2 ⟨sU_inj y ?_, sU_inj y ?_⟩]
+  rw [hu, ((_root_.GlobalTheory.Ex.SymLift.normalising_factor F N k hk q q).1 u).2 ⟨sU_inj y ?_, sU_inj y ?_⟩]
   · rw [NumD.tk, map_mul, map_mul, map_pow, map_pow, a₁, _root_.mul_assoc, div_mul_cancel]
   · rw [map_mul, map_pow, ← a₂, inv_mul_cancel_right]
 
@@ -277,7 +328,6 @@ theorem exists_frame {m : ℕ} (p : QkPt D F (m ^ 2)) {w : Frm D F (m ^ 2) p.g.b
       simp only [ofMul_mul, ofMul_inv, ofMul_zpow, ofMul_pow]
       module)
   refine ⟨w', hw', fun z J hJ => Eq.trans ?_ (v _ (𝟙 _) z J hJ).symm⟩
-  beta_reduce
   rw [Category.id_comp]
   rfl
 

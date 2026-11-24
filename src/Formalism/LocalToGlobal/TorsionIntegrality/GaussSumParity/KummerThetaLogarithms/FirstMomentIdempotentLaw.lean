@@ -1,11 +1,61 @@
 module
 
 public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.BiextensionPointsIntegral
-public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.KummerThetaLogarithms.SubstFirstCoboundaryThree
-public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.KummerThetaLogarithms.IpNormPowSubPowLe
 public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.KummerThetaLogarithms.EqZeroOfPowEqOne
-public import Formalism.FormalGroupWitt.WeightInvariance
+public import Formalism.FormalGroupWitt.Statement
+public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.StatementA
 public import Formalism.FormalGroupWitt.FormalGroupWittProofs.EqSingleOfDegreeEqOne
+public import Formalism.FormalGroupWitt.WeightInvariance
+public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.KummerThetaLogarithms.IpNormPowSubPowLe
+public import Formalism.LocalToGlobal.TorsionIntegrality.GaussSumParity.KummerThetaLogarithms.SubstFirstCoboundaryThree
+public import Formalism.ThetaLogCoordinates.UniformThetaSubstitution.FrobeniusLiftNorms.CoeffSubstLgFOfDegreeOne
+import Formalism.ThetaLogCoordinates.UniformThetaSubstitution.FrobeniusLiftNorms.TopsChoicePartA
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -64,8 +114,8 @@ variable {K : Type} [Field K] {d : ℕ} [NeZero d]
 lemma sum_odd (hd : Even d) (σ : K →+* K) {c : K} (hc : σ^[d] c = c) :
     (∑ s : ZMod d, if s.val % 2 = 0 then 0 else σ^[s.val] c) =
       σ (∑ s : ZMod d, if s.val % 2 = 0 then σ^[s.val] c else 0) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine Fintype.sum_equiv (Equiv.subRight (1 : ZMod d)) _ _ ?_
   intro s
   simp only [Equiv.subRight_apply]
@@ -175,8 +225,8 @@ lemma comb_zXY [Fintype ι] [DecidableEq ι] (hd : Even d) (l : ℕ) (σ : K →
     (∑ s : ZMod d, C (pXY σ om oms x s) * zXY l σ om oms s) = at1 x (lgF K l) := by
   simp only [zXY_eq, Finset.mul_sum, ← mul_assoc, ← map_mul]
   rw [Finset.sum_comm]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [← Finset.sum_mul, ← map_sum, dual1 hd σ hfix hT]
+
+  simp only [← Finset.sum_mul, ← map_sum, dual1 hd σ hfix hT]
   simp
 
 lemma comb_back [Fintype ι] [DecidableEq ι] (hd : Even d) (σ : K →+* K) {om oms : ι → K}
@@ -185,16 +235,16 @@ lemma comb_back [Fintype ι] [DecidableEq ι] (hd : Even d) (σ : K →+* K) {om
     (∑ x : Bool × ι, C (mXY σ om oms j x) * ∑ s : ZMod d, C (pXY σ om oms x s) * L s) = L j := by
   simp only [Finset.mul_sum, ← mul_assoc, ← map_mul]
   rw [Finset.sum_comm]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [← Finset.sum_mul, ← map_sum, dual2 hd σ hfix hT]
+
+  simp only [← Finset.sum_mul, ← map_sum, dual2 hd σ hfix hT]
   simp
 
 lemma subst_comb {α τ κ : Type} [Fintype α] {φ : τ → MvPowerSeries κ K} (hφ : HasSubst φ)
     (c : α → K) (L : α → MvPowerSeries τ K) :
     subst φ (∑ s, C (c s) * L s) = ∑ s, C (c s) * subst φ (L s) := by
   simp only [← MvPowerSeries.smul_eq_C_mul]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← MvPowerSeries.coe_substAlgHom hφ, map_sum]
+
+  rw [← MvPowerSeries.coe_substAlgHom hφ, map_sum]
   simp only [map_smul]
 
 lemma subst_linE' {τ : Type} (σ : K →+* K) (om oms : ι → K) (r : ι)
@@ -267,7 +317,7 @@ lemma coeff_one_gLog [CharZero K] {τ : Type} [DecidableEq τ] {l d : ℕ} (hl :
     have := hl.two_le
     nlinarith
   rw [Finsupp.degree_single, Finset.sum_range_succ, Finset.sum_range_one]
-  simp [Finsupp.single_eq_single_iff, hl1, Ne.symm hl1, hl.one_lt.ne']
+  simp [Finsupp.single_eq_single_iff, Ne.symm hl1]
 
 lemma isIdMod2_letLog [CharZero K] {l d : ℕ} [NeZero d] (hl : l.Prime) :
     Formalism.FG.IsIdMod2 (letLog (K := K) (d := d) l) := by
@@ -391,7 +441,7 @@ lemma keep_zXY {l d : ℕ} [NeZero d] {ι : Type} [Fintype ι] (σ : K →+* K) 
     simp only [not_forall] at h
     obtain ⟨x, hx, hPx⟩ := h
     unfold zXY
-    set_option synthInstance.maxHeartbeats 100000 in
+
     split_ifs with hj
     · rw [map_sum]
       refine Finset.sum_eq_zero fun r _ => ?_
@@ -442,9 +492,9 @@ lemma mXY_shift (hd : Even d) (σ : K →+* K) {om oms : ι → K}
   unfold mXY
   by_cases h : s.val % 2 = 0
   · have h' : (s - 2).val % 2 = 0 := by omega
-    cases b <;> simp [h, h', key _ (hfix r).1, key _ (hfix r).2]
+    cases b <;> simp [h, h', key _ (hfix r).1]
   · have h' : ¬ (s - 2).val % 2 = 0 := by omega
-    cases b <;> simp [h, h', key _ (hfix r).1, key _ (hfix r).2]
+    cases b <;> simp [h, h', key _ (hfix r).2]
 
 lemma zXY_shift [CharZero K] [Fintype ι] {l : ℕ} (hl : l.Prime) (hd : Even d) (σ : K →+* K)
     {om oms : ι → K} (hfix : ∀ r, σ^[d] (om r) = om r ∧ σ^[d] (oms r) = oms r) (s : ZMod d) :
@@ -457,9 +507,9 @@ lemma zXY_shift [CharZero K] [Fintype ι] {l : ℕ} (hl : l.Prime) (hd : Even d)
     fun x => artin_hasse_log_frobenius_shift hl (σ.comp σ) x
   simp only [frobVar_eq_expand hq] at hA ⊢
   rw [zXY_eq l σ om oms s, zXY_eq l σ om oms (s - 2)]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, map_mul, MvPowerSeries.map_C, RingHom.coe_comp, Function.comp_apply,
-    mXY_shift hd σ hfix, MvPowerSeries.expand_C]
+
+  simp only [map_sum, map_mul, MvPowerSeries.map_C, RingHom.coe_comp, Function.comp_apply,
+  mXY_shift hd σ hfix, MvPowerSeries.expand_C]
   rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
   refine Finset.sum_congr rfl fun x _ => ?_
   rw [← hA x]
@@ -495,8 +545,8 @@ lemma shiftType_zXY [IsUltrametricDist K] [CharZero K] [Fintype ι] {l : ℕ} (h
   refine ⟨cc_zXY hl.two_le σ om oms s, ?_⟩
   rw [zXY_shift hl hd σ hO.2 s]
   intro n
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg zero_le_one fun x _ => ?_
   rw [MvPowerSeries.coeff_C_mul, MvPowerSeries.coeff_X, norm_mul]
   split_ifs <;> simp [norm_mXY hσ hO.1 s x]
@@ -528,7 +578,7 @@ theorem BMinus1_of' (hE : ExpSpec) : BMinus1 := by
     (letter_shift K l d σ hl).2.1
   have hZS := shiftType_zXY hl hd hball hO
   have hid := isIdMod2_letLog (K := K) (d := d) hl
-  obtain ⟨T0, hT00, hT0I, hT0s⟩ := Formalism.FG.funEqHomV K l (l ^ 2) hq (σ.comp σ) hset (ZMod d)
+  obtain ⟨T0, hT00, hT0I, hT0s⟩ := _root_.Formalism.FG.functional_equation_hom_vector K l (l ^ 2) hq (σ.comp σ) hset (ZMod d)
     (sM K d) (by intro j k; unfold sM; split_ifs <;> simp) (letLog l) hid
     (funEq_of_shift hq σ hLS) (Bool × ι) (zXY l σ om oms) (cc_zXY hl2 σ om oms)
     (funEq_of_shift hq σ hZS)
@@ -602,8 +652,8 @@ theorem BMinus1_of' (hE : ExpSpec) : BMinus1 := by
   have hXiS : HasSubst Xi := hasSubst_of_constantCoeff_zero hXi0
   refine ⟨T, Xi, fun s => ⟨hTc0 s, hTI s⟩, fun x => ⟨hXi0 x, hXiI x⟩, hTlog, ?_, ?_, ?_, ?_⟩
   · intro s x
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [← coeff_one_subst hid hTc0 s x, hTlog, zXY_eq, map_sum, Finset.sum_eq_single x]
+
+    rw [← coeff_one_subst hid hTc0 s x, hTlog, zXY_eq, map_sum, Finset.sum_eq_single x]
     · rw [coeff_C_mul, artin_hasse_log_eq_generic_log (d := 1) l x 0, coeff_one_gLog hl, if_pos rfl, mul_one]
     · intro y _ hy
       rw [coeff_C_mul, artin_hasse_log_eq_generic_log (d := 1) l y 0, coeff_one_gLog hl, if_neg (Ne.symm hy),

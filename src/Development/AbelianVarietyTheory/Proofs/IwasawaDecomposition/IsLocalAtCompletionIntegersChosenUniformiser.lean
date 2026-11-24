@@ -1,21 +1,50 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.Divisibility.QLocTied
-public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.HostPins
-public import Formalism.DoubleCosetMeasures.LatticeCoset
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.HostPins
+import Formalism.LocalRingCardinality.SpanPowerMembership.Adelic
 
 @[expose] public section
 
 open MeasureTheory Matrix NumberField IsDedekindDomain Formalism.BasicNotions Formalism.DoubleCosetMeasures Formalism.L2.Host Formalism.L2.DIV Formalism.L2.DIV.QLoc GlobalTheory.Mem.HD
 
 namespace GlobalTheory.Mem.HD
-
-private theorem lt_one_iff_le_exp_neg_one (g : WithZero (Multiplicative ℤ)) :
-    g < 1 ↔ g ≤ WithZero.exp (-1 : ℤ) := by
-  induction g using WithZero.expRecOn with
-  | zero => simp
-  | exp a => rw [← WithZero.exp_zero, WithZero.exp_lt_exp, WithZero.exp_le_exp]; omega
 
 theorem isLocalAt_adicCompletionIntegers_uniformizer (L : Type) [Field L] [NumberField L] (P : HeightOneSpectrum (𝓞 L)) :
     IsLocalAt (OP P) ((piP P : (P.adicCompletion L)ˣ) : P.adicCompletion L) := by
@@ -36,7 +65,7 @@ theorem isLocalAt_adicCompletionIntegers_uniformizer (L : Type) [Field L] [Numbe
     have hx_eq : Valued.v x = 1 := by
       by_contra hne1
       have hlt : Valued.v x < 1 := lt_of_le_of_ne hx1 hne1
-      have hle := (lt_one_iff_le_exp_neg_one _).1 hlt
+      have hle := (_root_.Formalism.BasicNotions.Examples₂.wz_lt_one_iff _).1 hlt
       refine hnot (((piP P : (P.adicCompletion L)ˣ) : P.adicCompletion L)⁻¹ * x) ?_ ?_
       · rw [mem, map_mul, map_inv₀, hv]
         exact inv_mul_le_one_of_le₀ hle hexp.le

@@ -1,7 +1,20 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.Definitions.Divisors.HilbertNinetyQuotientHomEqIff
+public import Mathlib.LinearAlgebra.SymplecticGroup
+public import Mathlib.Topology.Covering.Basic
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -25,33 +38,10 @@ theorem eChar_apply (x : ℝ) : eChar x = cexp (2 * π * x * I) := by
   ring_nf
 
 theorem hasTemperateGrowth_eChar : Function.HasTemperateGrowth (eChar : ℝ → ℂ) := by
-  have hf : (eChar : ℝ → ℂ) = fun x : ℝ => cexp (2 * π * x * I) := funext eChar_apply
-  have hlin : ∀ x : ℝ, HasDerivAt (fun y : ℝ => (2 * π * y * I : ℂ)) (2 * π * I) x := by
-    intro x
-    have h := (((hasDerivAt_id x).ofReal_comp).const_mul (2 * π : ℂ)).mul_const I
-    simpa using h
-  have hd : ∀ c : ℂ, deriv (fun x : ℝ => c * cexp (2 * π * x * I)) =
-      fun x : ℝ => c * (2 * π * I) * cexp (2 * π * x * I) := by
-    intro c
-    funext x
-    rw [((hlin x).cexp.const_mul c).deriv]
-    ring
-  have hit : ∀ n : ℕ, iteratedDeriv n (fun x : ℝ => cexp (2 * π * x * I)) =
-      fun x : ℝ => (2 * π * I) ^ n * cexp (2 * π * x * I) := by
-    intro n
-    induction n with
-    | zero => funext x; simp
-    | succ n ih => rw [iteratedDeriv_succ, ih, hd, pow_succ]
-  have hnorm : ∀ x : ℝ, ‖cexp (2 * π * x * I)‖ = 1 := by
-    intro x
-    rw [show (2 * π * x * I : ℂ) = ((2 * π * x : ℝ) : ℂ) * I by push_cast; ring]
-    exact Complex.norm_exp_ofReal_mul_I _
-  rw [hf]
-  refine ⟨?_, fun n => ⟨0, (2 * π) ^ n, fun x => ?_⟩⟩
-  · exact ((contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const).cexp
-  · rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, hit n]
-    simp only [norm_mul, norm_pow, hnorm, mul_one, pow_zero]
-    simp [abs_of_pos Real.pi_pos]
+  have hscale : (fun x : ℝ => (2 * π) * x).HasTemperateGrowth := by fun_prop
+  rw [show (eChar : ℝ → ℂ) = fun x : ℝ => cexp (2 * π * x * I) from funext eChar_apply]
+  simpa [Function.comp_def, Complex.ofReal_mul] using
+    Complex.hasTemperateGrowth_exp_mul_I.comp hscale
 
 def rho (w : (ι → ℝ) × (ι → ℝ)) : 𝓢(ι → ℝ, ℂ) →L[ℂ] 𝓢(ι → ℝ, ℂ) :=
   SchwartzMap.smulLeftCLM ℂ (fun x => eChar (x ⬝ᵥ w.2 + ⅟(2 : ℝ) * (w.1 ⬝ᵥ w.2))) ∘L

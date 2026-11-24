@@ -1,7 +1,50 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.Columns.CoefficientMapHeightBound
+import Formalism.LocalToGlobal.Divisibility.CoefModLemmas
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -110,7 +153,7 @@ theorem blkE_of_hom {F : MvPolynomial (ι × Fin n × Fin n) ℂ} {d : ι → �
   classical
   ext m
   unfold blkE
-  rw [coeff_sum, coeff_smul, smul_eq_mul]
+  rw [coeff_sum, MvPolynomial.coeff_smul, smul_eq_mul]
   simp only [coeff_sum, coeff_X_mul_pderiv_columns]
   simp only [← Finset.sum_mul]
   by_cases h0 : AddMonoidAlgebra.coeff F m = 0
@@ -123,8 +166,8 @@ theorem blkE_blockAct (U : ι → Matrix (Fin n) (Fin n) ℂ) (τ : ι) (F : MvP
     blkE τ (Formalism.GradedWeylDivisibility.blockAct ℂ U F) = Formalism.GradedWeylDivisibility.blockAct ℂ U (blkE τ F) := by
   classical
   unfold blkE
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, map_mul, blockAct_X, pderiv_blockAct, Finset.mul_sum, Finset.sum_mul]
+
+  simp only [map_sum, map_mul, blockAct_X, pderiv_blockAct, Finset.mul_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
   conv_rhs => rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun t _ => ?_
@@ -140,8 +183,8 @@ theorem fockN_euler (τ : ι) (G : MvPolynomial (ι × Fin n × Fin n) ℂ) (c :
     simp only [← fockL_self, fockL_pderiv_X]
     have e : ∑ a, ∑ t, fockL G (X (τ, a, t) * pderiv (τ, a, t) G) = fockL G (blkE τ G) := by
       unfold blkE
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp only [map_sum]
+
+      simp only [map_sum]
     rw [e, hE, map_smul, smul_eq_mul]
   exact_mod_cast this
 

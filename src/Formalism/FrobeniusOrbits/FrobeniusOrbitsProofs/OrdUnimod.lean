@@ -1,12 +1,53 @@
 module
 
-public import Mathlib
 public import Formalism.FrobeniusOrbits.HostThickExists
-public import Formalism.FrobeniusOrbits.RealSubfieldLeCompositum
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.Galois
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.FrobMulInertia
 public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.Decomp
+public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.FrobMulInertia
+import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.Galois
 public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.SplitK
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -31,8 +72,6 @@ theorem integ_iff (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (t : hostE ζ a b
     IsIntegral ℤ (σ t) ↔ IsIntegral ℤ t := by
   first
   | exact isIntegral_algEquiv (σ.restrictScalars ℤ)
-  | exact ⟨fun h => by simpa using h.map (σ.symm.toAlgHom.restrictScalars ℤ),
-      fun h => h.map (σ.toAlgHom.restrictScalars ℤ)⟩
 
 theorem smul_ne_bot (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (𝓞 (hostE ζ a b)))
     (hB : B ≠ ⊥) : σ • B ≠ ⊥ := by
@@ -45,7 +84,6 @@ theorem smul_ne_bot (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (�
   | exact smul_bot _
   | exact Ideal.map_bot
   | (rw [Ideal.pointwise_smul_def]; exact Ideal.map_bot)
-  | simp
 
 theorem mem_inv_smul (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (𝓞 (hostE ζ a b)))
     (hB : B ≠ ⊥) (y : hostE ζ a b) :
@@ -58,8 +96,6 @@ theorem mem_inv_smul (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (�
     intro z
     first
     | rfl
-    | simp
-    | exact NumberField.RingOfIntegers.coe_smul _ _
   have h1 : ((σ • B : Ideal (𝓞 (hostE ζ a b))) :
       FractionalIdeal (𝓞 (hostE ζ a b))⁰ (hostE ζ a b)) ≠ 0 :=
     FractionalIdeal.coeIdeal_ne_zero.mpr (smul_ne_bot σ B hB)
@@ -74,8 +110,6 @@ theorem mem_inv_smul (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (�
     have hm : σ • z' ∈ σ • B := by
       first
       | exact Ideal.smul_mem_pointwise_smul σ z' B hz'
-      | exact Submodule.smul_mem_pointwise_smul z' σ B hz'
-      | exact Set.smul_mem_smul_set hz'
     have := h (algebraMap _ _ (σ • z')) (by
       rw [FractionalIdeal.mem_coeIdeal]
       exact ⟨σ • z', hm, rfl⟩)
@@ -87,7 +121,6 @@ theorem mem_inv_smul (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (B : Ideal (�
     have hv : σ⁻¹ • w' ∈ B := by
       first
       | exact (Ideal.mem_pointwise_smul_iff_inv_smul_mem).mp hw'
-      | exact Ideal.mem_pointwise_smul_iff_inv_smul_mem.mp hw'
       | (obtain ⟨v, hv, rfl⟩ := hw'; simpa using hv)
     have := h (algebraMap _ _ (σ⁻¹ • w')) (by
       rw [FractionalIdeal.mem_coeIdeal]
@@ -113,8 +146,6 @@ private theorem mem_stabilizer_of_isArithFrobAt {L : Type} [Field L] [NumberFiel
     rw [← this]
     first
     | rfl
-    | exact Iff.rfl
-    | simp
   rw [MulAction.mem_stabilizer_iff]
   ext x
   rw [Ideal.mem_pointwise_smul_iff_inv_smul_mem]
@@ -159,17 +190,12 @@ private theorem galE_fst_snd_eq_one_of_mem_stabilizer_of_jacobiSym_eq_one {e q d
   have hinj : Function.Injective (algebraMap (𝓞 (hostE ζ a b)) (hostE ζ a b)) := by
     first
     | exact IsIntegralClosure.algebraMap_injective (𝓞 (hostE ζ a b)) ℤ (hostE ζ a b)
-    | exact FaithfulSMul.algebraMap_injective _ _
-    | exact NoZeroSMulDivisors.algebraMap_injective _ _
-    | exact IsFractionRing.injective _ _
   have hcomm : ∀ z : 𝓞 (hostE ζ a b),
       algebraMap (𝓞 (hostE ζ a b)) (hostE ζ a b) (τ • z) =
         τ (algebraMap (𝓞 (hostE ζ a b)) (hostE ζ a b) z) := by
     intro z
     first
     | rfl
-    | simp
-    | exact NumberField.RingOfIntegers.coe_smul _ _
   have hβ2 : β ^ 2 = -(d : 𝓞 (hostE ζ a b)) := by
     apply hinj
     rw [map_pow, hβ, hb2]
@@ -212,8 +238,6 @@ private theorem galE_fst_snd_eq_one_of_mem_stabilizer_of_jacobiSym_eq_one {e q d
       have hm : τ • (β - (s : 𝓞 (hostE ζ a b))) ∈ τ • P := by
         first
         | exact Ideal.smul_mem_pointwise_smul τ _ P hs
-        | exact Submodule.smul_mem_pointwise_smul _ τ P hs
-        | exact Set.smul_mem_smul_set hs
       rwa [hstab] at hm
     have h2 : τ • (β - (s : 𝓞 (hostE ζ a b))) = -β - (s : 𝓞 (hostE ζ a b)) := by
       apply hinj
@@ -265,7 +289,6 @@ theorem hostOrdinary : HostOrdinary := by
     first
     | exact Iff.rfl
     | (rw [Psi, MonoidHom.mem_ker]; rfl)
-    | simp [Psi, chD]
   have hS := hostSplitK_of (hostFrob_of hostGalois hostGalSpec) e q d hH L ζ a b hL
   have hF := hostFrob_of hostGalois hostGalSpec e q d hodd L ζ a b hL
   have hcq : Nat.Coprime q (2 ^ (e + 2)) :=
@@ -327,8 +350,6 @@ theorem hostUnimodular : HostUnimodular := by
       (1 : FractionalIdeal (𝓞 (hostE ζ a b))⁰ (hostE ζ a b)) ≠ 0 := by
     first
     | exact FractionalIdeal.dual_ne_zero _ _ one_ne_zero
-    | exact FractionalIdeal.dual_ne_zero one_ne_zero
-    | exact FractionalIdeal.dual_ne_zero (𝓞 (KinE ζ a b)) (KinE ζ a b) one_ne_zero
   have hprod : ((𝔟 : Ideal (𝓞 (hostE ζ a b))) :
       FractionalIdeal (𝓞 (hostE ζ a b))⁰ (hostE ζ a b)) *
       ((σ • 𝔟 : Ideal (𝓞 (hostE ζ a b))) :
@@ -338,7 +359,6 @@ theorem hostUnimodular : HostUnimodular := by
     rw [← FractionalIdeal.coeIdeal_mul, ← h]
     first
     | exact coeIdeal_differentIdeal _ _ _ _
-    | exact coeIdeal_differentIdeal (𝓞 (KinE ζ a b)) (KinE ζ a b) (hostE ζ a b) (𝓞 (hostE ζ a b))
     | exact coeIdeal_differentIdeal (A := 𝓞 (KinE ζ a b)) (K := KinE ζ a b) (L := hostE ζ a b)
         (B := 𝓞 (hostE ζ a b))
   have hne : ((𝔟 : Ideal (𝓞 (hostE ζ a b))) :

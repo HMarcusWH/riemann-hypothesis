@@ -1,6 +1,54 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.FundamentalDomains.TraceIntegralBasis
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -64,10 +112,10 @@ lemma trace_int (c : Free.ChooseBasisIndex ℤ (𝓞 E) → ℤ) (γ : 𝓞 E) :
     rw [smul_mul_smul_comm, map_zsmul, mul_comm (ed E j), trace_ed]
     split_ifs <;> simp
   refine ⟨∑ j, c j * m j, ?_⟩
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [hm, Finset.sum_mul_sum, map_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp_rw [map_sum, key]
+
+  rw [hm, Finset.sum_mul_sum, map_sum]
+
+  simp_rw [map_sum, key]
   simp [Finset.sum_ite_eq']
 
 lemma norm_discr (β : E) (hβ : β ≠ 0)
@@ -88,8 +136,8 @@ lemma norm_discr (β : E) (hβ : β ≠ 0)
       ring
     rw [e]
     conv_lhs => rw [← (integralBasis E).sum_repr (β * integralBasis E j)]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [Finset.mul_sum, map_sum]
+
+    rw [Finset.mul_sum, map_sum]
     apply Finset.sum_congr rfl
     intro k _
     rw [Algebra.leftMulMatrix_eq_repr_mul, Algebra.traceMatrix_apply, Algebra.traceForm_apply,
@@ -142,8 +190,8 @@ lemma norm_bd_ge (x : VS E) (hx : x ∈ span ℤ (Set.range (bd E))) (hx0 : x �
   obtain ⟨β, hβdef⟩ : ∃ β : E, β = ∑ j, c j • ed E j := ⟨_, rfl⟩
   have hxβ : x = iota E (2 * cc β) := by
     rw [← hc, hβdef]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [bd, cc, map_sum, map_zsmul, Finset.mul_sum, mul_smul_comm]
+
+    simp only [bd, cc, map_sum, map_zsmul, Finset.mul_sum, mul_smul_comm]
   have hβ0 : β ≠ 0 := by
     rintro h
     apply hx0

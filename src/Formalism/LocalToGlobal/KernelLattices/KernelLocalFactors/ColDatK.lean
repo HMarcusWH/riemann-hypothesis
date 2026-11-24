@@ -1,23 +1,40 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.KernelLattices.ColumnData
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.BaseLinkOfNonzeroDelta
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.BaseExP
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.Smooth
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.AmbOfENeSd
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.CardTrivialFirstComponent
-public import Formalism.SharpRestriction.RamificationFrobenius.TotientGaloisClasses.FrameFacts
-public import Development.AutomorphicArithmetic.WeightCongruences.IsRootOfIntegral
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.MuCardLeTwo
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SplitPairOfGen
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.DiagramFitsSourceRank
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.GlobTied
-public import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.ColInst
-public import Formalism.LocalToGlobal.Columns.ChainOneP
-public import Formalism.LocalToGlobal.Columns.RefXi1Above
-public import Formalism.LocalToGlobal.Columns.ReferenceKernelEquivOfLastComponent
-public import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.KerEquivConcrete
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 

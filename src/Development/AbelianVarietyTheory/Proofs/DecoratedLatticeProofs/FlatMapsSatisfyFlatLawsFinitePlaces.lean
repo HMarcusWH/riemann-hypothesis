@@ -1,16 +1,51 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.Definitions.LatticeFrames.PlacesToAdeles
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.FlatThetaMapsPreserveThetaFunctionsStatement
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.FlatThetaMapsConvergeThetaFunctionsStatement
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.HeisenbergOperatorThetaFunctionalMixedSourceModeStatement
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.HeisenbergThetaMixedModelTargetOfMixedModelStatement
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.MixedCoordinatesOfThetaFunctionAreThetaFunctionsStatement
 public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.BesselToJacobiFlatSchwartzEquivariantStatement
-public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.JacobiToBesselFlatIntertwinesWeilActionStatement
 public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.FlatSchwartzTargetUnipotentConjBesselCharacterStatement
+public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.FlatThetaMapsConvergeThetaFunctionsStatement
+public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.FlatThetaMapsPreserveThetaFunctionsStatement
+import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.HeisenbergOperatorThetaFunctionalMixedSourceModeStatement
+import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.HeisenbergThetaMixedModelTargetOfMixedModelStatement
+public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.JacobiToBesselFlatIntertwinesWeilActionStatement
+import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.MixedCoordinatesOfThetaFunctionAreThetaFunctionsStatement
 public import Development.AbelianVarietyTheory.Proofs.DecoratedLatticeProofs.WeilDatumDescendsToWittCoreStatement
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+public import Development.AbelianVarietyTheory.Definitions.LatticeFrames.IsQuasiFam
 
 namespace I195MixedCoordinates_e025acfe930a3926902b259b
 
@@ -87,7 +122,7 @@ theorem flatAt_dual (hψ : IsStdChar D ψ (-1)) (f : WO V W → ℂ) (hf : IsThe
   have hm := mixT_smul dW ψ vT.μ vT.𝓕 (ψ (symplO V W (dV.extX W x) (dV.extY W a)))
   unfold _root_.I195MixedCoordinates_e025acfe930a3926902b259b.target at hm
   funext w
-  simp only [flatAt, flatFun, evalAt, key, hm, Pi.smul_apply, smul_eq_mul]
+  simp only [flatAt, flatFun, evalAt, key, Pi.smul_apply, smul_eq_mul]
   rw [← integral_const_mul]
   congr 1; funext u
   unfold _root_.I195MixedCoordinates_14b5fd3aa93c7f4842f1a892.target
@@ -111,7 +146,7 @@ theorem flatAt_iso (hψ : IsStdChar D ψ (-1)) (f : WO V W → ℂ) (hf : IsThet
     unfold _root_.I195MixedCoordinates_a63f0715cbf334f1e52c5d7b.source at hg
     simpa only [_root_.I195MixedCoordinates_a63f0715cbf334f1e52c5d7b.target, _root_.I195MixedCoordinates_14b5fd3aa93c7f4842f1a892.target] using (GlobalTheory.T.heisenbergThetaMixedModelTarget_of_mixedModel D ψ hψ V₀ W W₀ σ dW vT.μ vT.𝓕 vT.covol _ hg).1 ξ y
   funext w
-  simp only [flatAt, flatFun, evalAt, key, Pi.smul_apply, smul_eq_mul]
+  simp only [flatAt, flatFun, evalAt, Pi.smul_apply, smul_eq_mul]
   rw [← integral_const_mul]
   congr 1; funext u
   rw [congrFun (key u) w]
@@ -133,7 +168,7 @@ theorem flatAt_core (hψ : IsStdChar D ψ (-1)) (f : WO V W → ℂ) (hf : IsThe
     unfold _root_.I195MixedCoordinates_a63f0715cbf334f1e52c5d7b.source at hg
     simpa only [_root_.I195MixedCoordinates_a63f0715cbf334f1e52c5d7b.target, _root_.I195MixedCoordinates_14b5fd3aa93c7f4842f1a892.target] using (GlobalTheory.T.heisenbergThetaMixedModelTarget_of_mixedModel D ψ hψ V₀ W W₀ σ dW vT.μ vT.𝓕 vT.covol _ hg).2.1 w₀ y
   funext w
-  simp only [flatAt, flatFun, evalAt, key, heisO]
+  simp only [flatAt, flatFun, evalAt, heisO]
   rw [← integral_const_mul]
   congr 1; funext u
   rw [congrFun (key u) w]
@@ -186,4 +221,4 @@ theorem flatLaws_all (D : D7) : GlobalTheory.FinPl.FlatLaws D := by
 
 end GlobalTheory.FlatLawsDuality
 
-theorem GlobalTheory.FinPl.flatLaws_all : ∀ D : D7, GlobalTheory.FinPl.FlatLaws D := GlobalTheory.FlatLawsDuality.flatLaws_all
+alias GlobalTheory.FinPl.flatLaws_all := _root_.GlobalTheory.FlatLawsDuality.flatLaws_all

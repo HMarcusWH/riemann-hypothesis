@@ -1,8 +1,49 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.UnitaryAdmissibility.ArchimedeanUnitaryDual.InhabitedFinite
 public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.StableLattices.HeckeOperatorsSpanAndFaithful
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -92,8 +133,8 @@ theorem T_dd (g : G) : (T g).1 (dd K) = ∑ y ∈ (hp g).toFinset, Finsupp.singl
   h1 g _ (by simp)
 
 theorem augmentation_of_hecke_operator (g : G) : eps K ((T g).1 (dd K)) = q hp g := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [T_dd T hp h1, map_sum]
+
+  rw [T_dd T hp h1, map_sum]
   simp [eps_single, q]
 
 include h3
@@ -109,8 +150,8 @@ theorem mul_of {g h u : G} (H : ∀ k ∈ K, ∃ a ∈ K, ∃ b ∈ K, h * k * g
   have hw : (T g * T h).1 (dd K) =
       ∑ y ∈ (hp h).toFinset, lam K (Quotient.out y) ((T g).1 (dd K)) := by
     show (T g).1 ((T h).1 (dd K)) = _
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [T_dd T hp h1 h, map_sum]
+
+    rw [T_dd T hp h1 h, map_sum]
     refine Finset.sum_congr rfl fun y _ => ?_
     rw [← lam_out_dd, hk_comm]
   have key : ∀ y ∈ (hp h).toFinset, ∀ z ∈ (hp g).toFinset,
@@ -137,8 +178,8 @@ theorem mul_of {g h u : G} (H : ∀ k ∈ K, ∃ a ∈ K, ∃ b ∈ K, h * k * g
     intro y hy
     rw [hw, Finsupp.finsetSum_apply]
     refine Finset.sum_eq_zero fun x hx => ?_
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [T_dd T hp h1 g, map_sum, Finsupp.finsetSum_apply]
+
+    rw [T_dd T hp h1 g, map_sum, Finsupp.finsetSum_apply]
     refine Finset.sum_eq_zero fun z hz => ?_
     rw [lam_single, Finsupp.single_apply, if_neg]
     intro e
@@ -154,8 +195,8 @@ theorem mul_of {g h u : G} (H : ∀ k ∈ K, ∃ a ∈ K, ∃ b ∈ K, h * k * g
     have e1 : eps K ((T g * T h).1 (dd K)) = c * q hp u := by
       rw [hfix, map_smul, ← T_dd T hp h1 u, augmentation_of_hecke_operator T hp h1, smul_eq_mul]
     have e2 : eps K ((T g * T h).1 (dd K)) = q hp g * q hp h := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [hw, map_sum]
+
+      rw [hw, map_sum]
       simp only [eps_lam, augmentation_of_hecke_operator T hp h1]
       simp [q, mul_comm]
     rw [← e1, e2]

@@ -1,6 +1,50 @@
 module
 
 public import Formalism.LocalToGlobal.GroupLattices.PendingLemmas.DelEquiv
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -95,8 +139,8 @@ def linT (y : σ) : MvPolynomial σ S := ∑ x, C (L x y) * X x
 
 theorem pderiv_linP (x y : σ) : pderiv y (linP L x) = C (L x y) := by
   unfold linP
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   simp only [pderiv_C_mul, pderiv_X, Pi.single_apply]
   rw [Finset.sum_eq_single y]
   · simp
@@ -107,8 +151,8 @@ theorem pderiv_linP (x y : σ) : pderiv y (linP L x) = C (L x y) := by
 
 theorem constantCoeff_linP (x : σ) : constantCoeff (linP L x) = 0 := by
   unfold linP
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   exact Finset.sum_eq_zero fun y _ => by rw [map_mul, constantCoeff_X, mul_zero]
 
 theorem constantCoeff_aeval_linP (F : MvPolynomial σ S) : constantCoeff (aeval (linP L) F) = constantCoeff F := by
@@ -181,22 +225,22 @@ def linS (x : σ) : MvPowerSeries σ K := ∑ y, MvPowerSeries.C (Lk x y) * MvPo
 
 theorem linS_eq (x : σ) : linS Lk x = ((linP Lk x : MvPolynomial σ K) : MvPowerSeries σ K) := by
   unfold linS linP
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← coeToMvPowerSeries.ringHom_apply, map_sum]
+
+  rw [← coeToMvPowerSeries.ringHom_apply, map_sum]
   refine Finset.sum_congr rfl fun y _ => ?_
   rw [map_mul, coeToMvPowerSeries.ringHom_apply, coeToMvPowerSeries.ringHom_apply, coe_C, coe_X]
 
 theorem hasSubst_linS : MvPowerSeries.HasSubst (linS Lk) :=
   MvPowerSeries.hasSubst_of_constantCoeff_zero fun x => by
     unfold linS
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     exact Finset.sum_eq_zero fun y _ => by rw [map_mul, MvPowerSeries.constantCoeff_X, mul_zero]
 
 theorem map_linP (x : σ) : map (algebraMap K S) (linP Lk x) = linP (fun x y => algebraMap K S (Lk x y)) x := by
   unfold linP
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   exact Finset.sum_congr rfl fun y _ => by rw [map_mul, map_C, map_X]
 
 theorem coeff_prod_linS (m n : σ →₀ ℕ) :
@@ -267,8 +311,8 @@ theorem pr_sub (Gd : (σ →₀ ℕ) → Prop) [DecidablePred Gd]
         rw [hc n hn, Algebra.smul_def]
         by_cases hg : Gd n
         · simp only [if_pos hg]
-          set_option synthInstance.maxHeartbeats 100000 in
-            rw [map_mul, map_sum, algebraMap_facS, Finset.mul_sum, Finset.sum_mul]
+
+          rw [map_mul, map_sum, algebraMap_facS, Finset.mul_sum, Finset.sum_mul]
           refine Finset.sum_congr rfl fun m _ => ?_
           rw [map_mul, coeff_prod_linS]
           ring
@@ -314,8 +358,8 @@ def LkB (z z' : X.ZA j) : Kc :=
 theorem linS_LkB (z : X.ZA j) : linS (LkB X Kc j B) z = actS X Kc j B z := by
   rw [actS_eq]
   unfold linS LkB
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, Finset.sum_mul]
+
+  simp only [map_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun a' _ => ?_
   rw [Finset.sum_eq_single (⟨z.1, (z.2.1, a', z.2.2.2)⟩ : X.ZA j)]
@@ -726,8 +770,8 @@ theorem ringHom_scale {I R T : Type} [Fintype I] [DecidableEq I] [CommRing R] [C
     ring
   conv_lhs => rw [G.as_sum]
   conv_rhs => rw [G.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, Finset.mul_sum]
+
+  rw [map_sum, map_sum, Finset.mul_sum]
   exact Finset.sum_congr rfl fun m hm' => by rw [hm, hG m hm']
 
 theorem alg_eq (j : ℕ) (a : X.G.Kf) : algebraMap X.G.Kf (DA X Kc j) a = cD X Kc j (algebraMap X.G.Kf Kc a) := by
@@ -746,8 +790,8 @@ theorem subD_subst_X (j : ℕ) (A : ∀ v : Fin (X.Pj j).nV, GL (Fin ((X.Pj j).m
   cases j <;>
   · obtain ⟨v, s, a, t⟩ := x
     rw [Matrix.mul_apply]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Places.subst, MvPolynomial.aeval_X, map_sum, map_mul, subD_X, subD_C]
+
+    simp only [Places.subst, MvPolynomial.aeval_X, map_sum, map_mul, subD_X, subD_C]
     refine Fintype.sum_equiv (finCongr (rankJ X _)) _ _ fun b => ?_
     rfl
 
@@ -768,7 +812,7 @@ def s0 (j : ℕ) (A : ∀ v : Fin (X.Pj j).nV, GL (Fin ((X.Pj j).m + 1)) ((X.Pj 
   ∏ v, ∏ s : Fin ((X.Pj j).n' v), ((X.Pj j).gPos v s (A v : Matrix _ _ _)).det ^
     (-(lamAt ((X.Pj j).lam0 v) s (Fin.last (X.Pj j).m)))
 
-set_option maxHeartbeats 1000000 in
+
 theorem subD_natAct (j : ℕ) (A : ∀ v : Fin (X.Pj j).nV, GL (Fin ((X.Pj j).m + 1)) ((X.Pj j).Qq v)) (G : (X.Pj j).Xsp)
     (hO : OddDeg X j G) :
     subD X Kc j ((X.Pj j).natAct A G) = cD X Kc j (algebraMap X.G.Kf Kc (s0 X j A) * s1 X Kc j (glAt X j A)) *

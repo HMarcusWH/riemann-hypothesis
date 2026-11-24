@@ -1,8 +1,50 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.UnitaryAdmissibility.ArchimedeanUnitaryDual.InhabitedFinite
-public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.StableLattices.HeckeOperatorsSpanAndFaithfulStatement
+public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.StableLattices.HeckeOperatorsSpanAndFaithful
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -152,8 +194,8 @@ theorem avg_sigma {E : H →L[ℂ] H} (hA : IsAvg σ K E) (hv : ∀ k ∈ K, σ 
       ContinuousLinearMap.mul_apply, hA.2.2 _ _ k.2]
   have hfix := phi_fixed hv (((S.card : ℂ)⁻¹ • T : Hk K))
   rw [← hA.2.1 _ hfix, Subalgebra.coe_smul, LinearMap.smul_apply, hT]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_smul, map_sum]
+
+  simp only [map_smul, map_sum]
   rw [Finset.sum_congr rfl hterm, Finset.sum_const, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul,
     inv_mul_cancel₀ hcard, one_smul]
 
@@ -165,7 +207,7 @@ theorem word_apply {E : H →L[ℂ] H} (hA : IsAvg σ K E) (b : G → Hk K)
   induction l with
   | nil =>
     simp only [List.map_nil, word_nil, List.reverse_nil, List.prod_nil, OneMemClass.coe_one,
-      Module.End.one_apply, dlt, phi_single hv, one_smul, map_one, ContinuousLinearMap.one_apply]
+      dlt, phi_single hv, one_smul, map_one, ContinuousLinearMap.one_apply]
     exact hA.2.1 v hv
   | cons g l ih =>
     simp only [List.map_cons, word_cons, ContinuousLinearMap.mul_apply]
@@ -175,7 +217,7 @@ theorem word_apply {E : H →L[ℂ] H} (hA : IsAvg σ K E) (b : G → Hk K)
 
 theorem stTransfer : StTransfer := by
   intro G _ K M hK hPI H _ _ _ σ _ E hA g
-  obtain ⟨T, hT, -, -⟩ := GlobalTheory.T.hecke_operators_span_and_faithful G K hK
+  obtain ⟨T, hT, -, -⟩ := _root_.GlobalTheory.CompanionTheory.HeckeBasis.heckeBasis G K hK
   have hfin : ∀ x : G, (MulAction.orbit K (x : G ⧸ K)).Finite := hK
   let S : G → Finset (G ⧸ K) := fun x => (hfin x).toFinset
   have hS : ∀ x, (↑(S x) : Set (G ⧸ K)) = MulAction.orbit K (x : G ⧸ K) :=
@@ -209,15 +251,15 @@ theorem stTransfer : StTransfer := by
     have h0 := sum_reverse_eq_zero (fun i => b (g i)) (hPI _)
     show A (stdPoly E fun i => σ (g i)) = 0
     unfold CompanionTheory.D.gk.admitted.stdPoly
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     calc ∑ π : Equiv.Perm (Fin M), A (↑↑(Equiv.Perm.sign π) * word E (List.ofFn fun i => σ (g (π i))))
         = ∑ π : Equiv.Perm (Fin M), (Equiv.Perm.sign π : ℤ) • L (List.ofFn fun i => b (g (π i))).reverse.prod := by
           refine Finset.sum_congr rfl fun π _ => ?_
           rw [← zsmul_eq_mul, map_zsmul, hw]
       _ = L (∑ π : Equiv.Perm (Fin M), (Equiv.Perm.sign π : ℤ) • (List.ofFn fun i => b (g (π i))).reverse.prod) := by
-          set_option synthInstance.maxHeartbeats 100000 in
-            rw [map_sum]
+
+          rw [map_sum]
           simp only [map_zsmul]
       _ = 0 := by rw [h0, map_zero]
   ext v

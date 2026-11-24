@@ -1,7 +1,43 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.FourParts
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -149,11 +185,8 @@ theorem relevant_of_inSF (K : Type) [Field K] [Algebra K E] {T T' : E} {F : LFla
   have hfv : ∀ i : Fin (r + 1), F'.fl.fvec i - F.fl.fvec i ∈ F.fl.Xa i.val := by
     intro i
     refine Fin.lastCases ?_ (fun a => ?_) i
-    · simp only [FlagG.fvec, Fin.snoc_last, Fin.val_last]
-      rw [Xflag_r]
-      exact h.2
-    · simp only [FlagG.fvec, Fin.snoc_castSucc, Fin.coe_castSucc]
-      exact h.1 a
+    · simpa [FlagG.fvec, Fin.snoc_last, Fin.val_last, Xflag_r] using h.2
+    · simpa [FlagG.fvec, Fin.snoc_castSucc, Fin.coe_castSucc] using h.1 a
   unfold FlagG.dpsi
   rw [ell_eq_of hfv hY.1]
 
@@ -164,8 +197,7 @@ section D7
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
 theorem termInSRel_main (D : D7) (u u' : D.what₂.Word) : TermInSRel D u u' := by
-  intro F0 Λ hΛ x hx
-  exact relevant_of_inSF _ hx
+  exact fun F0 Λ hΛ x hx => relevant_of_inSF _ hx
 
 end D7
 

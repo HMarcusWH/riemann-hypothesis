@@ -1,23 +1,58 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.IndefiniteReal.LinksDefs
+import Mathlib
 public import Formalism.LocalToGlobal.IndefiniteReal.FWTie
 public import Formalism.LocalToGlobal.ProjectiveLattices.ThClassPins
-public import Formalism.LocalToGlobal.ProjectiveLattices.CompHt
-public import Formalism.SharpRestriction.Divisibility.PlaceRankTwoOne
-public import Development.AbelianVarietyTheory.Definitions.Foundations.IsProbabilityMeasureMuPart
 public import Development.AbelianVarietyTheory.Definitions.Foundations.ExistsFlatSecRankZero
 public import Development.AbelianVarietyTheory.Definitions.Divisors.IsHomogeneousCompIdeal
 public import Development.AbelianVarietyTheory.Definitions.Divisors.DividedWeightUnique
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsCoversOfHalves
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.ExistsCovPinNotIsXiDet
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.RankOneBaseWeightEqCmTheta
-public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.ExistsModuliSchemePolarizedAbelianLevel
-public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.HermitianCodeWordStagesRingOfIntegersFull
-public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.HermitianCodeWordStagesHasRootOfUnity
-public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.IsUnitaryOfOrderDvd
+public import Development.AbelianVarietyTheory.Definitions.ExistenceOfLattices.CoeSelfDualLatticeInFrameCoordinatesEq
+import Development.AbelianVarietyTheory.Definitions.ArchimedeanThetaValues.IsCoprimeTwoSubRtTwoAddRt
+import Development.AbelianVarietyTheory.Proofs.AbelianSchemeLawProofs.AbelianSchemeLawsUnconditional
+public import Development.AbelianVarietyTheory.Proofs.ModuliProofs.CmModuliConsequenceOfAbelianSchemeLaws
+public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.ExistsLatticeEmbeddingLiftDatumHermitianSpace
+public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.ExistsMemberDictionaryContextGoodEmbedding
+public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.ExistsPrincipalLevelSubgroupOpen
+public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.ExistsUniformisationDictionaryCharacterLaws
 public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.NonemptyFrPtComplex
+import Formalism.LocalRingCardinality.ConjSqrtMinusD
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -347,7 +382,7 @@ theorem exists_half (s : ℤ) (hs : (15 : ℤ) ∣ s ^ 2 + H.d) (e : ℕ) :
   let J : Ideal (𝓞 E) := Ideal.span {15, (s : 𝓞 E) + H.rt}
   have hJ : J.map (H.bar : 𝓞 E →+* 𝓞 E) = Ideal.span {15, (s : 𝓞 E) - H.rt} := by
     rw [Ideal.map_span, Set.image_pair]
-    simp [bar_root, sub_eq_add_neg, map_ofNat]
+    simp [sub_eq_add_neg, map_ofNat]
   have m1 : (15 : 𝓞 E) ∈ J := Ideal.subset_span (by simp)
   have m2 : (s : 𝓞 E) + H.rt ∈ J := Ideal.subset_span (by simp)
   have m3 : (15 : 𝓞 E) ∈ J.map (H.bar : 𝓞 E →+* 𝓞 E) := hJ ▸ Ideal.subset_span (by simp)
@@ -430,7 +465,7 @@ theorem rank_pos (T : Core D) (hQ : T.Q.Pins) (j : ℕ) (hj : InR D j) : 1 ≤ (
   rw [hr]; unfold Ranks.r; omega
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem exists_good_pin (T : Core D) (hQ : T.Q.Pins) (j : ℕ) (hj : InR D j) (c' : Coeff T.Q.l) (hle : T.Q.c.F ≤ c'.F)
     (d : DeltaDat (T.Q.Xo j) c' 0) (e : ℕ) (a1 : d.pd = 15 ^ e) (a2 : d.IsLev) (a3 : d.l₂.A = 1)
     (a4 : FnAlgClosed (Xo := d.Xo₂) (c := d.c₂)) (a5 : ∀ s : ℂ ≃+* ℂ, (∀ a ∈ T.Q.c.F, s a = a) → ∀ a ∈ c'.F, s a ∈ c'.F)

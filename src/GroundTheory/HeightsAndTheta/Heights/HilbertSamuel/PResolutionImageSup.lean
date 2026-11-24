@@ -1,9 +1,55 @@
 module
 
-public import Mathlib
+import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PBlockResolutionImageSup
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsResolutionImageSup
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsChartSup
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PResolutionSupBound
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Algebra.MvPolynomial
+import Mathlib.Topology.Sheaves.Init
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.ProjDefs
 
 @[expose] public section
 
@@ -81,33 +127,7 @@ theorem lintegral_chart_le {X : Type*} [TopologicalSpace X] [MeasurableSpace X] 
       μ S = ∫⁻ y in φ.target ∩ φ.symm ⁻¹' S, ENNReal.ofReal (ν y))
     {g : X → ENNReal} (hg : Measurable g) :
     ∫⁻ z in φ.target, ENNReal.ofReal (ν z) * g (φ.symm z) ≤ ∫⁻ y, g y ∂μ := by
-  have hT : MeasurableSet φ.target := φ.open_target.measurableSet
-  have hs : AEMeasurable φ.symm (volume.restrict φ.target) := φ.continuousOn_symm.aemeasurable hT
-  have hνm : AEMeasurable (fun z => ENNReal.ofReal (ν z)) (volume.restrict φ.target) :=
-    ENNReal.measurable_ofReal.comp_aemeasurable (hν.aemeasurable hT)
-  have hs' : AEMeasurable φ.symm
-      ((volume.restrict φ.target).withDensity fun z => ENNReal.ofReal (ν z)) :=
-    hs.mono_ac (withDensity_absolutelyContinuous _ _)
-  have hmap : Measure.map φ.symm ((volume.restrict φ.target).withDensity fun z => ENNReal.ofReal (ν z)) =
-      μ.restrict φ.source := by
-    ext S hS
-    have hset : φ.symm ⁻¹' S ∩ φ.target = φ.target ∩ φ.symm ⁻¹' (S ∩ φ.source) := by
-      ext z
-      constructor
-      · rintro ⟨h1, h2⟩
-        exact ⟨h2, h1, φ.map_target h2⟩
-      · rintro ⟨h2, h1, -⟩
-        exact ⟨h1, h2⟩
-    rw [Measure.map_apply_of_aemeasurable hs' hS, withDensity_apply' _ _, Measure.restrict_restrict' hT,
-      Measure.restrict_apply hS, hμ _ (hS.inter φ.open_source.measurableSet) inter_subset_right, hset]
-  calc ∫⁻ z in φ.target, ENNReal.ofReal (ν z) * g (φ.symm z)
-      = ∫⁻ z, g (φ.symm z) ∂((volume.restrict φ.target).withDensity fun z => ENNReal.ofReal (ν z)) :=
-        (lintegral_withDensity_eq_lintegral_mul₀ hνm (hg.comp_aemeasurable hs)).symm
-    _ = ∫⁻ y, g y ∂(Measure.map φ.symm
-          ((volume.restrict φ.target).withDensity fun z => ENNReal.ofReal (ν z))) :=
-        (lintegral_map' hg.aemeasurable hs').symm
-    _ = ∫⁻ y in φ.source, g y ∂μ := by rw [hmap]
-    _ ≤ ∫⁻ y, g y ∂μ := setLIntegral_le_lintegral _ _
+  apply GroundTheory.Heights₂.Heights.HilbertSamuel.BlockResolutionImageSup.lintegral_chart_le <;> assumption
 
 theorem local_bound (hC : ChartSupBound.Statement) (d : HSMDatum D Ω κ) (x₀ : d.R.X) :
     ∃ N : Set d.R.X, IsOpen N ∧ x₀ ∈ N ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ n : ℕ, 1 ≤ n →

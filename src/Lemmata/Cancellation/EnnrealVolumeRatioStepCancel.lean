@@ -1,6 +1,52 @@
 module
 
-public import Mathlib
+public import Mathlib.RingTheory.DedekindDomain.AdicValuation.Valuation
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.RingTheory.DedekindDomain.Factorization
 
 @[expose] public section
 
@@ -10,8 +56,7 @@ namespace Bl.VolumeRatioCancellation
 
 private lemma ennreal_volume_ratio_step_cancel {u w z : WithZero (Multiplicative ℤ)} (hz : z ≠ 0)
     (h : u * z ≤ w * z) : u ≤ w := by
-  have h' := mul_le_mul_left h z⁻¹
-  simpa [mul_assoc, mul_inv_cancel₀ hz] using h'
+  exact le_of_mul_le_mul_right h (zero_lt_iff.mpr hz)
 
 theorem goal1 :
   ∀ {R : Type u_1} [inst : CommRing.{u_1} R] [inst_1 : IsDedekindDomain.{u_1} R] {K : Type u_2} [inst_2 : Field.{u_2} K]
@@ -54,6 +99,12 @@ theorem goal1 :
   obtain ⟨y, hy⟩ := IsDedekindDomain.exists_forall_sub_mem_ideal (s := T ∪ S)
     (fun q => q.asIdeal) e (fun q _ => q.prime)
     (fun q _ q' _ hne h => hne (IsDedekindDomain.HeightOneSpectrum.ext h)) xx
+  have hmul (q : IsDedekindDomain.HeightOneSpectrum R) (z : K) :
+      q.valuation K z * q.intValuation (b : R) =
+        q.valuation K (z * algebraMap R K (b : R)) := by
+    have vb : q.valuation K (algebraMap R K (b : R)) = q.intValuation (b : R) := by
+      rw [IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
+    rw [← vb, ← map_mul]
   refine ⟨algebraMap R K y / algebraMap R K (b : R), ?_, ?_⟩
   · intro p hp
     have h1 := hy p (Finset.mem_union_left _ hp)
@@ -72,17 +123,11 @@ theorem goal1 :
       rw [map_sub, hx p hp, sub_mul, div_mul_cancel₀ _ hdK]; ring
     have h4 : p.valuation K (algebraMap R K y / algebraMap R K (b : R) - a p) * p.intValuation (b : R)
         ≤ p.valuation K (c p) * p.intValuation (b : R) := by
-      have vb : p.valuation K (algebraMap R K (b : R)) = p.intValuation (b : R) := by
-        rw [IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
-      have e1 : p.valuation K (algebraMap R K y / algebraMap R K (b : R) - a p) * p.intValuation (b : R)
-          = p.intValuation (y - x p) := by
-        rw [← vb, ← map_mul, key, IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
-      rw [e1]
+      rw [hmul p (algebraMap R K y / algebraMap R K (b : R) - a p), key,
+        IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
       exact h2.trans h3
     exact ennreal_volume_ratio_step_cancel (p.intValuation_ne_zero _ hd0) h4
   · intro q hq
-    have key : (algebraMap R K y / algebraMap R K (b : R)) * algebraMap R K (b : R)
-        = algebraMap R K y := div_mul_cancel₀ _ hdK
     have h5 : q.intValuation y ≤ q.intValuation (b : R) := by
       by_cases hqS : q ∈ S
       · have h1 := hy q (Finset.mem_union_right _ hqS)
@@ -99,12 +144,9 @@ theorem goal1 :
         exact q.intValuation_le_one _
     have h4 : q.valuation K (algebraMap R K y / algebraMap R K (b : R)) * q.intValuation (b : R)
         ≤ 1 * q.intValuation (b : R) := by
-      have vb : q.valuation K (algebraMap R K (b : R)) = q.intValuation (b : R) := by
-        rw [IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
-      have e1 : q.valuation K (algebraMap R K y / algebraMap R K (b : R)) * q.intValuation (b : R)
-          = q.intValuation y := by
-        rw [← vb, ← map_mul, key, IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap]
-      rw [e1, one_mul]
+      rw [hmul q (algebraMap R K y / algebraMap R K (b : R)),
+        div_mul_cancel₀ _ hdK,
+        IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap, one_mul]
       exact h5
     exact ennreal_volume_ratio_step_cancel (q.intValuation_ne_zero _ hd0) h4
 

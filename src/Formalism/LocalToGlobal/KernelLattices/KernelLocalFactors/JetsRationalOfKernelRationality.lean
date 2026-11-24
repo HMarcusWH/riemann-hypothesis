@@ -1,9 +1,47 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.KernelLattices.JetFieldLeKR
-public import Formalism.LocalToGlobal.GlobalTheory.GL3.CubicFields.ComplexMultiplication.ExtEmbEquivComp
 public import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.PeriodLatticeFinitelyGenerated
+import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.ThDistC
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -101,17 +139,17 @@ theorem subD_colSub_bSc (τ : ι) (x : K) (Q : Pol K ι a) :
     rw [AlgHom.comp_apply, AlgHom.comp_apply, colSub_bSc_X, map_mul]
     simp only [subD, aeval_X, aeval_C, algebraMap_eq]
     by_cases hb : v.2.2.1 < b
-    set_option synthInstance.maxHeartbeats 100000 in
-      · simp only [dif_pos hb, map_sum, map_mul, aeval_X, scU, Sum.elim_inl, Sum.elim_inr, C_1, one_mul, Finset.mul_sum]
-        exact Finset.sum_congr rfl fun β _ => by simp only [mul_assoc, mul_comm, mul_left_comm]
+
+    · simp only [dif_pos hb, map_sum, map_mul, aeval_X, scU, Sum.elim_inl, Sum.elim_inr, C_1, one_mul, Finset.mul_sum]
+      exact Finset.sum_congr rfl fun β _ => by simp only [mul_assoc, mul_comm]
     · simp only [dif_neg hb, mul_zero, map_zero]
   exact AlgHom.congr_fun e Q
 
 theorem jetLin_congr (J J' : (DVar ι a b →₀ ℕ) → K) (R : MvPolynomial ((ι × Fin b × Fin b) ⊕ DVar ι a b) K)
     (h : ∀ s ∈ R.support, J (s.comapDomain Sum.inr Sum.inr_injective.injOn) = J' (s.comapDomain Sum.inr Sum.inr_injective.injOn)) :
     jetLin J R = jetLin J' R := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [R.as_sum, map_sum, map_sum]
+
+  rw [R.as_sum, map_sum, map_sum]
   refine Finset.sum_congr rfl fun s hs => ?_
   rw [jetLin_monomial, jetLin_monomial, h s hs]
 
@@ -125,7 +163,7 @@ theorem deg_of_wt [Infinite K] {ν : ι → Fin a → ℕ} {Q : Pol K ι a} (hQ 
   have h2 := subD_colSub_bSc (b := b) τ x Q
   rw [h1, map_smul] at h2
   have h3 := congrArg (AddMonoidAlgebra.coeff · s) h2
-  rw [coeff_scale, scale_prod, coeff_smul, smul_eq_mul, mul_comm] at h3
+  rw [coeff_scale, scale_prod, MvPolynomial.coeff_smul, smul_eq_mul, mul_comm] at h3
   have hc : AddMonoidAlgebra.coeff (subD K ι a b Q) s ≠ 0 := mem_support_iff.1 hs
   have h4 := mul_left_cancel₀ hc h3
   rw [← h4]

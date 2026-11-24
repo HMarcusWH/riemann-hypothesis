@@ -1,6 +1,50 @@
 module
 
-public import Mathlib
+public import Mathlib.RingTheory.AdicCompletion.RingHom
+public import Mathlib.RingTheory.PowerSeries.Log
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Algebra.Algebra.Rat
 
 @[expose] public section
 
@@ -124,8 +168,8 @@ theorem mk_seriesEval {z : B} (hz : z ∈ I) (f : ℚ⟦X⟧) (n : ℕ) :
   have h := IsAdicComplete.mk_liftAlgHom I
     (fun n => truncEval (Ideal.Quotient.mk (I ^ n) z) (pow_mk_eq_zero I hz n))
     (fun hle => factorₐ_comp_truncEval I hz hle) n f
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [seriesEval, h, truncEval_eq_sum, map_sum]
+
+  rw [seriesEval, h, truncEval_eq_sum, map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [map_mul, map_pow, ← Ideal.Quotient.algebraMap_eq, ← IsScalarTower.algebraMap_apply]
 
@@ -163,8 +207,8 @@ theorem map_partialSum {B' : Type*} [CommRing B'] [Algebra ℚ B'] (F : B →+* 
     (f : ℚ⟦X⟧) (n : ℕ) :
     F (∑ i ∈ Finset.range n, algebraMap ℚ B (coeff i f) * z ^ i) =
       ∑ i ∈ Finset.range n, algebraMap ℚ B' (coeff i f) * F z ^ i := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [map_mul, map_pow, RingHom.map_rat_algebraMap]
 

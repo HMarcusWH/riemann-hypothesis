@@ -1,8 +1,47 @@
 module
 
-public import Mathlib
 public import Formalism.SharpRestriction.CuspSpanNormBounds.ThinScalesBound
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.LsDatumA
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -28,8 +67,8 @@ def hL (y : V) : V →ₗ[E] E where
 theorem h_sum_smul_left {ι : Type} [Fintype ι] (c : ι → E) (v : ι → V) (y : V) :
     H.h (∑ i, c i • v i) y = ∑ i, c i * H.h (v i) y := by
   show hL H y (∑ i, c i • v i) = _
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   simp only [map_smul, smul_eq_mul]
   rfl
 
@@ -37,8 +76,8 @@ theorem h_sub_left (x x' y : V) : H.h (x - x') y = H.h x y - H.h x' y := (hL H y
 
 theorem h_sum_smul_right {ι : Type} [Fintype ι] (c : ι → E) (v : ι → V) (w : V) :
     H.h w (∑ i, c i • v i) = ∑ i, M.L.cj (c i) * H.h w (v i) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [H.h_herm (∑ i, c i • v i) w, h_sum_smul_left, map_sum]
+
+  rw [H.h_herm (∑ i, c i • v i) w, h_sum_smul_left, map_sum]
   refine Finset.sum_congr rfl (fun i _ => ?_)
   rw [map_mul, H.h_herm (v i) w]
 
@@ -137,7 +176,7 @@ private theorem det_sub_cornerM (N : Matrix (Fin (r + 1)) (Fin (r + 1)) E) (t : 
   rw [Matrix.det_succ_row (N - cornerM t) (Fin.last r), Matrix.det_succ_row N (Fin.last r),
     Fin.sum_univ_castSucc, Fin.sum_univ_castSucc]
   simp only [hsub, hrow, hP]
-  simp only [Matrix.sub_apply, cornerM, Matrix.of_apply, eq_self_iff_true, and_self, ite_true,
+  simp only [Matrix.sub_apply, cornerM, Matrix.of_apply, and_self, ite_true,
     Fin.succAbove_last]
   ring
 

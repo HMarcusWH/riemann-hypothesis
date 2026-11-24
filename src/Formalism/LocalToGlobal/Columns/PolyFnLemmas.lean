@@ -1,8 +1,59 @@
 module
 
 public import Formalism.LocalToGlobal.Columns.PolyFn
-public import Formalism.GradedWeylDivisibility.FinalD
-public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LDlatLemmas
+import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
+public import Formalism.GradedWeylDivisibility.FinalB
+import Formalism.GradedWeylDivisibility.FinalD
+public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LClosedeqLemmas
+import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LDlatLemmas
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -34,10 +85,10 @@ theorem map_fockS (s : K →+* ℂ) (f g : MvPolynomial σ K) (hf : ∀ m, s (st
   have hsf : f.support ⊆ f.support ∪ g.support := fun x hx => Finset.mem_union_left _ hx
   have hsg : (MvPolynomial.map s g).support ⊆ f.support ∪ g.support :=
     fun x hx => Finset.mem_union_right _ (MvPolynomial.support_map_subset _ _ hx)
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [fockF_eq_sum _ _ _ hsg, map_sum, Finset.sum_subset hsf ?_]
+
+  rw [fockF_eq_sum _ _ _ hsg, map_sum, Finset.sum_subset hsf ?_]
   · refine Finset.sum_congr rfl fun m _ => ?_
-    simp only [MvPolynomial.coeff_map, map_mul, hf m, map_natCast, mfact, Finsupp.prod]
+    simp only [MvPolynomial.coeff_map, map_mul, hf m, map_natCast, mfact]
     ring
   · intro m _ hm
     have hc : f.coeff m = 0 := by simpa [MvPolynomial.mem_support_iff] using hm
@@ -83,7 +134,7 @@ theorem fockF_blockAct (g : ι → Matrix (Fin n) (Fin n) ℂ) (f h : MvPolynomi
     fockF (blockAct ℂ g f) h = fockF f (blockAct ℂ (fun τ => (g τ)ᴴ) h) := by
   classical
   rw [blockAct_eq_sub, blockAct_eq_sub, ← bigM_conjTranspose]
-  exact Formalism.GradedWeylDivisibility.fockSubAdj _ _ _ _
+  exact _root_.Formalism.GradedWeylDivisibility.fischerInnerSubstitutionAdjoint _ _ _ _
 
 theorem map_blockAct {K : Type} [Field K] (s : K →+* ℂ) (g : ι → Matrix (Fin n) (Fin n) K)
     (P : MvPolynomial (ι × Fin n × Fin n) K) :
@@ -199,13 +250,13 @@ theorem evFr_coord (G : ι → Matrix (Fin n) (Fin n) ℂ) (s : K →+* ℂ) (la
     have key : (blockAct K (n := n) A).comp (blockAct K (n := n) B) = blockAct K (n := n) (fun τ => B τ * A τ) := by
       apply MvPolynomial.algHom_ext
       rintro ⟨a, b, c⟩
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp only [AlgHom.comp_apply, Formalism.GradedWeylDivisibility.blockAct, MvPolynomial.aeval_X, map_sum, map_mul,
-        MvPolynomial.aeval_C, MvPolynomial.algebraMap_eq]
+
+      simp only [AlgHom.comp_apply, Formalism.GradedWeylDivisibility.blockAct, MvPolynomial.aeval_X, map_sum, map_mul,
+      MvPolynomial.aeval_C, MvPolynomial.algebraMap_eq]
       simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
       rw [Finset.sum_comm]
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp only [← Finset.sum_mul, ← map_sum, Matrix.mul_apply]
+
+      simp only [← Finset.sum_mul, ← map_sum, Matrix.mul_apply]
     exact DFunLike.congr_fun key q
   have hid : ∀ q : MvPolynomial (ι × Fin n × Fin n) K,
       blockAct K (n := n) (fun _ => (1 : Matrix (Fin n) (Fin n) K)) q = q := by
@@ -501,9 +552,9 @@ theorem linearIndependent_map {σ κ : Type} (s : K →+* ℂ) (v : κ → MvPol
       rfl
     have h2 : ∑ j ∈ t, (AddMonoidAlgebra.coeff (v j) m) * B.repr (g j) b = 0 := by
       have h3 := congrArg (fun z => B.repr z b) hm'
-      set_option synthInstance.maxHeartbeats 100000 in
-        simpa only [map_sum, map_smul, Finsupp.coe_finsetSum, Finset.sum_apply, Finsupp.smul_apply,
-        smul_eq_mul, map_zero, Finsupp.coe_zero, Pi.zero_apply] using h3
+
+      simpa only [map_sum, map_smul, Finsupp.coe_finsetSum, Finset.sum_apply, Finsupp.smul_apply,
+      smul_eq_mul, map_zero, Finsupp.coe_zero, Pi.zero_apply] using h3
     exact (Finset.sum_congr rfl fun j _ => mul_comm _ _).trans h2
   have h4 : B.repr (g i) = 0 := by
     ext b
@@ -603,13 +654,13 @@ theorem nfAll_blockAct (lam : ι → DomWeight n) (u : ι → Matrix (Fin n) (Fi
   have key : (blockAct ℂ (n := n) (fun τ => (u τ)ᴴ)).comp (blockAct ℂ (n := n) u) = AlgHom.id ℂ _ := by
     apply MvPolynomial.algHom_ext
     rintro ⟨a, b, c⟩
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [AlgHom.comp_apply, AlgHom.id_apply, Formalism.GradedWeylDivisibility.blockAct, MvPolynomial.aeval_X, map_sum, map_mul,
-      MvPolynomial.aeval_C, MvPolynomial.algebraMap_eq]
+
+    simp only [AlgHom.comp_apply, AlgHom.id_apply, Formalism.GradedWeylDivisibility.blockAct, MvPolynomial.aeval_X, map_sum, map_mul,
+    MvPolynomial.aeval_C, MvPolynomial.algebraMap_eq]
     simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
     rw [Finset.sum_comm]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [← Finset.sum_mul, ← map_sum]
+
+    simp only [← Finset.sum_mul, ← map_sum]
     have hmul : ∀ d, ∑ x : Fin n, u a b x * (u a)ᴴ x d = (1 : Matrix (Fin n) (Fin n) ℂ) b d := by
       intro d
       rw [← hu a, Matrix.mul_apply]

@@ -1,6 +1,49 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SquareIntegrability.GCauchyStatement
+public import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -19,10 +62,8 @@ lemma lemS_Hf_im (x y : EuclideanSpace ℂ ι) :
   refine Finset.sum_congr rfl fun i _ => ?_
   first
     | rw [Complex.inner]
-    | rw [real_inner_eq_re_inner ℂ]
   simp only [Complex.mul_re, Complex.mul_im, Complex.neg_re, Complex.neg_im, Complex.I_re,
-    Complex.I_im, Complex.conj_re, Complex.conj_im, RCLike.re_to_complex,
-    RCLike.inner_apply]
+    Complex.I_im, Complex.conj_re, Complex.conj_im]
   ring
 
 def lemSJ : EuclideanSpace ℂ ι →ₗ[ℝ] EuclideanSpace ℂ ι :=
@@ -70,8 +111,8 @@ lemma lemSG_det {n : ℕ} (b : Module.Basis (Fin n) ℝ (EuclideanSpace ℂ ι))
         ∑ l, inner ℝ (b₀ j) ((lemSJ : EuclideanSpace ℂ ι →ₗ[ℝ] _) (b₀ l)) * inner ℝ (b₀ l) (b i) := by
       intro j
       conv_lhs => rw [← b₀.sum_repr' (b i)]
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum, inner_sum]
+
+      rw [map_sum, inner_sum]
       refine Finset.sum_congr rfl fun l _ => ?_
       rw [map_smul, real_inner_smul_right, mul_comm]
     rw [e1, ← b₀.sum_inner_mul_inner (b k) ((lemSJ : EuclideanSpace ℂ ι →ₗ[ℝ] _) (b i))]
@@ -87,7 +128,7 @@ lemma lemSG_det {n : ℕ} (b : Module.Basis (Fin n) ℝ (EuclideanSpace ℂ ι))
   ring
 
 
-set_option maxHeartbeats 800000 in
+
 lemma lemSG_inv (Y : GT ι) :
     ∃ C : Matrix (Fin (2 * Fintype.card ι)) (Fin (2 * Fintype.card ι)) ℤ,
       (C.map (Int.cast : ℤ → ℝ)) * lemSG Y.b = 1 := by

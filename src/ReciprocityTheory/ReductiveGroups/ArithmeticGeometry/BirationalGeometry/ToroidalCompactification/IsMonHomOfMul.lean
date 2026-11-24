@@ -1,7 +1,54 @@
 module
 
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.BCTools
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.PhiGenPf
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.AlgebraicGeometry.Modules.Sheaf
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.ExistsZeroGt
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.OneArc
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.RigIsoCongr
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.RosVal
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.DiscreteValuationRings.LBPull
 
 @[expose] public section
 
@@ -94,7 +141,6 @@ private theorem units_ext_gm_lemma_3 {A : Scheme.{0}} {V : A.Opens} (a b : Γ(A,
     simp only [gm, dif_pos hy1]
     first
     | rfl
-    | simp [pullU]
   ext
   refine TopCat.Presheaf.section_ext A.sheaf V _ _ fun y hy => ?_
   have h := congrArg Units.val (H y hy)
@@ -143,7 +189,6 @@ private theorem gm_id_lemma_6 {A : Scheme.{0}} (V : A.Opens) (y : A) (hy : y ∈
   simp only [gm, dif_pos hy1]
   first
   | rfl
-  | simp [pullU]
 
 private theorem glue_units_lemma_5 {A : Scheme.{0}} {I : Type} (V : A.Opens) (U : I → A.Opens)
     (hU : ∀ i, U i ≤ V) (hcov : ∀ y ∈ V, ∃ i, y ∈ U i) (σ : ∀ i, Γ(A, U i)ˣ)
@@ -223,7 +268,7 @@ theorem exists_up {w : LB.Iso L' (L.pull F)} (hw : PGen w) (hL : L.IsLB) (hL' : 
   have hcovq : ∀ y : Y, ∃ q : K → L'.ι, y ∈ LB.wchart L' φ' q := by
     intro y
     have hk : ∀ k, ∃ i, φ' k y ∈ L'.U i := fun k =>
-      Opens.mem_iSup.mp (by rw [hL'.cover]; first | trivial | exact Set.mem_univ _ | simp)
+      Opens.mem_iSup.mp (by rw [hL'.cover]; first | trivial)
     choose q hq using hk
     exact ⟨q, (mem_wchart_lemma _ _ _ _).mpr hq⟩
   choose u hu using fun p q => exists_pw w φ' ε p q
@@ -276,7 +321,7 @@ theorem exists_down {w : LB.Iso L' (L.pull F)} (hw : PGen w) (hL : L.IsLB) (hL' 
   have hcovp : ∀ y : Y, ∃ p : K → L.ι, y ∈ LB.wchart L (fun k => φ' k ≫ F) p := by
     intro y
     have hk : ∀ k, ∃ i, (φ' k ≫ F) y ∈ L.U i := fun k =>
-      Opens.mem_iSup.mp (by rw [hL.cover]; first | trivial | exact Set.mem_univ _ | simp)
+      Opens.mem_iSup.mp (by rw [hL.cover]; first | trivial)
     choose p hp using hk
     exact ⟨p, (mem_wchart_lemma _ _ _ _).mpr hp⟩
   choose u hu using fun p q => exists_pw w φ' ε p q
@@ -345,9 +390,9 @@ theorem maps_of_good {w : LB.Iso L' (L.pull F)} (hw : PGen w) (hL : L.IsLB) (hL'
     have e := congrArg (fun m : Y ⟶ X => m y) (hψ k)
     simpa using e.symm
   have cov : ∀ ψ : Y ⟶ X, ∃ i, ψ y ∈ L.U i := fun ψ =>
-    Opens.mem_iSup.mp (by rw [hL.cover]; first | trivial | exact Set.mem_univ _ | simp)
+    Opens.mem_iSup.mp (by rw [hL.cover]; first | trivial)
   have cov' : ∀ ψ : Y ⟶ X', ∃ i, ψ y ∈ L'.U i := fun ψ =>
-    Opens.mem_iSup.mp (by rw [hL'.cover]; first | trivial | exact Set.mem_univ _ | simp)
+    Opens.mem_iSup.mp (by rw [hL'.cover]; first | trivial)
   choose J hJ using cov
   choose J' hJ' using cov'
   have hh := h y J J' hJ hJ'
@@ -544,7 +589,7 @@ def vK {F : Type} [Field F] [Algebra (FractionRing R) F] {X : Scheme.{0}} {M : L
     {ψ : K → ((TK R).left ⟶ X)} {ε : K → ℤ} (t : LB.Gen (LB.LinComb M ψ ε)) (y : Sp F) (J : (Sp F ⟶ X) → M.ι) :
     ((Sp F).presheaf.stalk y)ˣ := val t (𝟙 _ ≫ jFK (R := R) F) y J
 
-set_option maxHeartbeats 2000000 in
+
 theorem qkPullExists (hG : GlobalFnsSt) : QkPullExistsSt := by
   intro R R' _ _ _ _ φ D D' hD F _ _ _ hF k p'
   have gp := pull_grp hD

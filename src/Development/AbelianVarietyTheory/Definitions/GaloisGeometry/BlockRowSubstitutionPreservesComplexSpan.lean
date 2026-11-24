@@ -1,30 +1,74 @@
 module
 
-public import Mathlib
 public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypCard
-public import Formalism.SharpRestriction.GrowthBounds.ChartedClasses.CompInjLocJ
-public import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.MRatSpanOfRatInv
-public import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.LowestInvariantLeDelta
-public import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.ProdMemSpan
-public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LBidetLemmas
-public import Formalism.SharpRestriction.GrowthBounds.UnramifiedQuadraticSetting
-public import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.CastGLSymmBc
-public import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.NatActRVtupR
-public import Formalism.LocalToGlobal.GlobalTheory.GL6.ValuationClassTranslateMem
-public import Formalism.LocalToGlobal.GroupLattices.FockModels.SwRowGenMonomial
-public import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
-public import Formalism.SharpRestriction.GrowthBounds.IntegralWeylLatticeSpan.WeylLatticeDescentHolds
-public import Formalism.SharpRestriction.GrowthBounds.MonomialFactorials.LiMap
-public import Formalism.SharpRestriction.GrowthBounds.ChartComparison.PStabEq
 public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypVin
-public import Formalism.SharpRestriction.GrowthBounds.ChartComparison.LocCore
 public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypTwA
 public import Formalism.SharpRestriction.GrowthBounds.ChartedClasses.ExistsIsCGBases
-public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypLat
-public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypChi
-public import Formalism.SharpRestriction.GrowthBounds.ChartedClasses.ClsChartedLabAt
 public import Formalism.SharpRestriction.GrowthBounds.ChartComparison.LocTiesOf
+public import Formalism.LocalToGlobal.GlobalTheory.GL6.FrobeniusNoKernelOfFrobeniusSimilitude
+public import Formalism.SharpRestriction.GrowthBounds.IntegralWeylLatticeSpan.RowActWeylMemDescentLattice
+import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
+import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LBidetLemmas
+import Formalism.LocalToGlobal.GlobalTheory.GL6.PBwLocBases
+import Formalism.LocalToGlobal.GlobalTheory.GL6.PSplitT
+public import Formalism.LocalToGlobal.GlobalTheory.GL6.ValuationClassTranslateMem
+import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.MRatSpanOfRatInv
+import Formalism.LocalToGlobal.GroupLattices.FockModels.SwRowGenMonomial
+import Formalism.LocalToGlobal.GroupLattices.LevelCharts.FiniteClassSetOfFiniteIndex
+import Formalism.LocalToGlobal.GroupLattices.TiedFamilies.IsUnitDetBlockPreimage
+import Formalism.LocalToGlobal.GroupLattices.TiedFamilies.TiePtRec
+import Formalism.SharpRestriction.GrowthBounds.ChartComparison.LocMore
+public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypChi
+public import Formalism.SharpRestriction.GrowthBounds.ChartRank.HypLat
+public import Formalism.SharpRestriction.GrowthBounds.ChartedClasses.CompInjLocJ
 public import Formalism.SharpRestriction.GrowthBounds.IntegralWeylLatticeSpan
+import Formalism.SharpRestriction.GrowthBounds.IntegralWeylLatticeSpan.WeylEqSpanInt
+import Formalism.SharpRestriction.GrowthBounds.IntegralWeylLatticeSpan.WeylLatticeDescentOfIntegralModels
+public import Formalism.SharpRestriction.GrowthBounds.MonomialFactorials.LiMap
+public import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.LowestInvariantLeDelta
+import Mathlib.Algebra.Module.StablyFree.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalToGlobal.GroupLattices.FockModels.TransposeWords.TransposeWordsProofs.FormSK
 
 @[expose] public section
 
@@ -241,7 +285,7 @@ theorem mk_eq_of (S : StepIn M i hi G) (β : S.Ch) {γ : GL (Fin (D.R.N i)) D.ho
   exact hx
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem fiBPi (S : StepIn M i hi G) (β : S.Ch) : FiBPi S β := by
   intro f hf
   have hφ : ∀ c, ∃ φ ∈ AdForms (S.K β).lev (embT D) (lamTG M i), φ ((S.K β).y c) = f c := by
@@ -302,15 +346,6 @@ theorem chartRankGe_of [IsFractionRing G.O G.Kf] (S : StepIn M i hi G) (e : D.wh
 
 end Forms
 
-section LocJ
-
-variable {D : D7} {X : Formalism.L2.Herm.Herm0 D} {u : D.what₂.Word} {w : D.what₂.places.Pl}
-  {hg : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w hg)} {Lv : Levels Fl} {i : ℕ}
-  (hi : i + 1 ≤ D.R.m) {C : ColumnChain D.R D.what₂.Tau (D.hcW u)} {A : ColumnsAtT D.R C} {P : PeriodMap D.R C}
-  {M : MemberForms D.what₂.LL D.what₂.embLL D.what₂.places D.what₂.Tau (D.hcW u) C A P}
-
-end LocJ
-
 end GlobalTheory.HP
 end
 
@@ -341,8 +376,8 @@ theorem finrank_le_transfer (φK : Y →+ WK) (hK : ∀ (a : LL) y, φK (a • y
   have hsp : Submodule.span K (Set.range φK) ≤ Submodule.span K (Set.range fun j => φK (b j)) := by
     rw [Submodule.span_le]
     rintro _ ⟨y, rfl⟩
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [← b.sum_repr y, map_sum]
+
+    rw [← b.sum_repr y, map_sum]
     refine Submodule.sum_mem _ fun j _ => ?_
     rw [hK]
     exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨j, rfl⟩)
@@ -873,16 +908,10 @@ section Tr
 
 variable {ι : Type} [Fintype ι] {n : ℕ}
 
-theorem foNat_anti (lam : DomWeight n) : Antitone lam.natW := by
-  intro a b hab
-  have := lam.anti hab
-  unfold DomWeight.natW
-  exact Int.toNat_le_toNat (by omega)
-
 theorem foRow_delSq (lam : DomWeight n) (g : Matrix (Fin n) (Fin n) ℂ) {q : MvPolynomial (Fin n × Fin n) ℂ}
     (hq : q ∈ delSq ℂ n lam) : Formalism.GradedWeylDivisibility.rowAct ℂ g q ∈ delSq ℂ n lam := by
   unfold delSq at hq ⊢
-  rw [Formalism.L2.G.Model.sw_weyl_eq ℂ n n le_rfl _ (foNat_anti lam)] at hq ⊢
+  rw [Formalism.L2.G.Model.sw_weyl_eq ℂ n n le_rfl _ (_root_.Formalism.L2.Col.natW_anti lam)] at hq ⊢
   exact Formalism.GradedWeylDivisibility.dualWeylRowStable ℂ n n _ g q hq
 
 def foTr {Gm : ι → Matrix (Fin n) (Fin n) ℂ} (g : ι → Matrix (Fin n) (Fin n) ℂ) (hg : ∀ τ, IsUnit (g τ).det)
@@ -910,8 +939,8 @@ theorem blockRowSubstitution_rename (g : ι → Matrix (Fin n) (Fin n) ℂ) (τ 
   have h : (blockRowSubstitutionAlgHom g).comp (rename (Prod.mk τ)) = (rename (Prod.mk τ)).comp (Formalism.GradedWeylDivisibility.rowAct ℂ (r := n) (n := n) (g τ)) := by
     apply MvPolynomial.algHom_ext
     intro v
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [blockRowSubstitutionAlgHom, Formalism.GradedWeylDivisibility.rowAct, rename_X, map_sum]
+
+    simp [blockRowSubstitutionAlgHom, Formalism.GradedWeylDivisibility.rowAct, rename_X, map_sum]
   exact congrArg (fun φ => φ q) h
 
 theorem blockRowSubstitution_tensor (g : ι → Matrix (Fin n) (Fin n) ℂ) (f : ι → MvPolynomial (Fin n × Fin n) ℂ) :
@@ -953,10 +982,6 @@ theorem foInf_unit (emb : ι → E →+* ℂ) (γ : GL (Fin n) E) (τ : ι) : Is
   have h := ((Matrix.isUnit_iff_isUnit_det _).1 γ.isUnit).map (emb τ)
   rwa [RingHom.map_det] at h
 
-theorem foInf_mul (emb : ι → E →+* ℂ) (a b : Matrix (Fin n) (Fin n) E) (τ : ι) :
-    atInf emb (a * b) τ = atInf emb a τ * atInf emb b τ := by
-  simp [atInf, Matrix.map_mul]
-
 theorem foInf_one (emb : ι → E →+* ℂ) (τ : ι) : atInf emb (1 : Matrix (Fin n) (Fin n) E) τ = 1 := by
   simp [atInf]
 
@@ -971,7 +996,7 @@ theorem foTrR_mul (emb : ι → E →+* ℂ) (γ δ : GL (Fin n) E) (y : Formali
   apply Subtype.ext
   funext τ
   show (foTrR emb (γ * δ) y).1 τ = (foTrR emb γ (foTrR emb δ y)).1 τ
-  rw [foTrR_val, foTrR_val, foTrR_val, Units.val_mul, foInf_mul, Matrix.mul_assoc]
+  rw [foTrR_val, foTrR_val, foTrR_val, Units.val_mul, _root_.Formalism.L2.G.Cmp.atInf_mul, Matrix.mul_assoc]
 
 theorem foTrR_one (emb : ι → E →+* ℂ) (y : Formalism.L2.Forms.Frames (gramC J emb)) : foTrR emb 1 y = y := by
   apply Subtype.ext
@@ -1003,24 +1028,6 @@ variable {S emb}
 
 end Adelic
 
-section Rec
-
-open Formalism.MainNotions.G Formalism.L2.G Formalism.L2.G.Cmp Formalism.MainNotions.G.CmpJ Formalism.MainNotions.G.CmpJ.PCard GlobalTheory.HP GlobalTheory.HP
-
-variable {D : D7} {u : D.what₂.Word} {C : ColumnChain D.R D.what₂.Tau (D.hcW u)} {A : ColumnsAtT D.R C} {P : PeriodMap D.R C}
-  {M : MemberForms D.what₂.LL D.what₂.embLL D.what₂.places D.what₂.Tau (D.hcW u) C A P} {p : ℕ} {i : ℕ} {hi : i ≤ D.R.m} {G : GAtP p}
-
-end Rec
-
-section Card
-
-open Formalism.MainNotions.G Formalism.L2.G Formalism.L2.G.Cmp Formalism.MainNotions.G.CmpJ Formalism.MainNotions.G.CmpJ.PCard GlobalTheory.HP GlobalTheory.HP
-
-variable {D : D7} {Tw : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} {w : D.what₂.places.Pl}
-  {h : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w h)} {Lv : Levels Fl}
-
-end Card
-
 end GlobalTheory.HP
 end
 
@@ -1030,11 +1037,6 @@ namespace GlobalTheory.HP
 open Formalism Formalism.L2 Formalism.L2.G
 
 open Formalism.L2.G.Cmp Formalism.L2.G.RelativeIndexFlags Formalism.L2.G.RelativeIndexFlags.Core
-
-theorem nuOf_anti_ev {m : ℕ} {lam : Fin (m + 1) → ℤ} (h : Antitone lam) : Antitone (nuOf lam) := by
-  intro i j hij
-  unfold nuOf
-  exact Int.toNat_le_toNat (by have := h hij; omega)
 
 section Gen
 
@@ -1052,7 +1054,7 @@ theorem vsp_le (v : Fin P.nV) :
       dualWeyl ℂ (P.m + 1) (P.m + 1) (nuOf (lamAt (P.lam0 v) s)) else ⊥) → F ∈ Submodule.span ℂ (T s) := by
     intro s F hF
     have ha := lamAt_anti (P.lam0 v) (P.dom v) s
-    rw [if_pos ha, ← Formalism.L2.G.Model.sw_weyl_eq ℂ (P.m + 1) (P.m + 1) le_rfl _ (nuOf_anti_ev ha),
+    rw [if_pos ha, ← Formalism.L2.G.Model.sw_weyl_eq ℂ (P.m + 1) (P.m + 1) le_rfl _ (_root_.Formalism.L2.G.Model.TS.nuOf_antitone ha),
       weyl_eq_span_int] at hF
     exact hF
   have hP := prodSpan (O := ℂ) (I := Fin (P.n' v)) (B := fun _ => MvPolynomial (Fin (P.m + 1) × Fin (P.m + 1)) ℂ)
@@ -1252,13 +1254,6 @@ theorem cmpLiftOf_of (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) (hD : V
     exact b.map' (phiC S β γ0) (ker_phiC S β γ0)
 
 end Rec
-
-section Card
-
-variable {D : D7} {Tw : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} {w : D.what₂.places.Pl}
-  {h : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w h)} {Lv : Levels Fl}
-
-end Card
 
 end GlobalTheory.HP
 end
@@ -1481,13 +1476,6 @@ theorem cmpLiftOf_of_raw (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) (hV
 
 end Rec
 
-section Card
-
-variable {D : D7} {Tw : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} {w : D.what₂.places.Pl}
-  {h : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w h)} {Lv : Levels Fl}
-
-end Card
-
 end GlobalTheory.HP
 end
 
@@ -1510,7 +1498,7 @@ variable {D : D7} {u : D.what₂.Word} {C : ColumnChain D.R D.what₂.Tau (D.hcW
   {M : MemberForms D.what₂.LL D.what₂.embLL D.what₂.places D.what₂.Tau (D.hcW u) C A P} {p : ℕ} {i : ℕ} {hi : i ≤ D.R.m} {G : GAtP p}
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem cmpInvRaw_holds (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) : CmpInvRawOf S e := by
   intro hS H X β rep hok c g γ0 κ0 hγ0 hL hpt Q hQ γ hγ κ hyc y y' hy
   have Hb := H β
@@ -1584,13 +1572,6 @@ theorem cmpLiftOf_of_evVal (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) (
 
 end Rec
 
-section Card
-
-variable {D : D7} {Tw : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} {w : D.what₂.places.Pl}
-  {h : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w h)} {Lv : Levels Fl}
-
-end Card
-
 end GlobalTheory.HP
 end
 
@@ -1620,13 +1601,6 @@ theorem cmpLiftOf_holds (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) : Cm
 
 end Rec
 
-section Card
-
-variable {D : D7} {Tw : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} {w : D.what₂.places.Pl}
-  {h : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)} {Fl : Fills (D.gat u w h)} {Lv : Levels Fl}
-
-end Card
-
 end GlobalTheory.HP
 end
 
@@ -1654,7 +1628,7 @@ structure LatTies (w : D.what₂.places.Pl) (Fo : FormsIn M (j + 1) hj) (β : Fo
     D.what₂.embLL r = ((Fo.K β).lev.chi κ : ℂ)
 
 
-set_option maxHeartbeats 8000000 in
+
 theorem latIn_of {Fo : FormsIn M (j + 1) hj} {Lc : LocIn X u w hg Lv j Fo.Ch}
     {pos : (Σ v : Fin (Fl.Pj (j + 1)).nV, Fin ((Fl.Pj (j + 1)).n' v)) ≃ D.what₂.Tau} {β : Fo.Ch}
     (hfr : FrRatJ (Lc.t β) Lc.B) (H : LatTies hj w Fo β (Lc.Lb β)) : LatIn (stepInOf hj Fo Lc pos) w β := by
@@ -1669,7 +1643,7 @@ theorem latIn_of {Fo : FormsIn M (j + 1) hj} {Lc : LocIn X u w hg Lv j Fo.Ch}
     chi := H.chi }
 
 
-set_option maxHeartbeats 8000000 in
+
 theorem valIntN_rec {Fo : FormsIn M (j + 1) hj} {Lc : LocIn X u w hg Lv j Fo.Ch}
     {pos : (Σ v : Fin (Fl.Pj (j + 1)).nV, Fin ((Fl.Pj (j + 1)).n' v)) ≃ D.what₂.Tau} (e : D.what₂.LL →+* (D.gat u w hg).Kf)
     (HT : ∀ β, LocTies hj Fo Lc pos e β) (hS : BlockRationalityField) (hfrac : IsFractionRing (D.gat u w hg).O (D.gat u w hg).Kf)
@@ -1771,7 +1745,7 @@ theorem epsU_conj (hJ : IsUnit J.det) (B B' γ : GL (Fin n) E) (k : ℕ) (hγ : 
     _ = _ := by rw [h1, h2, inv_inv, inv_one, mul_one]
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem epsU_iw (S : StepLevel F E σ J T f bad) (A : LocAt F E n G) (hW : LocInt A) (hp : p.Prime) (hT : ¬ p ∣ T)
     (halg : ∀ v (a : (A.pl v).1.adicCompletion F), A.spl v ((1 : E) ⊗ₜ[F] a) = (a, a))
     (hb : ∀ v (t : Fin n → (A.pl v).1.adicCompletion F),
@@ -1859,7 +1833,7 @@ variable {u : D.what₂.Word} {C : ColumnChain D.R D.what₂.Tau (D.hcW u)} {A :
   {i : ℕ} {hi : i ≤ D.R.m} {G : GAtP p}
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem exists_pow (S : StepIn M i hi G) (β : S.Ch) (cl : {c // S.chOf c = β}) :
     ∃ (b k : ℕ), 0 < k ∧ ∃ (g κ : UPts (sigD D) (gramN D i hi) (FiniteAdeleRing (𝓞 D.host.F) D.host.F))
       (γ : GL (Fin (D.R.N i)) D.host.E), γ ∈ UJ (sigD D : D.host.E →+* D.host.E) (gramN D i hi) ∧
@@ -1877,7 +1851,7 @@ theorem exists_pow (S : StepIn M i hi G) (β : S.Ch) (cl : {c // S.chOf c = β})
   exact e
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem twUnit_of (S : StepIn M i hi G) (e : D.what₂.LL →+* G.Kf) (w : D.what₂.places.Pl) (β : S.Ch) (H : S.Core e β)
     (hR0 : ∀ x, x ∈ intW D.what₂.places w ↔ e x ∈ Set.range (algebraMap G.O G.Kf)) (L : LatIn S w β) : S.TwUnit w β := by
   intro cl B' hB'
@@ -2018,7 +1992,7 @@ variable {j : ℕ} (hj : j + 1 ≤ D.R.m) {C : ColumnChain D.R D.what₂.Tau (D.
   {M : MemberForms D.what₂.LL D.what₂.embLL D.what₂.places D.what₂.Tau (D.hcW u) C A P}
 
 
-set_option maxHeartbeats 2000000 in
+
 structure StepTies (Fo : FormsIn M (j + 1) hj) (Lc : LocIn X0 u w h Lv j Fo.Ch) (Gt : GatTies D) (c : LatCmp D) : Prop where
 
   frRat : ∀ β, FrRatJ (Lc.t β) Lc.B
@@ -2052,7 +2026,7 @@ theorem StepTies.chi (S : StepTies hj Fo Lc Gt c) (β : Fo.Ch) (κ : (Fo.K β).l
   chiUnit_of hj (Fo.K β).lev (S.sameU β) (c.embW u w h) (S.psi β) S.bad_p (fun x => c.embW_int u w h x) κ
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem StepTies.ties (S : StepTies hj Fo Lc Gt c) (β : Fo.Ch) : LocTiesR hj Fo Lc (c.embW u w h) β := by
   exact {
     frRat := S.frRat β

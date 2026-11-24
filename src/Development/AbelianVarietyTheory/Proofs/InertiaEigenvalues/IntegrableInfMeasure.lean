@@ -1,9 +1,51 @@
 module
 
-public import Mathlib
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.MemContraIff
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.MemBddFormsOfWithSmoothings
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ContinuousOfMemSmoothSpan
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.DecaysOfMemSmoothSpan
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.AutomorphicFormsFiniteGL
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.CuspRapidDecaySiegelGLOfFinite
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.MemContraIff
+import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.IdeleModuleDetDiagUnitsPosIdele
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -128,8 +170,8 @@ theorem fderiv_translate (F : Sm E a) (g : GA E a) {ℓ : Fin a} {y : Fin a → 
     ((contDiffAt_rowInv hy).differentiableAt (by simp)), ContinuousLinearMap.comp_apply, ← h1, ← chart_lieD F.2 X g hm,
     ← chart_rowInv _ g hy]
   change fderiv ℝ (chart F.1 _) (oneL E a) X = _
-  set_option synthInstance.maxHeartbeats 100000 in
-    conv_lhs => rw [← (Module.finBasis ℝ (Lie E a)).sum_repr X, map_sum]
+
+  conv_lhs => rw [← (Module.finBasis ℝ (Lie E a)).sum_repr X, map_sum]
   refine Finset.sum_congr rfl fun β _ => ?_
   rw [map_smul, Complex.real_smul]
   rfl
@@ -155,10 +197,10 @@ theorem fderiv_rsInf {ℓ : Fin a} (F F' : Sm E a) {Φ : (Fin a → Cinf E) → 
     have h4 := ((h1.mul (Complex.conjCLE.hasFDerivAt.comp y h2)).mul h3).fderiv
     refine (congrArg (· v) h4).trans ?_
     have hc : ∀ β, conj (rowCoef ℓ v β y) = rowCoef ℓ v β y := fun β => Complex.conj_ofReal _
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply,
-      fderiv_translate _ g (hΦ.2.2 hy), rsInf, smul_eq_mul, Pi.mul_apply, Function.comp_apply,
-      ContinuousLinearEquiv.coe_coe, Complex.conjCLE_apply, map_sum, map_mul, hc, Finset.mul_sum, mul_add]
+
+    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply,
+    fderiv_translate _ g (hΦ.2.2 hy), rsInf, smul_eq_mul, Pi.mul_apply, Function.comp_apply,
+    ContinuousLinearEquiv.coe_coe, Complex.conjCLE_apply, map_sum, map_mul, hc, Finset.mul_sum, mul_add]
     rw [add_comm, add_comm (∑ _, _)]
     congr 2 <;> exact Finset.sum_congr rfl fun _ _ => by ring
   · have h0 : Φ y = 0 := image_eq_zero_of_notMem_tsupport hy

@@ -1,7 +1,58 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.FlagBundles.Statements
+import Mathlib.Algebra.Order.Archimedean.Real.Hom
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.MeasureTheory.Measure.RegularityCompacts
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+public import Mathlib.RingTheory.MvPolynomial.EulerIdentity
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Mathlib.Topology.UniformSpace.Uniformizable
+import Std.Tactic.BVDecide.Normalize.Prop
+public import Mathlib.Algebra.MvPolynomial.Funext
+public import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 
 @[expose] public section
 
@@ -21,8 +72,8 @@ theorem eval_smul_of_isHomogeneous {σ : Type*} {φ : MvPolynomial σ ℝ} {n : 
   classical
   conv_lhs => rw [φ.as_sum]
   conv_rhs => rw [φ.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, eval_monomial, Finset.mul_sum]
+
+  simp only [map_sum, eval_monomial, Finset.mul_sum]
   refine Finset.sum_congr rfl fun d hd => ?_
   have hdeg : ∑ i ∈ d.support, d i = n := by
     have := h (mem_support_iff.mp hd)
@@ -178,8 +229,8 @@ theorem fibreQ_eq_map (k : ℕ) : fibreQ k = mapAlgHom (ContinuousMap.coeFnAlgHo
   rw [← AlgHom.comp_apply, comp_aeval, fibreQ]
   refine congrArg (fun x => aeval x (gMixed k)) ?_
   funext r
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp [map_sum, mapAlgHom_apply, map_X, map_C]
+
+  simp [map_sum, mapAlgHom_apply, map_X, map_C]
   rfl
 
 theorem continuous_coeff (k : ℕ) (μ : Fin 3 →₀ ℕ) : Continuous (AddMonoidAlgebra.coeff (fibreQ k) μ) := by
@@ -231,10 +282,10 @@ theorem fibrePoly_eq_C (h0 : FibreConstantClosedForm.Statement) (k : ℕ) :
     rw [real_inner_self_eq_norm_sq, EuclideanSpace.norm_sq_eq]
     simp [sq_abs]
   rw [haa] at hmean
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_mul, map_pow, map_sum, eval_C, eval_X]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← hmean, fibrePoly_eq, map_sum]
+
+  simp only [map_mul, map_pow, map_sum, eval_C, eval_X]
+
+  rw [← hmean, fibrePoly_eq, map_sum]
   simp only [eval_monomial]
   simp_rw [← integral_mul_const]
   rw [← integral_finsetSum _
@@ -249,8 +300,8 @@ theorem fibrePoly_eq_C (h0 : FibreConstantClosedForm.Statement) (k : ℕ) :
 theorem proof (h0 : FibreConstantClosedForm.Statement) : FibreIntegralInvariant.Statement := by
   refine ⟨mean_eq, fun k B _ _ a => ?_⟩
   rw [fibrePoly_eq_C h0 k]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp [map_mul, map_pow, map_sum, aeval_X]
+
+  simp [map_mul, map_pow, map_sum, aeval_X]
 
 end FibreIntegralInvariant
 

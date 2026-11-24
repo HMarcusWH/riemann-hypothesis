@@ -1,6 +1,43 @@
 module
 
 public import Formalism.LocalToGlobal.IndefiniteReal.FinitePlaces.ExistsSplitIdem
+public import Formalism.LocalToGlobal.BesselHermitianTheta.TiedWeil
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalToGlobal.IndefiniteReal.InjectiveDecompositionAction
 
 @[expose] public section
 
@@ -35,16 +72,10 @@ theorem epv_self (v : HeightOneSpectrum (𝓞 F)) : (epv v).2 v = 1 := by
   classical
   first
   | exact Pi.single_eq_same v (1 : v.adicCompletion F)
-  | (simp [epv, pairA, single]; done)
-  | (simp [epv, pairA, single]; convert Pi.single_eq_same v (1 : v.adicCompletion F); done)
-  | (simp [epv, pairA, single]; rfl)
 theorem epv_ne {v w : HeightOneSpectrum (𝓞 F)} (h : w ≠ v) : (epv v).2 w = 0 := by
   classical
   first
   | exact Pi.single_eq_of_ne h (1 : v.adicCompletion F)
-  | (simp [epv, pairA, single, h]; done)
-  | (simp [epv, pairA, single]; convert Pi.single_eq_of_ne h (1 : v.adicCompletion F); done)
-  | (simp [epv, pairA, single]; rfl)
 
 theorem epv_sq (v : HeightOneSpectrum (𝓞 F)) : epv v * epv v = epv v := by
   refine Prod.ext ?_ ?_
@@ -76,7 +107,6 @@ theorem exists_splitIdem' (v : HeightOneSpectrum (𝓞 D.host.F)) (s : v.adicCom
     intro a x
     first
     | rfl
-    | simp [cA]
   have h2F : (2 : v.adicCompletion D.host.F) ≠ 0 := by
     have h := (algebraMap D.host.F (v.adicCompletion D.host.F)).injective.ne (two_ne_zero (α := D.host.F))
     rw [map_ofNat, map_zero] at h
@@ -95,17 +125,11 @@ theorem exists_splitIdem' (v : HeightOneSpectrum (𝓞 D.host.F)) (s : v.adicCom
     intro t
     first
     | exact Pi.single_eq_same v t
-    | (simp [single]; done)
-    | (simp [single]; convert Pi.single_eq_same v t; done)
-    | (simp [single]; rfl)
   have hsw : ∀ (t : v.adicCompletion D.host.F) (w : HeightOneSpectrum (𝓞 D.host.F)), w ≠ v →
       (single v t) w = 0 := by
     intro t w hw
     first
     | exact Pi.single_eq_of_ne hw t
-    | (simp [single, hw]; done)
-    | (simp [single]; convert Pi.single_eq_of_ne hw t; done)
-    | (simp [single]; rfl)
   have hAF : ∀ x y : AF D.host.F, x.1 = y.1 → (∀ w, x.2 w = y.2 w) → x = y := by
     intro x y h1 h2
     refine Prod.ext h1 ?_

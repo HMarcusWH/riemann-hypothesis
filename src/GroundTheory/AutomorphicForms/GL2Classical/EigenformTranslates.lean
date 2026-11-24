@@ -1,24 +1,51 @@
 module
 
-public import Mathlib
-public import GroundTheory.AutomorphicForms.GL2Classical.Adelic
-public import GroundTheory.AutomorphicForms.GL2Classical.ConstantTerm
-public import GroundTheory.AutomorphicForms.GL2Classical.Smooth
-public import GroundTheory.AutomorphicForms.HarishChandraCentre
-public import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.SmoothKZ
-public import GroundTheory.AutomorphicForms.GL2Classical.CuspConverse
-public import GroundTheory.AutomorphicForms.GL2Classical.GrowthReduction
-public import GroundTheory.AutomorphicForms.GL2Classical.KFinite
-public import GroundTheory.AutomorphicForms.HeckeAlgebraLevel
-public import GroundTheory.AutomorphicForms.GL2Classical.HeckeCommute
-public import GroundTheory.AutomorphicForms.CuspidalDiscreteness.Unimodular
-public import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.Uniform
-public import GroundTheory.AutomorphicForms.Satake
-public import GroundTheory.AutomorphicForms.MacdonaldWhittakerHecke
-public import GroundTheory.AutomorphicForms.StrongApproximationSLDense
-public import GroundTheory.GlobalFields.LocalAtPlace
-public import GroundTheory.AutomorphicForms.HeckeIrreducible
-public import GroundTheory.AutomorphicForms.CuspidalDiscreteness.CuspFormsDecay
+public import GroundTheory.AutomorphicForms.ReductionDirichlet
+public import GroundTheory.GlobalFields.IdeleGroups.Rational
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+public import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.NumberField.InfinitePlace.TotallyRealComplex
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.Archimedean
+import Mathlib.Geometry.Manifold.StructureGroupoid
+import Mathlib.NumberTheory.ModularForms.CongruenceSubgroups
+import Mathlib.NumberTheory.ModularForms.SlashActions
 
 @[expose] public section
 

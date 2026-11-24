@@ -1,10 +1,58 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HeightKernels.StatementsGrassHeight
 public import GroundTheory.HeightsAndTheta.Heights.WeightedHomogeneous.StatementsIntDim
-public import GroundTheory.HeightsAndTheta.Heights.WeightedHomogeneous.PConeTrdeg
+public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.Objects
 public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.IsMultiHomogIdealIff
+public import GroundTheory.HeightsAndTheta.Heights.WeightedHomogeneous.PConeTrdeg
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -61,13 +109,13 @@ theorem component_mem [DecidableEq K] (y : (Σ k, ι k) → Ω) (f : MRing ι)
   set S := f.support.filter fun e ↦ Finsupp.weight (NumbersDVR.blockWeight ι) e = m
   have himg : φ (weightedHomogeneousComponent (NumbersDVR.blockWeight ι) m f) =
       monomial m' (∑ e ∈ S, ((AddMonoidAlgebra.coeff f e : ℤ) : Ω) * e.prod fun p n ↦ y p ^ n) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [weightedHomogeneousComponent_apply, map_sum, map_sum]
+
+    rw [weightedHomogeneousComponent_apply, map_sum, map_sum]
     refine Finset.sum_congr rfl fun e he ↦ ?_
     rw [mConeMap_monomial, (hdeg e).2 (Finset.mem_filter.1 he).2]
   have hcoeff : AddMonoidAlgebra.coeff (φ f) m' = ∑ e ∈ S, ((AddMonoidAlgebra.coeff f e : ℤ) : Ω) * e.prod fun p n ↦ y p ^ n := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      conv_lhs => rw [f.as_sum, map_sum]
+
+    conv_lhs => rw [f.as_sum, map_sum]
     rw [coeff_sum, Finset.sum_filter]
     refine Finset.sum_congr rfl fun e _ ↦ ?_
     rw [mConeMap_monomial, coeff_monomial]
@@ -76,7 +124,7 @@ theorem component_mem [DecidableEq K] (y : (Σ k, ι k) → Ω) (f : MRing ι)
   rw [mCoordIdeal, RingHom.mem_ker]
   show φ _ = 0
   rw [himg, ← hcoeff, hzero]
-  simp [AddMonoidAlgebra.coeff]
+  simp
 
 theorem isMultiHomogIdeal (y : (Σ k, ι k) → Ω) : IsMultiHomogIdeal (mCoordIdeal y) := by
   classical

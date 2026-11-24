@@ -1,7 +1,54 @@
 module
 
-public import Mathlib
-public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.StatementsFlagIndependence
+public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.BundleObjects
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
+public import Mathlib.Algebra.GroupWithZero.Indicator
+public import Mathlib.RingTheory.Ideal.MinimalPrime.Noetherian
 
 @[expose] public section
 
@@ -188,8 +235,8 @@ theorem isPairExpansion_push {n n' m : ℕ} (σ : Fin n → Fin n') {A : MvPolyn
   have e2 : rename Sum.inr (rename σ A) = rename (Sum.map σ σ) (rename Sum.inr A) := by
     rw [rename_rename, rename_rename]
     rfl
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [e1, e2, ← map_sub, h.expansion, map_sum]
+
+  rw [e1, e2, ← map_sub, h.expansion, map_sum]
   simp only [map_mul, map_sub, rename_X, Sum.map_inl, Sum.map_inr, pushExpansion, Finset.mul_sum]
   refine (Finset.sum_fiberwise Finset.univ σ _).symm.trans ?_
   refine Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun i hi => ?_
@@ -223,8 +270,8 @@ theorem exists_expansion {n : ℕ} (A : MvPolynomial (Fin n) ℤ) :
 theorem homogeneousComponent_linear_mul {σ : Type*} {L : MvPolynomial σ ℤ} (hL : L.IsHomogeneous 1)
     (P : MvPolynomial σ ℤ) (t : ℕ) :
     homogeneousComponent t (L * P) = if t = 0 then 0 else L * homogeneousComponent (t - 1) P := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    conv_lhs => rw [← sum_homogeneousComponent P, Finset.mul_sum, map_sum]
+
+  conv_lhs => rw [← sum_homogeneousComponent P, Finset.mul_sum, map_sum]
   have h : ∀ j, homogeneousComponent t (L * homogeneousComponent j P) =
       if j = t - 1 ∧ t ≠ 0 then L * homogeneousComponent j P else 0 := by
     intro j
@@ -252,9 +299,9 @@ theorem exists_isPairExpansion {n m : ℕ} {A : MvPolynomial (Fin n) ℤ} (hA : 
   have hD : (rename Sum.inl A - rename Sum.inr A).IsHomogeneous m :=
     hA.rename_isHomogeneous.sub hA.rename_isHomogeneous
   have key := congrArg (homogeneousComponent m) hG
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [homogeneousComponent_of_mem ((mem_homogeneousSubmodule _ _).mpr hD), if_pos rfl, map_sum]
-    at key
+
+  rw [homogeneousComponent_of_mem ((mem_homogeneousSubmodule _ _).mpr hD), if_pos rfl, map_sum]
+  at key
   simp only [homogeneousComponent_linear_mul (hL _)] at key
   rcases Nat.eq_zero_or_pos m with rfl | hm
   · refine ⟨0, ?_, fun i => isHomogeneous_zero _ _ _⟩

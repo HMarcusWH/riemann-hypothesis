@@ -1,7 +1,50 @@
 module
 
-public import Formalism.LocalToGlobal.GroupLattices.FockModels.OperatorsPreserveLattices
 public import Formalism.LocalRingCardinality.DataLatDefs
+public import Formalism.SharpRestriction.GrowthBounds.LatticeSystems
+public import Formalism.LocalToGlobal.GroupLattices.FockModels.OperatorsPreserveLattices
+import Mathlib.Algebra.Module.StablyFree.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -43,8 +86,8 @@ def IsRat (F : W) : Prop := ∀ t, ev t F ∈ Set.range e
 theorem ev_pi (hsm : ∀ (a : LL) x, cmp (a • x) = e a • cmp x) (hval : ∀ x, IsRat e ev (cmp x))
     (π : Kf →+ LL) (hπ : ∀ a x, π (e a * x) = a * π x) (c : V →₀ Kf) (t : T) :
     ev t (cmp (c.sum fun x a => π a • x)) = e (π (ev t (c.sum fun x a => a • cmp x))) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [Finsupp.sum, map_sum, hsm, map_smul, smul_eq_mul]
+
+  simp only [Finsupp.sum, map_sum, hsm, map_smul, smul_eq_mul]
   refine Finset.sum_congr rfl fun x _ => ?_
   obtain ⟨r, hr⟩ := hval x t
   rw [← hr, mul_comm (c x), hπ, map_mul, mul_comm]
@@ -77,10 +120,10 @@ theorem li_of_rat (hsep : ∀ F : W, (∀ t, ev t F = 0) → F = 0)
     obtain ⟨r, hr⟩ := hval (b j) t
     rw [← hr, mul_comm (g j), hπ, map_mul, mul_comm]
   have h0 := congrArg (fun F => e (π (ev t F))) hg
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, map_smul, smul_eq_mul, map_zero] at h0
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, hsm, map_smul, smul_eq_mul, key]
+
+  simp only [map_sum, map_smul, smul_eq_mul, map_zero] at h0
+
+  simp only [map_sum, hsm, map_smul, smul_eq_mul, key]
   exact h0
 
 def descOp (hsm : ∀ (a : LL) x, cmp (a • x) = e a • cmp x) (hinj : Function.Injective cmp) (Tp : W →ₗ[Kf] W)
@@ -138,8 +181,8 @@ theorem isRational_iff (F : FnP P α) : RatFnP P α e F ↔ IsRat e (evP P α) F
       rw [localComponent_apply₂] at hr
       rw [← hr, hπe]
     refine ⟨∑ n ∈ (F i L).support, MvPolynomial.monomial n (π (AddMonoidAlgebra.coeff (F i L) n)), ?_⟩
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     simp only [MvPolynomial.map_monomial, hc]
     exact (MvPolynomial.as_sum (F i L)).symm
 
@@ -217,8 +260,8 @@ theorem cmp_inj u (w : D.what₂.places.Pl) (hg : GIdx D.host (D.mem u).A.T (D.w
   have hsum : ∑ a, (fun a => c.embW u w hg (((D.fm u).lat 0).b.repr x a)) a •
       c.cmp u w hg (((D.fm u).lat 0).b a) = 0 := by
     have h1 := congrArg (c.cmp u w hg) (((D.fm u).lat 0).b.sum_repr x)
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, hx] at h1
+
+    rw [map_sum, hx] at h1
     simpa only [c.cmp_smul] using h1
   have hz : ∀ a, ((D.fm u).lat 0).b.repr x a = 0 := fun a =>
     (c.embW u w hg).injective ((hli Finset.univ _ hsum a (Finset.mem_univ a)).trans (map_zero _).symm)

@@ -1,6 +1,41 @@
 module
 
 public import Formalism.LocalToGlobal.HermitianForms.TiedTw
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -31,7 +66,7 @@ def PvG (res : ∀ v : A.vT, 𝓞 D.host.E →+* A.Fv v) (v : A.vT) : Ideal (�
 instance (res : ∀ v : A.vT, 𝓞 D.host.E →+* A.Fv v) (v : A.vT) : (PvG res v).IsPrime := RingHom.ker_isPrime _
 
 
-set_option maxHeartbeats 1000000 in
+
 structure LevelCompatibleLattices (T : ℕ) (res : ∀ v : A.vT, 𝓞 D.host.E →+* A.Fv v) (i : ℕ) (hi : i ≤ D.R.m)
     (lat : C.cls i → Submodule (𝓞 D.host.E) (Fin (D.R.N i) → D.host.E)) where
 
@@ -55,7 +90,7 @@ variable {M} {T : ℕ} {res : ∀ v : A.vT, 𝓞 D.host.E →+* A.Fv v} {i : ℕ
   {Ch : Type} {chOf : C.cls i → Ch}
 
 
-set_option maxHeartbeats 1000000 in
+
 def FvTieG (L : LevelCompatibleLattices M T res i hi lat)
     (eV : A.vT ≃ {v : HeightOneSpectrum (𝓞 D.host.F) // (T : 𝓞 D.host.F) ∈ v.asIdeal})
     (K : ∀ β : Ch, LevelChart D T bad i hi (fun c : {c // chOf c = β} => C.stab i c.1) (fun c => lat c.1))
@@ -68,7 +103,7 @@ def FvTieG (L : LevelCompatibleLattices M T res i hi lat)
     M.fv i v c.1 (L.pr v c.1 z) = fMe β v ((K β).lev.fT (eV v).1 (eV v).2 ⟨_, hz⟩)
 
 
-set_option maxHeartbeats 1000000 in
+
 def UpNatTieG (L : LevelCompatibleLattices M T res i hi lat) (eY : C.Y i ≃ Fr D i hi)
     (eV : A.vT ≃ {v : HeightOneSpectrum (𝓞 D.host.F) // (T : 𝓞 D.host.F) ∈ v.asIdeal})
     (K : ∀ β : Ch, LevelChart D T bad i hi (fun c : {c // chOf c = β} => C.stab i c.1) (fun c => lat c.1)) : Prop :=
@@ -91,7 +126,7 @@ def UpNatTieG (L : LevelCompatibleLattices M T res i hi lat) (eY : C.Y i ≃ Fr 
         M.upT i v c.1 (L.pr v c.1 z) h s = ((((K β).lev.chi κ)⁻¹ : ℂˣ) : ℂ) * h s'
 
 
-set_option maxHeartbeats 1000000 in
+
 def DnNatTieG (L : LevelCompatibleLattices M T res i hi lat) (eY : C.Y i ≃ Fr D i hi)
     (eV : A.vT ≃ {v : HeightOneSpectrum (𝓞 D.host.F) // (T : 𝓞 D.host.F) ∈ v.asIdeal})
     (K : ∀ β : Ch, LevelChart D T bad i hi (fun c : {c // chOf c = β} => C.stab i c.1) (fun c => lat c.1)) : Prop :=
@@ -129,7 +164,7 @@ end Gen
 variable {inQ : D.what₂.Tup → HeightOneSpectrum (𝓞 D.host.F) → Prop}
 
 
-set_option maxHeartbeats 4000000 in
+
 structure TwistedLevelData {Tw : TwForms D} {T : Formalism.L2.Herm.TwChTied D inQ} {F : ∀ u, FormsTied D u} (W : TwFormsTied D Tw T F) where
   lv : ∀ u μ, μ ≠ D.what₂.mu0 → ∀ i, 1 ≤ i → ∀ hm : i ≤ D.R.m,
     LevelCompatibleLattices (Tw.fm u μ) (D.mem u).A.T ((W.atT u μ).res (F u).atT) i hm (fun c => latCrd D i hm (T.lat u μ i c))

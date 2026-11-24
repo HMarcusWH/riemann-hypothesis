@@ -1,14 +1,60 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.UnitaryAdmissibility.ArchimedeanUnitaryDual.StDefinite
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.IsOpenIsCompactLevelOffFinEmpty
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.NonarchimedeanGroupOfIsCompactIsOpen
+public import Formalism.PeriodIntegrals.UJClassFin
 public import CompanionTheory.RealGroups.UnitaryAdmissibility.ArchimedeanUnitaryDual.ArchimedeanDenseStabilizers.DenseRangeOfNotIsReal
 public import Development.AbelianVarietyTheory.Proofs.FlagMeasures.LocalHeightBasePairEqModuleProduct
-public import Formalism.SatakeDualWeyl.KpqSubgroupCompact
-public import Formalism.LocalToGlobal.IndefiniteReal.CoreTExist
+import Development.AbelianVarietyTheory.Proofs.FoundationProofs.EventuallyAlgebraMapMemIntegers
+import Development.AbelianVarietyTheory.Proofs.FoundationProofs.IsOpenIsCompactLevelOffFinEmpty
+public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.NonarchimedeanGroupOfIsCompactIsOpen
 public import Formalism.LocalToGlobal.GlobalTheory.GL5.PClassDecomp
+public import Formalism.LocalToGlobal.IndefiniteReal.CoreTExist
+public import Formalism.PeriodIntegrals.OrbitalBoundsConclusion.UJClassFin
+import Formalism.SatakeDualWeyl.KpqSubgroupCompact
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Algebra.Nonarchimedean.TotallyDisconnected
+import Mathlib.Topology.Separation.Connected
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -114,28 +160,9 @@ theorem mem_orbit_of_eq {v : HeightOneSpectrum (𝓞 F)} {K : Subgroup (GLoc σ 
   rw [e2]
   group
 
-theorem sigma_invol (h : IsCMExt F E σ) (x : E) : σ (σ x) = x := by
-  obtain ⟨τ⟩ : Nonempty (E →+* ℂ) := inferInstance
-  apply τ.injective
-  rw [h.2.2.2 τ, h.2.2.2 τ, star_star]
-
-theorem exists_sigma_ne (h : IsCMExt F E σ) : ∃ z, σ z ≠ z := by
-  by_contra hc
-  push_neg at hc
-  obtain ⟨τ⟩ : Nonempty (E →+* ℂ) := inferInstance
-  have hr : ComplexEmbedding.IsReal τ := by
-    rw [ComplexEmbedding.isReal_iff]
-    ext x
-    have := h.2.2.2 τ x
-    rw [hc x] at this
-    simpa [ComplexEmbedding.conjugate_coe_eq] using this.symm
-  have h1 := h.2.1
-  have := (NumberField.IsTotallyComplex.isComplex (K := E) (InfinitePlace.mk τ))
-  exact (InfinitePlace.not_isReal_iff_isComplex.2 this) ((InfinitePlace.isReal_mk_iff).2 hr)
-
 theorem mem_range_of_sigma_eq (h : IsCMExt F E σ) {y : E} (hy : σ y = y) : y ∈ (algebraMap F E).range := by
   by_contra hc
-  obtain ⟨z, hz⟩ := exists_sigma_ne h
+  obtain ⟨z, hz⟩ := _root_.GlobalTheory.AdelicU.exists_cm_conj_ne h
   have hli : LinearIndependent F ![(1 : E), y] := by
     rw [LinearIndependent.pair_iff]
     intro s t hst
@@ -189,8 +216,8 @@ theorem isTotDef_of_posDef (h : IsCMExt F E σ) (hJ : IsHermND σ J) (hp : Compa
     rfl
   have hfix : σ y = y := by
     rw [ey]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [dotProduct, Matrix.mulVec, map_sum, map_mul, sigma_invol h]
+
+    simp only [dotProduct, Matrix.mulVec, map_sum, map_mul, _root_.GlobalTheory.AdelicU.cm_conj_conj h]
     simp only [Finset.mul_sum]
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
@@ -206,7 +233,7 @@ theorem isTotDef_of_posDef (h : IsCMExt F E σ) (hJ : IsHermND σ J) (hp : Compa
 
 @[reducible] def cmStarRing (h : IsCMExt F E σ) : StarRing E where
   star := σ
-  star_involutive := sigma_invol h
+  star_involutive := _root_.GlobalTheory.AdelicU.cm_conj_conj h
   star_mul := fun a b => by rw [map_mul, mul_comm]
   star_add := map_add σ
 
@@ -237,7 +264,7 @@ theorem finite_level_rat (h : IsCMExt F E σ) (hJ : IsHermND σ J) (hp : Compani
     (L : Submodule (𝓞 E) (Fin n → E)) [Submodule.IsFullLattice E L] :
     {γ : GRat σ J | ratEmb σ J γ ∈ levelOpen σ J L}.Finite := by
   have hfg : L.FG := Submodule.IsLattice.fg (A := E) L
-  have hfin : Finite (Formalism.UG.level (σ : E →+* E) J L) := Formalism.UG.Final.StabFinite F E (Fin n) σ J
+  have hfin : Finite (Formalism.UG.level (σ : E →+* E) J L) := _root_.Formalism.UG.P.UG_stabilizer_finite F E (Fin n) σ J
     (fun τ => RingHom.ext fun x => h.2.2.2 τ x) (by
       ext i j
       exact hJ.1 i j)
@@ -256,11 +283,11 @@ theorem exists_class_cover (h : IsCMExt F E σ) (hJ : IsHermND σ J) (hp : Compa
   have hfg : L.FG := Submodule.IsLattice.fg (A := E) L
   have hsp : Submodule.span E (L : Set (Fin n → E)) = ⊤ := Submodule.IsFullLattice.span_eq_top
   letI := cmStarRing h
-  let c : E ≃ₐ[F] E := AlgEquiv.ofAlgHom σ σ (AlgHom.ext (sigma_invol h)) (AlgHom.ext (sigma_invol h))
+  let c : E ≃ₐ[F] E := AlgEquiv.ofAlgHom σ σ (AlgHom.ext (_root_.GlobalTheory.AdelicU.cm_conj_conj h)) (AlgHom.ext (_root_.GlobalTheory.AdelicU.cm_conj_conj h))
   have hcs : ∀ x, c x = σ x := fun _ => rfl
   have hG : GlobalTheory.UnRep.IsHermForm c Jᵀ := by
-    obtain ⟨z, hz⟩ := exists_sigma_ne h
-    refine ⟨sigma_invol h, fun e => hz ?_, fun a b => hJ.1 a b, by rw [Matrix.det_transpose]; exact hJ.2⟩
+    obtain ⟨z, hz⟩ := _root_.GlobalTheory.AdelicU.exists_cm_conj_ne h
+    refine ⟨_root_.GlobalTheory.AdelicU.cm_conj_conj h, fun e => hz ?_, fun a b => hJ.1 a b, by rw [Matrix.det_transpose]; exact hJ.2⟩
     have := congrArg (fun d : E ≃ₐ[F] E => d z) e
     exact this
   have hsig : ∀ τ : E →+* ℂ, PI.UJClassFin.HasSignature (J.map τ) n 0 := fun τ => by

@@ -2,6 +2,50 @@ module
 
 public import Formalism.LocalToGlobal.CharacterGerms.RankMaximalOfNondegenerateOfUnitSeriesIntegral
 public import Formalism.LocalToGlobal.CharacterGerms.RowTiePGerm
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Rat
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -72,8 +116,8 @@ theorem ex_sum {σ ι : Type} (s : Finset ι) (f : ι → MvPowerSeries σ C) (h
     exact ex_zero
   · intro i s hi ih
     have h0 : constantCoeff (∑ j ∈ s, f j) = 0 := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum]
+
+      rw [map_sum]
       exact Finset.sum_eq_zero fun j _ => hf j
     rw [Finset.sum_insert hi, Finset.prod_insert hi, ex_add _ _ (hf i) h0, ih]
 
@@ -279,8 +323,8 @@ theorem second_coord_mul_inner (Y : FBChart C V O dd) : Y.u1 * ∏ i ∈ Finset.
     rw [map_sub, height_multiple_constantCoeff, show (V.l : C) • Y.h = ((V.l : ℕ) : PS C 2 dd) * Y.h by
       rw [Nat.cast_smul_eq_nsmul, nsmul_eq_mul], map_mul, h_const, mul_zero, sub_zero]
   have hS0 : constantCoeff (∑ i ∈ Finset.range (V.l - 1), (gg Y (i + 1) + Y.h - gg Y (i + 1 + 1))) = 0 := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]; exact Finset.sum_eq_zero fun i _ => hE i
+
+    rw [map_sum]; exact Finset.sum_eq_zero fun i _ => hE i
   rw [hu, hprod, ← ex_add _ _ hU0 hS0, sum_height_telescope Y V.l hl]
   have key : ∀ (A B : PS C 2 dd) (L : ℕ), 1 ≤ L → A - L • B + (B - A + (L - 1) • B) = 0 := by
     intro A B L hL

@@ -1,7 +1,55 @@
 module
 
-public import Mathlib
 public import GroundTheory.AutomorphicForms.GeometricLemmaJacquetCell
+import GroundTheory.AutomorphicForms.AdmissibleInduction
+import GroundTheory.AutomorphicForms.GeometricLemmaCount
+import GroundTheory.AutomorphicForms.GeometricLemmaOrbit
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -34,13 +82,13 @@ theorem exists_nonneg_avgOver (π : W →ₗ[ℂ] E) {K : Subgroup G} {f : G →
   have hidx : (0 : ℝ) < (S.index : ℝ) := Nat.cast_pos.2 (Nat.pos_of_ne_zero hf)
   refine ⟨(S.index : ℝ)⁻¹ * ∑ q, rr q, ?_, ?_, ?_⟩
   · exact mul_nonneg (inv_nonneg.2 hidx.le) (Finset.sum_nonneg fun q _ => (hrr q).1)
-  set_option synthInstance.maxHeartbeats 100000 in
-    · rw [avgOver_eq_sum, map_smul, map_sum]
-      simp_rw [fun q : K ⧸ S => (hrr q).2]
-      rw [← Finset.sum_smul, smul_smul]
-      congr 1
-      push_cast
-      rfl
+
+  · rw [avgOver_eq_sum, map_smul, map_sum]
+    simp_rw [fun q : K ⧸ S => (hrr q).2]
+    rw [← Finset.sum_smul, smul_smul]
+    congr 1
+    push_cast
+    rfl
   · intro r₀ hr₀ hfx hc₀
     set q₀ : K ⧸ S := QuotientGroup.mk 1
     have hq₀ : (Quotient.out q₀ : K) ∈ S := by

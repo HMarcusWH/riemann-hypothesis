@@ -1,7 +1,50 @@
 module
 
-public import Formalism.LocalToGlobal.LatticeGeometry.PluckerHadamard.BlockVandermondeForms
+public import Formalism.LocalToGlobal.LatticeGeometry.PluckerHadamard.FlagIntegralKillsPowerSums
 public import Formalism.DegreeFormula.PointDegree.FlagDeg
+public import Formalism.LocalToGlobal.LatticeGeometry.PluckerHadamard.BlockVandermondeForms
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -71,7 +114,7 @@ theorem Qp_eq (ℓ : ι → R) (s : Finset ι) : ∀ k ≤ s.card,
       rw [if_pos rfl, Finset.sum_eq_single 0]
       · rw [ih _ (by omega), if_pos (by omega), Finset.prod_insert ha, Nat.factorial_succ]
         push_cast
-        simp only [Nat.choose_one_right, zero_add, pow_one]
+        simp only [Nat.choose_one_right, pow_one]
         push_cast
         ring
       · intro m hm hm0
@@ -103,7 +146,7 @@ theorem apol_add (P g h : MvPolynomial σ ℝ) : apol P (g + h) = apol P g + apo
   unfold apol; rw [← Finset.sum_add_distrib]; refine Finset.sum_congr rfl (fun m _ => ?_); rw [MvPolynomial.coeff_add]; ring
 
 theorem apol_smul (P g : MvPolynomial σ ℝ) (c : ℝ) : apol P (c • g) = c * apol P g := by
-  unfold apol; rw [Finset.mul_sum]; refine Finset.sum_congr rfl (fun m _ => ?_); rw [coeff_smul, smul_eq_mul]; ring
+  unfold apol; rw [Finset.mul_sum]; refine Finset.sum_congr rfl (fun m _ => ?_); rw [MvPolynomial.coeff_smul, smul_eq_mul]; ring
 
 theorem apol_self_pos (P : MvPolynomial σ ℝ) (hP : P ≠ 0) : 0 < apol P P := by
   unfold apol
@@ -258,8 +301,8 @@ theorem weyl_coeff (j : ℕ) (ν : Ψ → Fin N → ℝ) (n k : ℕ) (hD : Forma
     Polynomial.C ((D.choose m : ℝ) * degFlL Ψ N (μ ^ m * L ^ (D - m))) * Polynomial.X ^ (D - m) with hPLdef
   have hPL : ∀ ε : ℝ, PL.eval ε = degFlL Ψ N ((μ + C ε * L) ^ D) := by
     intro ε
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [add_pow, map_sum, hPLdef, Polynomial.eval_finsetSum]
+
+    rw [add_pow, map_sum, hPLdef, Polynomial.eval_finsetSum]
     refine Finset.sum_congr rfl (fun m _ => ?_)
     have e : μ ^ m * (C ε * L) ^ (D - m) * ((D.choose m : ℕ) : Pol Ψ N) =
         C (ε ^ (D - m) * (D.choose m : ℝ)) * (μ ^ m * L ^ (D - m)) := by

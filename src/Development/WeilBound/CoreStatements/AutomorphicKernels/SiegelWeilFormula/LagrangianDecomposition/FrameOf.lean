@@ -1,6 +1,48 @@
 module
 
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.LagrangianDecomposition.LdExOfLeaves
+public import Development.AbelianVarietyTheory.BlockTheory.DivisorBase.WeilTensorModels
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsNeZeroConjNegOfCmExtension
 public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.LagrangianDecomposition.SigSig
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -40,13 +82,13 @@ theorem yFrame : YFrame := by
   obtain ⟨ε, hε⟩ := d.ok.frame.1
   have hεσ : σ (((ε : ℤ) : E)) = ((ε : ℤ) : E) := map_intCast σ _
   rcases d.ok.sign with ⟨hA, hY⟩ | ⟨hA, hY⟩
-  · obtain ⟨ξ, hξ, hσξ⟩ := GlobalTheory.T.exists_ne_zero_conj_neg_of_cmExtension F E σ d.B d.ok.good
+  · obtain ⟨ξ, hξ, hσξ⟩ := _root_.GlobalTheory.CMTraceZero.exists_ne_zero_conj_neg F E σ d.B d.ok.good
     have hξ' : -ξ ≠ 0 := neg_ne_zero.2 hξ
     let J : Matrix (Fin n) (Fin n) E := ξ • 1
     have hJ : ∀ i j, σ (J j i) = (-1) * J i j := fun i j => by
       by_cases h : i = j
       · subst h; simp [J, hσξ]
-      · simp [J, Matrix.one_apply, h, Ne.symm h]
+      · simp [J, h, Ne.symm h]
     let T : GL (Fin n) E := ⟨(-ξ)⁻¹ • 1, (-ξ) • 1,
       by rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, inv_mul_cancel₀ hξ', one_smul],
       by rw [Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, mul_inv_cancel₀ hξ', one_smul]⟩
@@ -54,7 +96,7 @@ theorem yFrame : YFrame := by
       ext i j
       by_cases h : i = j
       · subst h; simp [T, map_inv₀, hσξ]
-      · simp [T, Matrix.one_apply, h]
+      · simp [T, h]
     have hT : J * T.1.map σ = 1 := by
       rw [hm, Matrix.smul_mul, Matrix.mul_smul, Matrix.one_mul, smul_smul, mul_inv_cancel₀ hξ, one_smul]
     obtain ⟨b, hb, hd⟩ := frame_of hc (by norm_num) hJ T hT
@@ -68,7 +110,7 @@ theorem yFrame : YFrame := by
     have hJ : ∀ i j, σ (J j i) = 1 * J i j := fun i j => by
       by_cases h : i = j
       · subst h; simp [J]
-      · simp [J, Matrix.one_apply, h, Ne.symm h]
+      · simp [J, h, Ne.symm h]
     have hT : J * (1 : GL (Fin n) E).1.map σ = 1 := by
       simp [J, Matrix.map_one _ (map_zero σ) (map_one σ)]
     obtain ⟨b, hb, hd⟩ := frame_of hc (by norm_num) hJ 1 hT

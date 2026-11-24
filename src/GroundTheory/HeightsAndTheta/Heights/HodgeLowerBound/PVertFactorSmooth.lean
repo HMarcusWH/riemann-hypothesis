@@ -1,7 +1,56 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HodgeLowerBound.StatementsVertFactorSmooth
+public import GroundTheory.HeightsAndTheta.Heights.HodgeLowerBound.StatementsVertFactorPos
+public import Mathlib.Data.FunLike.Fintype
+import GroundTheory.HeightsAndTheta.Heights.HodgeLowerBound.CoordinateIdeals.MemMCoordIdealOfAevalEqZero
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -65,8 +114,8 @@ theorem mConeMap_monomial (y : (Σ k, ι k) → Ω) (e : (Σ k, ι k) →₀ ℕ
 theorem mConeMap_eq_sum (y : (Σ k, ι k) → Ω) (u : MRing ι) :
     mConeMap y u = ∑ e ∈ u.support, monomial (mdeg e) (((AddMonoidAlgebra.coeff u e : ℤ) : Ω) * e.prod fun p n => y p ^ n) := by
   conv_lhs => rw [u.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   simp only [mConeMap_monomial]
 
 
@@ -93,8 +142,8 @@ theorem isMultiHomog_comp (u : MRing ι) (m : K →₀ ℕ) : IsMultiHomog (comp
 theorem aeval_comp (y : (Σ k, ι k) → Ω) (u : MRing ι) (m : K →₀ ℕ) :
     aeval y (comp u m) = AddMonoidAlgebra.coeff (mConeMap y u) m := by
   classical
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [mConeMap_eq_sum, coeff_sum, comp, map_sum]
+
+  rw [mConeMap_eq_sum, coeff_sum, comp, map_sum]
   simp only [coeff_monomial, aeval_monomial, algebraMap_int_eq, eq_intCast]
   rw [← Finset.sum_filter]
 
@@ -103,8 +152,8 @@ theorem mConeMap_of_homog (y : (Σ k, ι k) → Ω) {g : MRing ι} {d : K →₀
   classical
   rw [isMultiHomog_iff] at hg
   rw [mConeMap_eq_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    conv_rhs => rw [g.as_sum, map_sum, map_sum]
+
+  conv_rhs => rw [g.as_sum, map_sum, map_sum]
   refine Finset.sum_congr rfl fun e he => ?_
   rw [hg e he, aeval_monomial, algebraMap_int_eq, eq_intCast]
 
@@ -216,7 +265,7 @@ theorem exists_forms (D : ComponentData II Ψ K ι Ω E) {p : ℕ} (hp : p ∈ D
   have key : AddMonoidAlgebra.coeff (mConeMap D.y (u * D.vnum p - v * D.vden p)) (m + bf') = 0 := by
     have h0 : mConeMap D.y (u * D.vnum p - v * D.vden p) = 0 := huv
     simp [h0]
-  rw [map_sub, map_mul, map_mul, mConeMap_of_homog _ hf', mConeMap_of_homog _ hg', coeff_sub,
+  rw [map_sub, map_mul, map_mul, mConeMap_of_homog _ hf', mConeMap_of_homog _ hg', MvPolynomial.coeff_sub,
     coeff_mul_monomial, coeff_mul_monomial'] at key
   have hfy : aeval D.y (D.vnum p) ≠ 0 := fun h => hV.num_not_mem (mem_mCoordIdeal_of_aeval_eq_zero _ hf h)
   have hHz : eval z (map (Int.castRingHom ℂ) (comp u m)) ≠ 0 := by

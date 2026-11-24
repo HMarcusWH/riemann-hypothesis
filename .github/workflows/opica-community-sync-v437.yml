@@ -1,0 +1,33 @@
+name: OPICA community v4.37 sync source identity
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  source:
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /.github/
+            /scripts/fork_ci_identity.py
+            /scripts/test_fork_ci_identity.py
+            /verification/fork-sync-v437/
+            /lean-toolchain
+            /lake-manifest.json
+          sparse-checkout-cone-mode: false
+      - name: Exact upstream mathematical source and fork CI boundary
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          python3 verification/fork-sync-v437/verify_source.py "$EXPECTED_HEAD"
+          python3 -O verification/fork-sync-v437/verify_source.py "$EXPECTED_HEAD"
+          (cd scripts && python3 -m unittest -v test_fork_ci_identity)
+          (cd scripts && python3 -O -m unittest -v test_fork_ci_identity)

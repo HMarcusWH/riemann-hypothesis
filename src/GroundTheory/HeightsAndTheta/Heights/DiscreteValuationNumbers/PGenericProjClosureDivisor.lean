@@ -1,9 +1,56 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.StatementsGenericProjClosureDivisor
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.StatementsTwistedDualGensExpress
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.Cartier
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.IsSemipositiveOn
 
 @[expose] public section
 
@@ -40,8 +87,8 @@ theorem pointConeMap_of_homog (z : (Σ k, ι k) → Φ) {f : MRing ι O} {b : K 
     pointConeMap O z f = C (aeval z f) * ∏ k, X k ^ b k := by
   conv_lhs => rw [f.as_sum]
   conv_rhs => rw [f.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, map_sum, Finset.sum_mul]
+
+  rw [map_sum, map_sum, map_sum, Finset.sum_mul]
   refine Finset.sum_congr rfl fun m hm => ?_
   have hw : ∀ k, ∑ i : ι k, m ⟨k, i⟩ = b k := by
     intro k
@@ -127,9 +174,9 @@ omit [Algebra O Φ] in
 theorem genVal_sum_smul (e : Module.Basis (Fin N) Ω E) (t : Fin N → Φ) {L : ℕ} (r : Fin L → Ω)
     (ψ : Fin L → Module.Dual Ω E) :
     genVal e t (∑ l, r l • ψ l) = ∑ l, algebraMap Ω Φ (r l) * genVal e t (ψ l) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [genVal, LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul, map_sum, map_mul,
-    Finset.mul_sum]
+
+  simp only [genVal, LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul, map_sum, map_mul,
+  Finset.mul_sum]
   rw [Finset.sum_comm]
   exact Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun l _ => by ring
 
@@ -292,8 +339,8 @@ theorem val_pair {z : (Σ o, bundleIdx (bundleIdx ι M) M' o) → Φ} {L : ℕ}
     (hx : aeval z x = w) (H : MRing (bundleIdx (bundleIdx ι M) M') O)
     (hval : aeval z H * w = ∑ l, aeval z (G l) * v l) :
     aeval z (∑ l, xs l * G l) = aeval z (x * H) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_mul, hx, mul_comm, hval]
+
+  rw [map_sum, map_mul, hx, mul_comm, hval]
   exact Finset.sum_congr rfl fun l _ => by rw [map_mul, hxs, mul_comm]
 
 theorem pairs_at (hexp : TwistedDualGensExpress.Statement) {ϖ : O} (y : (Σ k, ι k) → Ω)

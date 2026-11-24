@@ -1,32 +1,53 @@
 module
 
-public import Mathlib
-public import Development.AutomorphicSpectrum.PublishedTheorems.Metrics₂.PoincareLelong
-public import Development.AutomorphicSpectrum.PublishedTheorems.Metrics₂.SheetDensityEqSetSheetDensity
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterRed
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterRedF
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterGood
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterDivSupp
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterSheet
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterSheetB
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterFib
-public import ReciprocityTheory.AnalyticForms.RegularLocalRings.ConeChart
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.KleimanNefness.AlgDim
-public import Development.AutomorphicSpectrum.Proofs.MetricProofs.CxPosDens
-public import Development.AutomorphicSpectrum.Proofs.MetricProofs.CxSimple
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PSegreChartZeroSet
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PSegreChartDim
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PGoodChartZeroSet
 public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PGoodChartDim
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PGoodChartModel
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PConeVanishingHomog
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PConeSliceIdeal
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PChartDehomogPrime
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PComponentsGenericCount
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PSheetLift
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PPtsGenericCount
-public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PPtsSheetSimpleNull
 public import Development.AutomorphicSpectrum.Proofs.MetricProofs.ProjChartSetEqSetChartSet
+import GroundTheory.HeightsAndTheta.Heights.ChowForms.PChartHomogenise
+public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PChartDehomogPrime
+public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PConeSliceIdeal
+public import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PConeVanishingHomog
+import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PGoodChartZeroSet
+import GroundTheory.HeightsAndTheta.Heights.OrbitLimits.PSegreChartDim
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.KleimanNefness.AlgDim
 
 @[expose] public section
 
@@ -233,9 +254,9 @@ theorem chart_dim {Q : Ideal (MRingOver ℂ ι)} (hQp : Q.IsPrime) (hQ : Recipro
     rw [hVQ₀, Ideal.minimalPrimes_eq_subsingleton_self]
     rfl
 
-  have d₁ := ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.KH.dimPIT ℂ (Fin m) V J (linForm t - 1) hV.isPrime
+  have d₁ := _root_.ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.KH.KrullDimensionPrincipalIdeal.dimPIT' ℂ (Fin m) V J (linForm t - 1) hV.isPrime
     (linForm_sub_one_not_mem hV.isHomog hV.isPrime.ne_top t) hJmin
-  have d₂ := ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.KH.dimPIT ℂ (Fin m) V Q₀ (linForm u - 1) hV.isPrime
+  have d₂ := _root_.ReciprocityTheory.ChartRestriction.G.ArakelovGeometry.KH.KrullDimensionPrincipalIdeal.dimPIT' ℂ (Fin m) V Q₀ (linForm u - 1) hV.isPrime
     (linForm_sub_one_not_mem hV.isHomog hV.isPrime.ne_top u) hQ₀min
   rw [← d₂, hdimQ₀] at d₁
   exact eq_of_add_one_eq d₁

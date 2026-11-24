@@ -1,10 +1,56 @@
 module
 
-public import Mathlib
-public import Formalism.LocalRingCardinality.RhoDetPrimeEqMuTildeMulChiPow
-public import Formalism.LocalRingCardinality.AdicCompletionLocal.LocTied
-public import Formalism.SharpRestriction.LevelLetterCocycles.LocalSituation
-public import Formalism.SharpRestriction.LevelLetterCocycles.LocCoh
+public import Formalism.WeaklyAdmissibleFiltrations.Statement
+public import Mathlib.RingTheory.IsTensorProduct
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
+import Formalism.SharpRestriction.LevelLetterCocycles.DataNLoc
+import Formalism.SharpRestriction.LevelLetterCocycles.LocCoh
 
 @[expose] public section
 
@@ -57,15 +103,15 @@ variable {u : ι → L'} {J : M →ₗ[L] M'} {π : ι → M' →ₗ[L] M}
 
 theorem IsCoord.sum (h : IsCoord u J π) (m : ι → M) (k : ι) :
     π k (∑ l, u l • J (m l)) = m k := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp [map_sum, h.2]
+
+  simp [map_sum, h.2]
 
 theorem IsCoord.comm (h : IsCoord u J π) (hN : IsCoord u JN πN) (f : N →ₗ[L] M)
     (f' : N' →ₗ[L'] M') (hf : ∀ y, f' (JN y) = J (f y)) (k : ι) (x : N') :
     π k (f' x) = f (πN k x) := by
   conv_lhs => rw [← hN.1 x]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum f', map_smul, hf]
+
+  simp only [map_sum f', map_smul, hf]
   exact h.sum _ k
 
 theorem IsCoord.rel_ker (h : IsCoord u J π) (hN : IsCoord u JN πN) (f : N →ₗ[L] M)
@@ -87,8 +133,8 @@ theorem IsCoord.rel_range (h : IsCoord u J π) (hN : IsCoord u JN πN) (f : N �
   · intro hx
     choose y hy using hx
     refine ⟨∑ k, u k • JN (y k), ?_⟩
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [map_sum, map_smul, hf, hy]
+
+    simp only [map_sum, map_smul, hf, hy]
     exact h.1 x
 
 omit [Algebra L L'] [Fintype ι] [DecidableEq ι] in
@@ -130,7 +176,7 @@ theorem IsCoord.finrank_eq [IsScalarTower L L' M'] {u : Basis ι L L'} (h : IsCo
   haveI : Module.Finite L L' := Module.Finite.of_basis u
   have h1 : finrank L L' * finrank L' S' = finrank L S' := Module.finrank_mul_finrank L L' S'
   have h2 : finrank L (ι → S) = Fintype.card ι * finrank L S := by
-    simp [Module.finrank, rank_fun_eq_lift_mul]
+    simp [Module.finrank]
   rw [e.finrank_eq, h2, ← Module.finrank_eq_card_basis u] at h1
   exact Nat.eq_of_mul_eq_mul_left Module.finrank_pos h1
 

@@ -1,9 +1,48 @@
 module
 
-public import Formalism.LocalToGlobal.InertKernelTheory.SubBSplit
-public import Formalism.LocalToGlobal.InertKernelTheory.InertCoprimeLemmas.K2Hermitian
-public import Formalism.LocalToGlobal.GroupLattices.PendingLemmas.InvarianceIffAdditiveMapsExist
-public import Formalism.LocalToGlobal.GroupLattices.ComparisonMaps.NatActRVtupR
+public import Formalism.LocalToGlobal.InertKernelTheory.DelPolOfTies
+public import Formalism.LocalToGlobal.InertKernelTheory.InertCoprimeLemmas.QuadraticBaseChangeGL3
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalToGlobal.InertKernelTheory.SecondKernelEntrywiseLastLevel
+import Formalism.LocalToGlobal.InertKernelTheory.TieSerPin
+import Formalism.LocalToGlobal.InertKernelTheory.SubBSplit
 
 @[expose] public section
 
@@ -89,7 +128,7 @@ theorem wt_deg {N : ℕ} (ν : D.what₂.Tau → Fin N → ℕ) (Q : MvPolynomia
   have h1 := hQ (fun τ' => Matrix.diagonal fun _ : Fin N => d τ') hB
   rw [colSub_diag] at h1
   have h2 := congrArg (AddMonoidAlgebra.coeff · m) h1
-  rw [coeff_aeval_CX, coeff_smul, smul_eq_mul] at h2
+  rw [coeff_aeval_CX, MvPolynomial.coeff_smul, smul_eq_mul] at h2
   have h3 := mul_right_cancel₀ hm h2
   have hl : (m.prod fun k e => d k.1 ^ e) = (2 : ℂ) ^ Finsupp.weight (wF τ) m := by
     rw [Finsupp.weight_apply, Finsupp.prod, Finsupp.sum, hd]
@@ -122,8 +161,8 @@ theorem polDY_wh {N N' : ℕ} (s : D.what₂.Tau → ℂ) (ν : D.what₂.Tau �
     exact (isWeightedHomogeneous_X _ _ _).C_mul _
   unfold polDY
   conv => enter [2]; rw [Q.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine IsWeightedHomogeneous.sum _ _ _ fun m hm => ?_
   rw [aeval_monomial, MvPolynomial.algebraMap_apply, ← wt_deg ν Q hQ τ m (mem_support_iff.1 hm), Finsupp.weight_apply]
   have := (isWeightedHomogeneous_C (wI (N := N) (N' := N') τ) (algebraMap ℂ (MvPolynomial (GL3Theta.FrV D N') ℂ) (AddMonoidAlgebra.coeff Q m))).mul

@@ -1,10 +1,50 @@
 module
 
 public import PositivityTheory.AutomorphicForms.PublishedInputs.HilbertEisenstein.SSmooth
-public import GroundTheory.GlobalFields.TateThesis.TateThetaDecay
-public import GroundTheory.GlobalFields.TateThesis.AdelePoissonUniform
-public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.ExistsUniqueHcharOfFiniteOrder
 public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.IsOpenIdeleSubgroupContainsCongruenceUnits
+public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.ExistsUniqueHcharOfFiniteOrder
+import Formalism.SharpRestriction.GrowthBounds.MonomialOrderSegments.BrData
+public import GroundTheory.GlobalFields.TateThesis.AdelePoisson
+public import GroundTheory.GlobalFields.TateThesis.AdelePoissonUniform
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Development.AutomorphicArithmetic.AutomorphicVarieties.GaloisLibrary.SelmerTransport.RestrictionMemInvariantH1
+import Development.AutomorphicArithmetic.AutomorphicVarieties.IdeleGenerators.ConstSmall
+import Development.AutomorphicArithmetic.AutomorphicVarieties.PublishedTheorems.GelfandKazhdanReal
 
 @[expose] public section
 
@@ -120,14 +160,14 @@ theorem exists_den_row (c : HeightOneSpectrum (𝓞 F) → ℕ) (g : GA F 2) {C 
       (pFin F (((g⁻¹ : GA F 2) : Matrix (Fin 2) (Fin 2) (Ad F)) j i) *
         ((IdeleGroup.toFinite F a⁻¹ : (Af F)ˣ) : Af F)) := by
     have h2 := congrArg (fun v => pFin F (v i)) hrow
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Matrix.vecMul, dotProduct, coe_Mcol_apply', map_sum, map_mul] at h2
+
+    simp only [Matrix.vecMul, dotProduct, coe_Mcol_apply', map_sum, map_mul] at h2
     rw [← pFin_algebraMap]
     exact h2
   apply exists_int_of_val
   intro w
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_mul, hx, Finset.mul_sum, map_sum]
+
+  rw [map_mul, hx, Finset.mul_sum, map_sum]
   apply val_sum_two_le
   intro j
   rw [mul_left_comm, map_mul, Valuation.map_mul]
@@ -213,8 +253,8 @@ theorem exists_den_col (c : HeightOneSpectrum (𝓞 F) → ℕ) (hc : {w | c w �
   have hx : algebraMap F (Af F) (ξ i) = ∑ j, (((IdeleGroup.toFinite F a : (Af F)ˣ) : Af F) *
       pFin F (((g : GA F 2) : Matrix (Fin 2) (Fin 2) (Ad F)) i j)) * pFin F (col j) := by
     have h2 := congrArg (fun v => pFin F (v i)) hcol
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Matrix.mulVec, dotProduct, coe_Mrow_apply', map_sum, map_mul] at h2
+
+    simp only [Matrix.mulVec, dotProduct, coe_Mrow_apply', map_sum, map_mul] at h2
     rw [← pFin_algebraMap]
     exact h2
   apply exists_int_of_val
@@ -227,8 +267,8 @@ theorem exists_den_col (c : HeightOneSpectrum (𝓞 F) → ℕ) (hc : {w | c w �
     refine Finset.sum_congr rfl fun j _ => ?_
     ring
   have e2 : (((d * e : 𝓞 F)) : F) = (d : F) * (e : F) := by push_cast; ring
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [e2, e1, map_sum]
+
+  rw [e2, e1, map_sum]
   apply val_sum_two_le
   intro j
   rw [map_mul, Valuation.map_mul]

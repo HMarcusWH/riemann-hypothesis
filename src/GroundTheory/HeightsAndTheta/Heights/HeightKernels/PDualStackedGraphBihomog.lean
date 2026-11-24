@@ -1,7 +1,55 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HeightKernels.StatementsDualStackedExcLead
+public import Aesop.BuiltinRules
+import Mathlib.Algebra.AffineMonoid.UniqueSums
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -152,14 +200,14 @@ theorem stackedFormEval_bipart (b : Module.Basis T ℤ (dualLattice F))
   rw [map_zero]
   change formEvalFrac b b' (bipart f p) = 0
   have h0 := biEval_eq_zero b b' hb hf
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← support_sum_monomial_coeff f, map_sum] at h0
+
+  rw [← support_sum_monomial_coeff f, map_sum] at h0
   simp_rw [biEval_monomial] at h0
   have h1 := congrArg (fun q => AddMonoidAlgebra.coeff (AddMonoidAlgebra.coeff q (Finsupp.single () p.2)) (Finsupp.single () (p.1 + p.2))) h0
   simp only [coeff_sum, coeff_C_mul_X_pow_unit, apply_ite (AddMonoidAlgebra.coeff · (Finsupp.single () (p.1 + p.2))),
     AddMonoidAlgebra.coeff_zero, Finsupp.zero_apply] at h1
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← h1, bipart, map_sum, Finset.sum_filter]
+
+  rw [← h1, bipart, map_sum, Finset.sum_filter]
   refine Finset.sum_congr rfl fun m _ => ?_
   rw [sum_eq_bideg, sum_secW_eq_bideg]
   obtain ⟨d, e⟩ := p

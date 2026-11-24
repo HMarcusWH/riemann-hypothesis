@@ -1,6 +1,54 @@
 module
 
-public import Formalism.LocalToGlobal.CharacterGerms.RowTiePGerm
+import Development.AbelianVarietyTheory.Proofs.UnramifiedDepth.FormalGroupActionLimitsIntegralEndomorphisms
+public import Formalism.LocalToGlobal.CharacterGerms.IntSubst
+public import Mathlib.RingTheory.MvPowerSeries.Substitution
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Algebra.Order.Floor.Semiring
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.ToroidalCompactification.CocycleRightZeroThd
 
 @[expose] public section
 
@@ -66,22 +114,7 @@ theorem exists_ge (x : C) : ∃ K : ℝ, V.Ge K x := by
   | coe r => exact ⟨r, le_rfl⟩
 
 theorem eq_zero_of_ge_all {x : C} (h : ∀ w : ℝ, V.Ge w x) : x = 0 := by
-  change ∀ w : ℝ, ((w : WithTop ℝ) ≤ V.v x) at h
-  by_contra hx
-  have hne : V.v x ≠ ⊤ := by
-    intro ht
-    apply hx
-    first
-    | exact (AddValuation.top_iff V.v).mp ht
-    | exact V.v.top_iff.mp ht
-    | (by_contra hx0
-       have h2 : V.v (x * x⁻¹) = V.v x + V.v x⁻¹ := AddValuation.map_mul V.v x x⁻¹
-       rw [mul_inv_cancel₀ hx0, AddValuation.map_one, ht, top_add] at h2
-       simp at h2)
-  obtain ⟨r, hr⟩ := WithTop.ne_top_iff_exists.mp hne
-  have h1 := h (r + 1)
-  rw [← hr, WithTop.coe_le_coe] at h1
-  linarith
+  apply GlobalTheory.ActLimit.eq_zero_of_ge <;> assumption
 
 theorem tends_const (x : C) : Tends V (fun _ => x) x := by
   intro w
@@ -286,7 +319,6 @@ theorem ord_one_of_const {f : MvPowerSeries σ C} (hf : constantCoeff f = 0) : O
   subst h0
   first
   | (rw [MvPowerSeries.coeff_zero_eq_constantCoeff_apply]; exact hf)
-  | simpa using hf
 
 theorem Ord.prod {ι : Type} (S : Finset ι) {k : ι → ℕ} {f : ι → MvPowerSeries σ C}
     (h : ∀ i ∈ S, Ord (k i) (f i)) : Ord (∑ i ∈ S, k i) (∏ i ∈ S, f i) := by
@@ -305,8 +337,6 @@ theorem ord_fprod {τ : Type} {a : σ → MvPowerSeries τ C} (ha : ∀ s, const
   have hdeg : Finsupp.degree d = ∑ s ∈ d.support, d s := by
     first
     | rfl
-    | simp [Finsupp.degree_apply]
-    | simp [Finsupp.degree]
   rw [hdeg]
   simp only [Finsupp.prod]
   exact Ord.prod d.support (k := fun s => d s) (f := fun s => a s ^ d s)
@@ -319,9 +349,6 @@ theorem coeff_subst_eq_sum [Finite σ] {τ : Type} {a : σ → MvPowerSeries τ 
   have hs : MvPowerSeries.HasSubst a := by
     first
     | exact MvPowerSeries.hasSubst_of_constantCoeff_zero ha
-    | exact MvPowerSeries.HasSubst.of_constantCoeff_nilpotent (fun s => by rw [ha s]; exact IsNilpotent.zero)
-    | exact MvPowerSeries.hasSubst_of_constantCoeff_nilpotent (fun s => by rw [ha s]; exact IsNilpotent.zero)
-    | exact ⟨fun s => by rw [ha s]; exact IsNilpotent.zero, fun d => Set.toFinite _⟩
   rw [MvPowerSeries.coeff_subst hs]
   simp only [smul_eq_mul]
   apply finsum_eq_sum_of_support_subset

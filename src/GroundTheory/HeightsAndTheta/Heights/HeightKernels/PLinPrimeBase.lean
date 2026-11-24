@@ -1,7 +1,48 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HeightKernels.StatementsDualStackedExcLinear
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -21,8 +62,8 @@ def firstLin (n : T → ℤ) : MRing (stackedBlocks T) := ∑ t, n t • graphFi
 
 theorem linPointMap_firstLin (α : T → k) (M : T → Fin 1 → k) (n : T → ℤ) :
     linPointMap α M (firstLin n) = C (∑ t, n t • α t) * X none := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [firstLin, map_sum, map_zsmul, LinPrimeExample.linPointMap_first, Finset.sum_mul, smul_mul_assoc]
+
+  simp only [firstLin, map_sum, map_zsmul, LinPrimeExample.linPointMap_first, Finset.sum_mul, smul_mul_assoc]
 
 theorem exists_comb {α : T → k} (hα : Submodule.span ℤ (Set.range α) = ⊤) (y : k) :
     ∃ n : T → ℤ, ∑ t, n t • α t = y := by
@@ -65,8 +106,8 @@ theorem chart_equiv (α : T → k) (M : T → Fin 1 → k) (hα : Submodule.span
   set N : Submodule ℤ (MRing (stackedBlocks T) ⧸ I) :=
     Submodule.span ℤ (Set.range fun t => mk (graphFirst t)) with hN
   have hLin : ∀ n : T → ℤ, mk (firstLin n) ∈ N := fun n => by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [firstLin, map_sum]
+
+    rw [firstLin, map_sum]
     refine Submodule.sum_mem _ fun t _ => ?_
     rw [map_zsmul]
     exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨t, rfl⟩)
@@ -133,8 +174,8 @@ theorem chart_equiv (α : T → k) (M : T → Fin 1 → k) (hα : Submodule.span
     rw [RingHom.mem_ker] at hg
     obtain ⟨n, hn⟩ := (Submodule.mem_span_range_iff_exists_fun ℤ).mp (hAll g)
     have hn' : mk (firstLin n) = mk g := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [← hn, firstLin, map_sum]
+
+      rw [← hn, firstLin, map_sum]
       simp only [map_zsmul]
     have hd : g - firstLin n ∈ I := Ideal.Quotient.eq.mp hn'.symm
     have hd' : φ (g - firstLin n) = 0 := RingHom.mem_ker.mp (hIle hd)

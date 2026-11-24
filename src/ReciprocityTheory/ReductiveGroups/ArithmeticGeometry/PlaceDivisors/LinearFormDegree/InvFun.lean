@@ -1,6 +1,52 @@
 module
 
-public import Mathlib
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.RingTheory.MvPowerSeries.Substitution
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Presheaf
 
 @[expose] public section
 
@@ -134,8 +180,8 @@ theorem order_lin (A : Matrix σ σ R) (f : σ → MvPowerSeries σ R) (k : ℕ�
     (i : σ) : k ≤ (lin A f i).order := by
   apply le_order
   intro e he
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [lin, map_sum]
+
+  rw [lin, map_sum]
   refine Finset.sum_eq_zero fun j _ => ?_
   rw [coeff_C_mul, coeff_of_lt_order (lt_of_lt_of_le he (h j)), mul_zero]
 
@@ -146,8 +192,8 @@ theorem lin_sub (A : Matrix σ σ R) (f g : σ → MvPowerSeries σ R) (i : σ) 
 theorem lin_lin (A B : Matrix σ σ R) (f : σ → MvPowerSeries σ R) :
     lin A (lin B f) = lin (A * B) f := by
   funext i
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [lin, Matrix.mul_apply, map_sum, Finset.sum_mul, Finset.mul_sum, ← mul_assoc, ← map_mul]
+
+  simp only [lin, Matrix.mul_apply, map_sum, Finset.sum_mul, Finset.mul_sum, ← mul_assoc, ← map_mul]
   exact Finset.sum_comm
 
 theorem lin_one (f : σ → MvPowerSeries σ R) : lin 1 f = f := by
@@ -160,8 +206,8 @@ theorem constantCoeff_lin (A : Matrix σ σ R) (f : σ → MvPowerSeries σ R) (
 
 theorem subst_lin (a : σ → MvPowerSeries σ R) (ha : HasSubst a) (A : Matrix σ σ R) (i : σ) :
     subst a (lin A (fun j => X j) i) = lin A a i := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [lin, ← coe_substAlgHom ha, map_sum]
+
+  rw [lin, ← coe_substAlgHom ha, map_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [map_mul, coe_substAlgHom ha, subst_C, subst_X ha]
 
@@ -180,8 +226,8 @@ theorem two_le_order_nl (φ : σ → MvPowerSeries σ R) (L : Matrix σ σ R)
     rw [coeff_zero_eq_constantCoeff_apply, nl, map_sub, h0, constantCoeff_lin _ _ (fun j => constantCoeff_X j)]
     simp
   · obtain ⟨j, rfl⟩ := eq_single_of_degree_eq_one h
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [nl, map_sub, h1, lin, map_sum]
+
+    rw [nl, map_sub, h1, lin, map_sum]
     simp only [coeff_C_mul, coeff_X]
     rw [Finset.sum_eq_single j]
     · simp
@@ -301,8 +347,8 @@ theorem coeff_lim_single (φ : σ → MvPowerSeries σ R) (L M : Matrix σ σ R)
   rw [coeff_lim, Finsupp.degree_single]
   change coeff (Finsupp.single j 1) (lin M (fun l => X l - subst (0 : σ → MvPowerSeries σ R) (nl φ L l)) i) = M i j
   simp only [subst_zero_of_constantCoeff_zero (constantCoeff_nl φ L hnl _), sub_zero]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [lin, map_sum]
+
+  rw [lin, map_sum]
   simp only [coeff_C_mul, coeff_X]
   rw [Finset.sum_eq_single j]
   · simp

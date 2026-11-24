@@ -1,9 +1,56 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsSectionsDimZero
-public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PHilbFnValueSpan
+public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsHilbFnValueSpan
 public import GroundTheory.HeightsAndTheta.Heights.HeightsOfSets.PCoordCurveAlgebraic
+public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PHilbFnValueSpan
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import GroundTheory.HeightsAndTheta.Heights.HeightsOfSets.IsSaturatedFirstCoordinateLine
 
 @[expose] public section
 
@@ -118,8 +165,8 @@ theorem valueSpan_le (y : (Σ k, ι k) → Ω) (c : ∀ k, ι k) (hc : ∀ k, y 
       (LinearMap.mulRight ℚ (∏ k, y ⟨k, c k⟩ ^ d k)) := by
   refine Submodule.span_le.mpr ?_
   rintro _ ⟨g, hg, rfl⟩
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [SetLike.mem_coe, g.as_sum, map_sum]
+
+  rw [SetLike.mem_coe, g.as_sum, map_sum]
   refine Submodule.sum_mem _ fun m hm => ?_
   rw [aeval_monomial_int, monVal_eq y c hc m]
   have hb : ∀ k, blockDeg m k = d k := fun k => hg m hm k
@@ -182,8 +229,8 @@ theorem exists_le_span {y : (Σ k, ι k) → Ω} (hP : IsArithVar (mCoordIdeal y
       change x ∈ chartRingQ y c at hx
       rw [chartRingQ, Algebra.adjoin_range_eq_range_aeval] at hx
       obtain ⟨f, rfl⟩ := hx
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, f.as_sum, map_sum]
+
+      rw [AlgHom.toRingHom_eq_coe, RingHom.coe_coe, f.as_sum, map_sum]
       refine Submodule.sum_mem _ fun m _ => ?_
       rw [aeval_monomial_rat]
       refine Submodule.smul_mem _ _ ?_

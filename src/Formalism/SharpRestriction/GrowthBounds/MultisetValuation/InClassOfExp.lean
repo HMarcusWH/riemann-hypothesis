@@ -1,7 +1,44 @@
 module
 
-public import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.PrimeCastNeZero
 public import Formalism.ThetaLogCoordinates.UniformThetaSubstitution.FrobeniusLiftNorms.TopsChoicePartB
+public import Formalism.SharpRestriction.GrowthBounds.FormalGroupSystem
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -63,8 +100,8 @@ theorem coeff_expK (f : MvPowerSeries ι K) (n : ι →₀ ℕ) :
 theorem low_expK_sub {f : MvPowerSeries ι K} (hf : MvPowerSeries.constantCoeff f = 0) (M : ℕ) :
     Low M (expK f - expSum f M) := by
   intro d hd
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sub, coeff_expK, expSum, map_sum, sub_eq_zero]
+
+  rw [map_sub, coeff_expK, expSum, map_sum, sub_eq_zero]
   simp only [MvPowerSeries.coeff_C_mul]
   refine Finset.sum_subset (Finset.range_subset_range.2 (by omega)) fun k _ hk => ?_
   rw [low_pow ((low_one_iff _).2 hf) k d (by simp only [mem_range] at hk; omega), mul_zero]
@@ -90,8 +127,8 @@ theorem expK_add [CharZero K] {a b : MvPowerSeries ι K}
     refine low_sum _ _ _ fun k _ => ?_
     rw [Finset.mul_sum]
     intro d hd
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sub, map_sum, map_sum, sub_eq_zero]
+
+    rw [map_sub, map_sum, map_sum, sub_eq_zero]
     symm
     refine Finset.sum_subset (Finset.range_subset_range.2 (Nat.sub_le _ _)) fun l _ hl => ?_
     have hkl : Low (k + l) ((MvPowerSeries.C ((k.factorial : K)⁻¹) * a ^ k) *
@@ -160,8 +197,8 @@ theorem inClass_of_exp {R : Subring K} {pp c : K} (hpp : pp ≠ 0) (hc : ∀ k :
     simpa using low_mul (low_expK_sub hx (n.degree + 1)) (low_zero V)
   have h2 := h1 n (by omega)
   rw [sub_mul, map_sub, sub_eq_zero] at h2
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [h2, expSum, Finset.sum_mul, map_sum]
+
+  rw [h2, expSum, Finset.sum_mul, map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [term_exp hpp, ← MvPowerSeries.coeff_C_mul]
   congr 1
@@ -187,8 +224,8 @@ theorem inProd_of_exp {Pl : Type} [Fintype Pl] [DecidableEq Pl] {R : Subring K} 
   rw [sub_mul, map_sub, sub_eq_zero] at h2
   rw [h2]
   unfold expSum
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [Finset.prod_univ_sum, Finset.sum_mul, map_sum]
+
+  rw [Finset.prod_univ_sum, Finset.sum_mul, map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   congr 1
   rw [Finset.prod_congr rfl fun v _ => term_exp hpp (h v) (i v), Finset.prod_mul_distrib,

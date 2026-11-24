@@ -1,7 +1,48 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.Saturated
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.CoassocSimps
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -45,19 +86,15 @@ theorem gmap_sup' (A B : Submodule (𝓞 E) S.V) :
 
 theorem gmap_span' (s : Set S.V) :
     Formalism.HermitianLatticesTheory.gmap β (Submodule.span (𝓞 E) s) = Submodule.span (𝓞 E) (β '' s) := by
-  rw [Formalism.HermitianLatticesTheory.gmap, Submodule.map_span]
-  rfl
+  exact Submodule.map_span _ _
 
 theorem coe_gmap (M : Submodule (𝓞 E) S.V) : (Formalism.HermitianLatticesTheory.gmap β M : Set S.V) = β '' M := by
-  rw [Formalism.HermitianLatticesTheory.gmap, Submodule.map_coe]
   rfl
 
 theorem gmap_toO (U : Submodule E S.V) :
     Formalism.HermitianLatticesTheory.gmap β (toO S U) = toO S (U.map (β : S.V →ₗ[E] S.V)) := by
   ext x
-  rw [mem_gmap_iff]
-  simp only [toO, Submodule.restrictScalars_mem]
-  rw [Submodule.mem_map_equiv]
+  simp only [mem_gmap_iff, toO, Submodule.restrictScalars_mem, Submodule.mem_map_equiv]
 
 theorem gmap_locP (P : Ideal (𝓞 E)) [P.IsPrime] (M : Submodule (𝓞 E) S.V) :
     Formalism.HermitianLatticesTheory.localization₂ P (Formalism.HermitianLatticesTheory.gmap β M) = Formalism.HermitianLatticesTheory.gmap β (Formalism.HermitianLatticesTheory.localization₂ P M) := by
@@ -112,8 +149,7 @@ theorem Xsp_mapL (F : LFlag S r T) : Xsp (mapL β hβ F) = (Xsp F).map (β : S.V
 
 theorem Xflag_mapL (F : LFlag S r T) (j : ℕ) :
     Xflag (mapL β hβ F) j = (Xflag F j).map (β : S.V →ₗ[E] S.V) := by
-  simp only [Xflag, FlagG.Xa, mapL, mapFlag]
-  rw [span_image_E, Set.image_image]
+  simp only [Xflag, FlagG.Xa, mapL, mapFlag, span_image_E, Set.image_image]
 
 theorem zt_mapL (F : LFlag S r T) : (mapL β hβ F).zt = β F.zt := rfl
 theorem z_mapL (F : LFlag S r T) : (mapL β hβ F).fl.z = β F.fl.z := rfl
@@ -148,8 +184,8 @@ theorem NgX_mapL (g : ℕ) (Λ : Submodule (𝓞 E) S.V) (F : LFlag S r T) (F' :
 
 theorem frameAct_map {n : ℕ} (f : Fin n → S.V) (ξ : Matrix (Fin n) (Fin n) (𝓞 E)) (b : Fin n) :
     frameAct (fun a => β (f a)) ξ b = β (frameAct f ξ b) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [frameAct, map_sum, LinearEquiv.map_smul]
+
+  simp only [frameAct, map_sum, LinearEquiv.map_smul]
 
 theorem frame_mapL' (F : LFlag S r T) : frame (mapL β hβ F) = fun a => β (frame F a) := by
   funext a; exact frame_mapL β hβ F a
@@ -268,13 +304,9 @@ theorem double_coset_isomorphism : DCIso S r := by
     refine ⟨β⁻¹ * n * β, (mem_NLam_map β hβ Λ F n).1 hn, β⁻¹ * m * β, (mem_NLam_map β hβ Λ F₁ m).1 hm,
       fun a => ?_, ?_⟩
     · apply β.injective
-      rw [hf a]
-      change n (m (β (frame F₁ a))) = β (β.symm (n (β (β.symm (m (β (frame F₁ a)))))))
-      simp
+      simpa [conj_apply] using hf a
     · apply β.injective
-      rw [hz]
-      change n (m (β F₁.zt)) = β (β.symm (n (β (β.symm (m (β F₁.zt))))))
-      simp
+      simpa [conj_apply] using hz
   · rintro ⟨n, hn, m, hm, hf, hz⟩
     refine ⟨β * n * β⁻¹, (conj_mem_NLam β hβ Λ F n).2 hn, β * m * β⁻¹, (conj_mem_NLam β hβ Λ F₁ m).2 hm,
       fun a => ?_, ?_⟩
@@ -296,8 +328,7 @@ theorem conjL_symm (Y : S.V →ₗ[E] S.V) : conjL β (conjL β.symm Y) = Y := b
 
 theorem Xa_mapFlag (F : FlagG S r T) (j : ℕ) :
     (mapFlag β hβ F).Xa j = (F.Xa j).map (β : S.V →ₗ[E] S.V) := by
-  simp only [FlagG.Xa, mapFlag]
-  rw [span_image_E, Set.image_image]
+  simp only [FlagG.Xa, mapFlag, span_image_E, Set.image_image]
 
 theorem X_mapFlag (F : FlagG S r T) : (mapFlag β hβ F).X = F.X.map (β : S.V →ₗ[E] S.V) := by
   simp only [FlagG.X, mapFlag]
@@ -1226,13 +1257,12 @@ theorem Mint_le_MplusInt : Mint Λ g F F' ≤ MplusInt Λ g F F' := by
   rw [Mint, Submodule.span_le]
   rintro v (hv | ⟨w, ⟨hwU, hwg⟩, rfl⟩)
   · exact Submodule.mem_sup_left (by rw [UU_eq]; exact Submodule.mem_sup_left hv)
-  · have hwU' : w ∈ Apart Λ F ⊔ Apart Λ F' := by rw [← UU_eq]; exact hwU
-    obtain ⟨u, hu, u', hu', rfl⟩ := Submodule.mem_sup.1 hwU'
-    have e1 : u' - -u = u + u' := by rw [sub_neg_eq_add, add_comm]
-    refine Submodule.mem_sup_right (Submodule.subset_span ⟨u', hu', -u, Submodule.neg_mem _ hu, ?_, ?_⟩)
-    · rw [e1]; exact hwg
-    · show (g : E)⁻¹ • (u + u') = (g : E)⁻¹ • (u' - -u)
-      rw [e1]
+  · rw [UU_eq] at hwU
+    obtain ⟨u, hu, u', hu', rfl⟩ := Submodule.mem_sup.1 hwU
+    refine Submodule.mem_sup_right (Submodule.subset_span
+      ⟨u', hu', -u, Submodule.neg_mem _ hu, ?_, ?_⟩)
+    · simpa [sub_neg_eq_add, add_comm] using hwg
+    · simp [sub_neg_eq_add, add_comm]
 
 theorem Apart_le_Mplus (ξ : Matrix (Fin (r + 1)) (Fin (r + 1)) (𝓞 E)) : Apart Λ F ≤ Mplus Λ g F F' ξ := by
   refine sup_le (fun v hv => Submodule.subset_span (Or.inl (Or.inl hv))) ?_
@@ -1319,8 +1349,7 @@ theorem eq_of_locP {A B : Submodule (𝓞 E) S.V}
     intro P
     have := P.isPrime
     have hx' : x ∈ Formalism.HermitianLatticesTheory.localization₂ P.asIdeal B := by rw [← h P]; exact le_locP' _ _ hx
-    obtain ⟨s, hs, hsx⟩ := hx'
-    exact ⟨s, hs, hsx⟩
+    exact hx'
   exact le_antisymm (key A B h) (key B A fun P => (h P).symm)
 
 end Int

@@ -1,8 +1,47 @@
 module
 
-public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.VacuumIwasawa.ParabolicThetaScalar
-public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.ThetaSplitting.SplitW
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.AuxiliaryPrimeFunction
 public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.ThetaSplitting.SplitP
+public import Development.WeilBound.CoreStatements.AutomorphicKernels.SiegelWeilFormula.WhittakerCovolume.ParabolicLowerBlockZero
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -17,10 +56,6 @@ namespace PositivityTheory.SiegelWeilFormula.Avac
 variable {F E : Type} [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E] {σ : E →ₐ[F] E}
 
 open GlobalTheory.Doubling (absE)
-
-omit [NumberField E] in
-theorem incM_mul'' {a b c : Type} [Fintype b] (X : Matrix a b E) (Y : Matrix b c E) :
-    incM F (X * Y) = incM F X * incM F Y := Matrix.map_mul
 
 theorem isPar_of_frame (d : SD σ) (p : d.G) (h21 : (inFrame d.b p).toBlocks₂₁ = 0) :
     ∃ t : GL (Fin d.n) (AE F E), IsPar p t ∧ (Matrix.GeneralLinearGroup.det t : AE F E) = (inFrame d.b p).toBlocks₁₁.det := by
@@ -38,16 +73,16 @@ theorem isPar_of_frame (d : SD σ) (p : d.G) (h21 : (inFrame d.b p).toBlocks₂�
     ext i j
     rfl
   have h2 : incM F ((diagCols (Fin d.n) : Matrix (Fin d.n ⊕ Fin d.n) (Fin d.n) E) * tb.1) = DC * incM F tb.1 := by
-    rw [incM_mul'']
+    rw [_root_.PositivityTheory.SiegelWeilFormula.KWhit.incM_mul']
     congr 1
     ext i j
     cases i <;> simp [DC, diagCols, incM, Matrix.one_apply, apply_ite] <;> split_ifs <;> simp_all
   have hb : incM F d.b.1 * E1 = DC * incM F tb.1 := h1.trans ((congrArg (incM F) htb').trans h2)
   have hTb : incM F tb.1 * incM F (tb⁻¹).1 = 1 := by
-    rw [← incM_mul'', Units.mul_inv]
+    rw [← _root_.PositivityTheory.SiegelWeilFormula.KWhit.incM_mul', Units.mul_inv]
     exact Matrix.map_one _ (map_zero _) (map_one _)
   have hTb' : incM F (tb⁻¹).1 * incM F tb.1 = 1 := by
-    rw [← incM_mul'', Units.inv_mul]
+    rw [← _root_.PositivityTheory.SiegelWeilFormula.KWhit.incM_mul', Units.inv_mul]
     exact Matrix.map_one _ (map_zero _) (map_one _)
   have hdc : DC = incM F d.b.1 * E1 * incM F (tb⁻¹).1 := by
     rw [hb, Matrix.mul_assoc, hTb, Matrix.mul_one]

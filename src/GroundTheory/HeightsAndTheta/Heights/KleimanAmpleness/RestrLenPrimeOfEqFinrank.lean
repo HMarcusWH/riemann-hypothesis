@@ -1,11 +1,49 @@
 module
 
-public import Mathlib
-public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.IsGraphGenTwistBundleZero
-public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.RestrLenRestrictSt
-public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.AssemblyBase
+import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.PInterNumPoint
+public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.AlgebraMapMemChartRingLine
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.TwistAlg
-public import GroundTheory.HeightsAndTheta.Heights.FieldsOfNumbers.Assembly
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -87,27 +125,7 @@ variable {k : Type u} [Field k] {K' : Type w} [Field K'] [Algebra k K'] {N : ℕ
 
 theorem restrLen_primeOf_eq_finrank (y : Fin (N + 1) → K') {j : Fin (N + 1)} (hyj : y j ≠ 0)
     (F : SubSystem k y K') : restrLen (primeOf (S := k) y) F = Module.finrank k F.secs := by
-  have hid : ∀ I : Chart y, idealMod (x := y) (primeOf (S := k) y) I = ⊥ := by
-    intro I
-    refine Submodule.span_eq_bot.mpr ?_
-    rintro _ ⟨f, s, e, hf, _, hfe, _, rfl⟩
-    rw [(mem_primeOf_of_isHomogeneous y hfe).mp hf, zero_div]
-  have hbot : ∀ I : Chart y, (F.twist (idealSys y (primeOf (S := k) y))).sub I = ⊥ := by
-    intro I
-    refine Submodule.span_eq_bot.mpr ?_
-    rintro _ ⟨q, hq, z, _, rfl⟩
-    have hq' : q ∈ idealMod (x := y) (primeOf (S := k) y) I := hq
-    rw [hid I, Submodule.mem_bot] at hq'
-    rw [hq', zero_smul]
-  have hsecs : (F.twist (idealSys y (primeOf (S := k) y))).secs = ⊥ := by
-    refine eq_bot_iff.mpr fun z hz => ?_
-    have h1 := (Submodule.mem_iInf _).mp hz (singleChart hyj)
-    rw [Submodule.restrictScalars_mem, hbot] at h1
-    exact h1
-  unfold restrLen
-  rw [hsecs, Submodule.comap_bot, Submodule.ker_subtype,
-    (Submodule.quotEquivOfEqBot (⊥ : Submodule k F.secs) rfl).length_eq, Module.length_eq_rank]
-  rfl
+  apply GroundTheory.Heights₂.Heights.Kleiman.interNumPoint_restrLen_eq_finrank <;> assumption
 
 end Point
 

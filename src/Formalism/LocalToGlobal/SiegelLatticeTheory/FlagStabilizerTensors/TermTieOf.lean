@@ -1,12 +1,53 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.FlagStabilizerTensors.ParametersTermRelations
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.TermLoc
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.GaugeLatticeShifts.SaturatedPf
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.GaugeLatticeShifts.LocalSplitTypeMixedSecond
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedVolumeStatements.GenericRatioOfBoundHolds
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.CntLocal
+import Formalism.PeriodIntegrals.OrbitalBoundsConclusion.TermAttrConst
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.FlagClassConstancy.FlagOfInSFRight
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.RelativeEquivalence.DCRelEquivAllHolds
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.TermAttractorConstant.LeadMinorEMulUpper
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.TermAttractorConstant.SpanFrameLtSucc
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedVolumeStatements.GenericRatioOfBoundHolds
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.RelevantCarrierNonempty.InSCarrierNonempty
 
 @[expose] public section
 
@@ -205,10 +246,10 @@ theorem isId_iffC {u u' : D.what₂.Word} (t : D.s.Term u u') :
   unfold Formalism.L2.SG.FourParts.IsIdT
   constructor
   · rintro ⟨F', ⟨h, hm⟩, hid⟩
-    have h2 := (ex_rep_iff (tc hI t) _ (Formalism.L2.SG.Closed.TermInSFun_holds D u u' (X.Fu u) _ hrow)).1
+    have h2 := (ex_rep_iff (tc hI t) _ (_root_.in_s_class_constant D u u' (X.Fu u) _ hrow)).1
       ⟨F', ⟨h, hm⟩, Formalism.L2.SG.FourParts.inSF_of_isIdF _ hid⟩
-    exact Formalism.L2.SG.Closed.TermIdIffInS_holds D u u' (X.Fu u) _ hrow (Quot.out (tc hI t).cls)
-      (Formalism.L2.SG.Closed.TermInSRel_holds D u u' (X.Fu u) _ hrow (Quot.out (tc hI t).cls) h2) h2
+    exact _root_.term_id_iff_in_s D u u' (X.Fu u) _ hrow (Quot.out (tc hI t).cls)
+      (_root_.PI.UnitaryGroupMassFormula.InSRelevantW.termInSRel_main D u u' (X.Fu u) _ hrow (Quot.out (tc hI t).cls) h2) h2
   · intro h
     exact ⟨_, ⟨(Quot.out (tc hI t).cls).2, Quot.out_eq _⟩, h⟩
 
@@ -481,7 +522,6 @@ theorem hT_X_zero (F : LFlag S r T) (a : Fin (r + 1)) {x : S.V} (hx : x ∈ Xsp 
   have hs : ∀ x y, starRingEnd E (S.hT x y) = S.hT y x := fun x y => by
     first
       | exact S.herm.eq x y
-      | exact S.herm x y
   have he : ∀ i, S.hT (F.fl.fvec a) (F.fl.e i) = 0 := by
     intro i
     induction a using Fin.lastCases with

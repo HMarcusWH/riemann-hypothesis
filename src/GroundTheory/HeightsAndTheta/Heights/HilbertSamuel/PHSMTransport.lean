@@ -1,10 +1,66 @@
 module
 
-public import Mathlib
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.StepTStB
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterBridgeB
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsHSMTransport
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsKrullDimMatAct
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.StepTStA
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.LocallyConvex.AbsConvexOpen
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.HopfAlgebra.Basic
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.StepTStB
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterBridgeB
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.LemSec
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -54,7 +110,8 @@ theorem coneMap_subZ {Ω : Type} [Field Ω] (M : J → J → ℤ) (v : J → Ω)
   have h : (coneMap ℤ v).comp (subZ M) = coneMap ℤ (intAct M v) := by
     apply MvPolynomial.algHom_ext
     intro i
-    simp [subZ, coneMap, intAct, Finset.sum_mul, mul_assoc]
+    have hi : subZ M (X i) = ∑ j, C (M i j) * X j := bind₁_X_right ..
+    simp [hi, coneMap, intAct, Finset.sum_mul, mul_assoc]
   rw [← AlgHom.comp_apply, h]
 
 theorem isHomogeneous_subZ (M : J → J → ℤ) {g : MvPolynomial J ℤ} {n : ℕ} (hg : g.IsHomogeneous n) :
@@ -69,9 +126,11 @@ theorem map_subZ (M : J → J → ℤ) (g : MvPolynomial J ℤ) :
   | C a => simp [subZ, subC]
   | add p q hp hq => simp only [map_add (f := _), hp, hq]
   | mul_X p n hp =>
+    have hZ : subZ M (X n) = ∑ j, C (M n j) * X j := bind₁_X_right ..
+    have hC : subC M (X n) = ∑ j, C (M n j : ℂ) * X j := bind₁_X_right ..
     simp only [map_mul, hp, map_X]
     congr 1
-    simp [subZ, subC]
+    simp [hZ, hC]
 
 def dirD (z w : J → ℂ) (h : MvPolynomial J ℂ) : ℂ :=
   ∑ i, eval z (pderiv i h) * w i
@@ -94,8 +153,8 @@ theorem dirD_X (z w : J → ℂ) (n : J) : dirD z w (X n) = w n := by
 
 theorem dirD_sum (z w : J → ℂ) {α : Type} (s : Finset α) (f : α → MvPolynomial J ℂ) :
     dirD z w (∑ a ∈ s, f a) = ∑ a ∈ s, dirD z w (f a) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [dirD, map_sum, Finset.sum_mul]
+
+  simp only [dirD, map_sum, Finset.sum_mul]
   exact Finset.sum_comm
 
 theorem dirD_subC (M : J → J → ℤ) (z w : J → ℂ) (h : MvPolynomial J ℂ) :
@@ -104,7 +163,7 @@ theorem dirD_subC (M : J → J → ℤ) (z w : J → ℂ) (h : MvPolynomial J �
   | C a => simp only [subC, bind₁_C_right, dirD_C]
   | add p q hp hq => rw [map_add (f := _), dirD_add, dirD_add, hp, hq]
   | mul_X p n hp =>
-    have hX : subC M (X n) = ∑ j, C (M n j : ℂ) * X j := by simp [subC]
+    have hX : subC M (X n) = ∑ j, C (M n j : ℂ) * X j := bind₁_X_right ..
     have h1 : dirD z w (∑ j, C (M n j : ℂ) * X j) = intAct M w n := by
       rw [dirD_sum]
       simp only [dirD_mul, dirD_C, dirD_X, eval_C, eval_X]
@@ -173,8 +232,8 @@ theorem subZ_mem_coordIdeal_iff {Ω : Type} [Field Ω] [CharZero Ω] [DecidableE
 
 theorem matActC_conjPt (A : Matrix J J ℚ) (z : J → ℂ) : matActC A (conjPt z) = conjPt (matActC A z) := by
   funext i
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp [matActC, conjPt, map_sum, map_mul]
+
+  simp [matActC, conjPt, map_sum, map_mul]
 
 theorem contDiff_matActC {k : WithTop ℕ∞} (A : Matrix J J ℚ) : ContDiff ℝ k (matActC A) := by
   refine contDiff_pi.2 fun i => ?_

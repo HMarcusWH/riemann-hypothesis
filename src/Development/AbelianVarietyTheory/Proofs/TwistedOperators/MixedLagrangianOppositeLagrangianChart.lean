@@ -1,14 +1,50 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.IsLocIsoRefl
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.OrientedHermitianFormQuadSumEqTrace
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.AtWAtPlSelf
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.InfPartAlgebraMapLiftV
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.GridLocalTensorPlacesSplitIdempotentSum
-public import Development.AbelianVarietyTheory.Proofs.FoundationProofs.FinPartIdemMulMemIff
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.InfPartAlgebraMapLiftV
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.OrientedHermitianFormQuadSumEqTrace
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ValuationLeOneOfMem
 public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.HermitianActionColumnBase
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ValuationLeOneOfMem
+import Formalism.LocalRingCardinality.SpanPowerMembership.LocAtA
+import Formalism.LocalToGlobal.BesselHermitianTheta.LemmasWeil
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+public import Development.AbelianVarietyTheory.Definitions.TwistedInnerProducts.MemLevelFunOfIsAutFun
 
 @[expose] public section
 
@@ -22,8 +58,8 @@ open GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels (Base Spc Model Ch
 attribute [local instance] Formalism.BasicNotions.Host.cmStar GlobalTheory.LocalData.complRel GlobalTheory.LocalData.isLocalField borelKw borelSpaceKw
 open GlobalTheory.FlipMatch
 
-set_option maxHeartbeats 1000000
-set_option synthInstance.maxHeartbeats 200000
+
+
 
 namespace GlobalTheory.FlipMatch.ChartOpp
 
@@ -201,8 +237,8 @@ theorem mixCoS_inl (a : Fin (spW₁ G i j).rank) (k : Fin (spV G i j).rank) :
   have hx : (mulG (spW₁ G i j) (colV e u)ᵀ).map (fun a => cpt w (toEAf D a)) =
       ((u.map fun a => cpt w (toEAf D a)).submatrix id fun k => e (.inl k))ᵀ * (spW₁ G i j).gram.map κ := by
     ext a b
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [mulG, Matrix.mul_apply, map_sum, map_mul, colV, GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.incM, hinc]
+
+    simp [mulG, Matrix.mul_apply, map_sum, map_mul, colV, GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.incM, hinc]
   have key : ∀ {n p : ℕ} (b : Matrix (Fin p) (Fin p) (Kw w)) (U : Matrix (Fin n) (Fin p) (Kw w))
       (g c : Matrix (Fin n) (Fin n) (Kw w)) (a : Fin n) (k : Fin p), (b * (Uᵀ * g) * c) k a = (cᵀ * gᵀ * U * bᵀ) a k :=
     fun b U g c a k => by
@@ -219,8 +255,8 @@ theorem mixCoS_inr (a : Fin (spW₁ G i j).rank) (k : Fin (spV₁ G i j).rank) :
   have hx : (adjV₁ e u).map (fun a => cpt w (toEAf D a)) =
       -(((u.map fun a => cpt w (toEAf D (cA D a))).submatrix id fun k => e (.inr k)) * (spV₁ G i j).gram.map κ) := by
     ext a b
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [adjV₁, mulG, Matrix.mul_apply, map_sum, map_mul, GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.incM, hinc]
+
+    simp [adjV₁, mulG, Matrix.mul_apply, map_sum, map_mul, GlobalTheory.IndefiniteRowSideFullHecke.WeilTensorModels.incM, hinc]
   have key : ∀ {n p : ℕ} (b : Matrix (Fin n) (Fin n) (Kw w)) (U : Matrix (Fin n) (Fin p) (Kw w))
       (g c : Matrix (Fin p) (Fin p) (Kw w)), b * -(U * g) * c = b * U * -(g * c) := fun b U g c => by
     simp only [Matrix.mul_neg, Matrix.neg_mul, Matrix.mul_assoc]

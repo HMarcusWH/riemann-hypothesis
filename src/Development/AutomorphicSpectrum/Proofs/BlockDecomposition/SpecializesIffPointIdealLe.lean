@@ -1,11 +1,47 @@
 module
 
-public import Mathlib
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsPullHermPullLine
-public import Development.AbelianVarietyTheory.PublishedTheorems.Divisors₂.EqOfIsometricTrivShift
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterRedA
-public import Development.AutomorphicSpectrum.Definitions.DivisibilityTowers.Birational
-public import GroundTheory.HeightsAndTheta.Heights.HeightsOfSets.IsSmoothHermConstLine
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Std.Tactic.BVDecide.Normalize.Prop
+import Development.AbelianVarietyTheory.Definitions.Divisors.NefFibOfIsNef
+import Development.WeilBound.CoreStatements.TemperedRepresentationTheory.ArakelovCycleHeights.QpSndStr
 
 @[expose] public section
 
@@ -208,7 +244,7 @@ theorem mratio_self (c : ∀ k, Bk n k) (k : Fin (m + 1)) : mratio c ⟨k, c k�
 theorem evaluation_resG' {X : Scheme.{0}} {U V : X.Opens} (h : V ≤ U) (x : X) (hx : x ∈ V) (s : Γ(X, U)) :
     X.evaluation V x hx (resG X h s) = X.evaluation U x (h hx) s := by
   rw [← Scheme.germ_residue, ← Scheme.germ_residue]
-  simp only [CommRingCat.hom_comp, RingHom.comp_apply, CommRingCat.comp_apply]
+  simp only [CommRingCat.hom_comp, RingHom.comp_apply]
   rw [TopCat.Presheaf.germ_res_apply]
 
 theorem ptCoord_ne_zero_iff (x : MP ℤ m n) (k : Fin (m + 1)) (i : Bk n k) :
@@ -248,7 +284,7 @@ theorem mCoordIdeal_le_of_scale {Ω : Type} [Field Ω] (y r : (Σ k, Bk n k) →
   have e : (Geo.mConeMap y).toRingHom = S.toRingHom.comp (Geo.mConeMap r).toRingHom := by
     refine MvPolynomial.ringHom_ext (fun a => ?_) fun p => ?_
     · simp
-    · simp [Geo.mConeMap, S, h p, mul_comm, mul_left_comm, mul_assoc]
+    · simp [Geo.mConeMap, S, h p, mul_comm, mul_left_comm]
   have := RingHom.congr_fun e f
   simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe] at this
   rw [this, hf, map_zero]

@@ -1,7 +1,52 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HeightKernels.StatementsDualStackedExcLinear
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -68,8 +113,8 @@ theorem subst_ellForm {n : ℕ} (M : T → Fin (n + 2) → k) (c : T) (j₀ : Fi
       · subst hj
         simp only [AlgHom.comp_apply, subst, aeval_X, Option.elim, Fin.insertNth_apply_same]
         rw [Ideal.Quotient.mkₐ_eq_mk, Ideal.Quotient.eq, Ideal.mem_span_singleton']
-        set_option synthInstance.maxHeartbeats 100000 in
-          simp only [liftBack, map_neg, map_sum, map_mul, rename_C, rename_X, Option.map_some]
+
+        simp only [liftBack, map_neg, map_sum, map_mul, rename_C, rename_X, Option.map_some]
         refine ⟨-C (M c j)⁻¹, ?_⟩
         have e : ∀ j' : Fin (n + 1), C (M c (j.succAbove j') / M c j) * X (some (j.succAbove j')) =
             C (M c j)⁻¹ * (C (M c (j.succAbove j')) * X (some (j.succAbove j'))) := by
@@ -138,8 +183,8 @@ theorem X_some_eq {m : ℕ} (M : T → Fin m → k) (hM : LinFormsIndep M) (j : 
     _ = ∑ j', C (∑ t, g (fun t' => if t = t' then 1 else 0) j * M t j') * X (some j') := by
         simp_rw [hcoef]
     _ = ∑ t, C (g (fun t' => if t = t' then 1 else 0) j) * ellForm M t := by
-        set_option synthInstance.maxHeartbeats 100000 in
-          simp only [ellForm, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum, mul_assoc]
+
+        simp only [ellForm, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum, mul_assoc]
         exact Finset.sum_comm
 
 theorem mul_mem_range {m : ℕ} (α : T → k) (M : T → Fin m → k) (hα : Submodule.span ℤ (Set.range α) = ⊤)

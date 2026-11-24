@@ -1,14 +1,64 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.SCompact
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.UnipStmt
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.WuDecayPf
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.IsMulRightInvariantOfLattice
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.HermitianCombinationZ
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.NinfConjIff
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedVolumeStatements.WuDefiniteHolds
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.GaugeLatticeShifts.SlabCoverPfSteps
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.IUnfold
+import Formalism.LocalRingCardinality.RankBoundMonotoneInDimension
+import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedVolumeStatements.LevelSubgroupProperties
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedVolumeStatements.WuDefiniteHolds
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.IsMulRightInvariantOfLattice
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.NinfConjIff
+import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.ConcreteLevelAdelicSubset
+import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.HaarOn
+import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.InHHDef
+import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.SCompact
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.UnitaryHaarProducts.WuDecayPf
+import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.AutomorphicFormsDecompositionHolds
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.HopfAlgebra.Basic
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Mathlib.MeasureTheory.Measure.HasOuterApproxClosedProd
+import Mathlib.RingTheory.PicardGroup
 
 @[expose] public section
 
@@ -161,7 +211,7 @@ theorem muN_compact {K : Set X.B.I.Ginf} (hK : IsCompact K) : X.muN u K < ⊤ :=
 
 theorem muN_right (hNO : NOCocompact X u) :
     ∀ t ∈ X.NinfU u, (X.muN u).map (fun y => y * t) = X.muN u := by
-  have hK := Formalism.L2.SG.Closed.level_subgroup_is_group X
+  have hK := _root_.Formalism.L2.SG.Pf.level_subgroup_character_unitary X
   haveI := NOsub_discrete X u hK
   obtain ⟨C, hC, hcov⟩ := hNO
   have hle : NOsub X u hK ≤ NinfSub X.eR (X.zR u) := by
@@ -190,7 +240,7 @@ theorem sinf_mul' {a b : X.B.I.Ginf} (ha : a ∈ X.SinfU u) (hb : b ∈ X.SinfU 
 theorem sinf_inv' {a : X.B.I.Ginf} (ha : a ∈ X.SinfU u) : a⁻¹ ∈ X.SinfU u :=
   (SinfSub X.B.I X.eR (X.zR u)).inv_mem ha
 
-theorem sinf_one' : (1 : X.B.I.Ginf) ∈ X.SinfU u := (SinfSub X.B.I X.eR (X.zR u)).one_mem
+alias sinf_one' := _root_.Formalism.L2.SG.Pf.one_mem_sinf
 
 end Sec
 
@@ -352,7 +402,7 @@ theorem nDenseAt_of (h : Formalism.L2.SG.Pf.SlabCoverPf.NDense) : NDenseAt X u :
 
 theorem sCompact_of (hFL : FinLevi X u) (hNO : NOCocompact X u) (hND : NDenseAt X u) : SCompact X u := by
   classical
-  have hK := Formalism.L2.SG.Closed.level_subgroup_is_group X
+  have hK := _root_.Formalism.L2.SG.Pf.level_subgroup_character_unitary X
   have hCF := Formalism.L2.SG.Closed.ClassFin_holds X u hK
   unfold Cut.ClassFin at hCF
   have hsurj : ∀ c : Formalism.L2.SG.ColsDim.Classes (iotaF X u) (Ku X u hK),

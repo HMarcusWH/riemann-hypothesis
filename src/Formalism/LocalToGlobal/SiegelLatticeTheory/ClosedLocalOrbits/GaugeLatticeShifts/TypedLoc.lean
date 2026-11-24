@@ -1,12 +1,59 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.HaarTransversals.HidaSetting
 public import Formalism.SatakeDualWeyl.StatementC
-public import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.Afsplit
-public import Formalism.LocalRingCardinality.RankBoundMonotoneInDimension
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.GaugeLatticeShifts.SatGramLoc
+public import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.AfsplitA
+public import Mathlib.NumberTheory.RamificationInertia.Inertia
 public import Development.AutomorphicArithmetic.IntegralCasts.CapelliIdentities.ModuliIntegralCharts
+public import Formalism.LocalRingCardinality.RankBoundMonotoneInDimension
+public import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.Afsplit
+import Mathlib.Algebra.AffineMonoid.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.RamificationInertia.Basic
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -519,8 +566,8 @@ theorem trV_nondeg (z : I.E ⊗[I.F] v.adicCompletion I.F)
     let bi : 𝓞 I.E := ⟨b i, hbI i⟩
     have hbi : (bi : I.E) = b i := rfl
     have h1 := h bi
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [Finset.mul_sum, map_sum] at h1
+
+    rw [Finset.mul_sum, map_sum] at h1
     simp only [Algebra.TensorProduct.tmul_mul_tmul, one_mul, trV_tmul, hbi] at h1
     have e : ∀ j, tlin I (b i * d j) = if i = j then 1 else 0 := by
       intro j
@@ -591,8 +638,7 @@ theorem Lf_int : ∃ c : ℤ, c ≠ 0 ∧ ∀ w ∈ I.Lf, ∀ i,
     rw [e]
     exact mul_mem r.2 (hx i)
 
-theorem single_mem (i : Fin I.n) : ∃ N : ℤ, N ≠ 0 ∧ (Pi.single i (N : I.E) : Fin I.n → I.E) ∈ I.L :=
-  by apply _root_.UpperTheory.Reformulated.B.ModuliIntegralCharts.single_mem <;> assumption
+alias single_mem := _root_.UpperTheory.Reformulated.B.ModuliIntegralCharts.single_mem
 
 end Lat
 

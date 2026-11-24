@@ -1,6 +1,54 @@
 module
 
-public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovGeometry.NotRelevantOfDimZero
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.IsIntersectionFamily
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -59,9 +107,9 @@ theorem isMultiHomog_xpow (i : ∀ k, ι k) (e : K → ℕ) : IsMultiHomog (xpow
       rw [Finset.sum_eq_single (i k')]
       · simp
       · intro j _ hj
-        simp [Finsupp.single_apply, Sigma.mk.inj_iff, Ne.symm hj]
+        simp [Ne.symm hj]
       · simp
-    · simp [Finsupp.single_apply, Sigma.mk.inj_iff, hk, Ne.symm hk]
+    · simp [hk]
   have h := isMultiHomog_prod Finset.univ (fun k => (X ⟨k, i k⟩ : MRing ι) ^ e k)
     (fun k => e k • Pi.single k 1) (fun k => isMultiHomog_pow (hX k) (e k))
   have he : (∑ k, e k • Pi.single k 1 : K → ℕ) = e := by
@@ -119,8 +167,8 @@ theorem mem_of_mem_dehomI {W : Ideal (MRing ι)} (hWp : W.IsPrime) (hWm : IsMult
       Finset.prod_ne_zero_iff.mpr fun k _ => pow_ne_zero _ (hc k)
     conv_lhs => rw [f.as_sum]
     conv_rhs => rw [f.as_sum]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, map_sum, Finset.sum_mul]
+
+    rw [map_sum, map_sum, Finset.sum_mul]
     refine Finset.sum_congr rfl fun m hm => ?_
     have hcm : ∏ p ∈ m.support, q (X ⟨p.1, i p.1⟩) ^ m p = ∏ k, q (X ⟨k, i k⟩) ^ d k := by
       rw [Finset.prod_subset (Finset.subset_univ m.support) (fun p _ hp => by

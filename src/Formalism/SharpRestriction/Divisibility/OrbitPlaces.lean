@@ -4,6 +4,48 @@ public import Formalism.SharpRestriction.GrowthBounds.WeilJacquetShalikaLaw
 public import Formalism.SharpRestriction.Divisibility.ProductZerothFirstParts
 public import Formalism.LocalRingCardinality.DataKerI
 public import Development.AutomorphicArithmetic.OrbitLabellings.ColDefs
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Presheaf
+import Std.Tactic.BVDecide.Normalize.BitVec
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -1292,8 +1334,8 @@ theorem kgeTw_of (E : KerEnt D Dx T) (hU : E.UnUnit) (hR : KmapRat E) {u : D.wha
     have heq' : KM.applyAt0 (D.R.N i) (D.R.N (i + 1)) (D.what₂.places.resChar w) (E.Th u μ w i c c')
         (KM.Gxz (D.R.N i) (D.R.N (i + 1)) (nuD D u i) I) = cf.sum fun J a =>
           a • MvPolynomial.map (Int.castRingHom ℂ_[D.what₂.places.resChar w]) (KM.nablaX (D.R.N i) (nuD D u i) J) := heq
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [heq', Finsupp.sum, map_sum]
+
+    rw [heq', Finsupp.sum, map_sum]
     refine IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg (Real.rpow_nonneg hP0.le _) fun J _ => ?_
     rw [map_smul, smul_eq_mul, norm_mul]
     calc ‖cf J‖ * _ ≤ ((D.what₂.places.resChar w : ℕ) : ℝ) ^ (-B) * 1 :=
@@ -1362,8 +1404,8 @@ theorem kgeTw_of (E : KerEnt D Dx T) (hU : E.UnUnit) (hR : KmapRat E) {u : D.wha
     funext c'
     show ∑ c, (D.chTw u μ).wt i c • (D.chTw u μ).Kmap i c c' ((T.fm u μ).emb i x c) =
       D.what₂.embLL b • E.ev u μ (i + 1) c' (∑ c, (r c * a⁻¹) • v' c c')
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, Finset.smul_sum]
+
+    rw [map_sum, Finset.smul_sum]
     refine Finset.sum_congr rfl fun c _ => ?_
     rw [← hvev c, ← hv' c c', hwt c, LinearMap.map_smulₛₗ, smul_smul, ← map_mul]
     congr 2
@@ -1378,8 +1420,8 @@ theorem kgeTw_of (E : KerEnt D Dx T) (hU : E.UnUnit) (hR : KmapRat E) {u : D.wha
   have hV' : ∀ c' I, ‖E.prT u μ w i c' (V' c') I‖ ≤ 1 := by
     intro c' I
     show ‖E.prT u μ w i c' (∑ c, (r c * a⁻¹) • v' c c') I‖ ≤ 1
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, Finset.sum_apply]
+
+    rw [map_sum, Finset.sum_apply]
     refine IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg zero_le_one fun c _ => ?_
     rw [LinearMap.map_smulₛₗ, Pi.smul_apply, smul_eq_mul, map_mul, norm_mul, norm_mul, mul_assoc]
     calc ‖E.iL w (r c)‖ * (‖E.iL w a⁻¹‖ * ‖E.prT u μ w i c' (v' c c') I‖) ≤ 1 * 1 :=

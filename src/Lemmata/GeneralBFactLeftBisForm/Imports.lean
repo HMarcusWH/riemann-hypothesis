@@ -1,98 +1,45 @@
 module
 
-public import Mathlib
-public import Formalism.MahlerMeasure.CoarseLevelSlackInequalities
-public import Formalism.SharpRestriction.GrowthBounds.ObjSeg
-public import Formalism.SharpRestriction.GrowthBounds.ObjBridge
-public import Formalism.MahlerMeasure.WithMargin
-public import Formalism.MahlerMeasure.FinalT
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.SmithZp
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.TheoremM
-public import Formalism.PolynomialDimension.MultinomialDepth.PartnerM
-public import Formalism.LocalRingCardinality.Params
-public import Formalism.LocalRingCardinality.DataSpaces
-public import Formalism.LocalRingCardinality.DataCoeff
-public import Formalism.LocalRingCardinality.DataArith
-public import Formalism.LocalRingCardinality.DataKernels
-public import Formalism.LocalRingCardinality.DataRows
-public import Formalism.SharpRestriction.CuspSpanNormBounds.DataS
-public import Formalism.SharpRestriction.GrowthBounds.DataG
-public import Formalism.LocalRingCardinality.DataCD
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.GamInt
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.LieMat
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.SchurTraceProofs.InvInv
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.SchurTraceProofs.InvInt
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.SchurTraceProofs.HomRelationHolds
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.SchurTraceProofs.Discharge
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.HighestVectorProjection
-public import Formalism.PolynomialDimension.ChainOrderLetters
-public import Formalism.SharpRestriction.GrowthBounds.RootWeights.SumFinsuppAntidiagEqSumPiFinset
-public import Formalism.FrobeniusOrbits.DiscrMaximalRealCyclotomic
-public import Formalism.FrobeniusOrbits.HostOrbitsPlaces
-public import Formalism.FrobeniusOrbits.HostDiffSupport
-public import Formalism.FrobeniusOrbits.HostThickExists
-public import Formalism.SharpRestriction.RamificationFrobenius.TotientGaloisClasses.ConjEMemHostFIff
-public import Formalism.CoboundaryTransfers.Statement
-public import Formalism.DegreeFormula.FlagDegFormula
-public import Formalism.SharpRestriction.GlobalSchurBounds.GeneralLinearActions.FrameTransport
-public import Formalism.SharpRestriction.GrowthBounds.UnramifiedQuadraticSetting
-public import Formalism.SharpRestriction.GrowthBounds.DataGChain
 public import Formalism.SharpRestriction.GrowthBounds.ObjPol
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.StatementC
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.StatementC
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.StatementF
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.GramBoundOfRestrictionOfProj
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.InitPartZeroXMul
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.DerivativeKeepsSpaceHolds
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.OmegaInjectiveHolds
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.FiltrationBotHolds
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.ResInto
-public import Formalism.ThetaLogCoordinates.BihomogeneousPairs.FinalLL
-public import Formalism.GrowthSums.LemmaATwoFactList
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.RealCyclotomicSubfield
-public import Formalism.LocalRingCardinality.DataLevel
-public import Formalism.SatakeDualWeyl.Statement
-public import Formalism.FormalDegreeBessel.StatementG
-public import Formalism.ThetaLogCoordinates.TraceIsometryWeights.StatementA
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.FockMonomialProofs.RaisingKeepsEarlyLetters
-public import Formalism.ThetaLogCoordinates.FockResolutionOnto.StatementD
-public import Formalism.ThetaLogCoordinates.BihomogeneousPairs.LetterChainEmbeddings.PairStep
-public import Formalism.FrobeniusOrbits.Statement
-public import Formalism.FormalDegreeBessel.StatementDS
-public import Formalism.SharpRestriction.CuspSpanNormBounds.Point
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.MeanGam
-public import Formalism.TameInertiaTowers.CentralOrderTwo.OrderOfThreeUnitsTwoPow
-public import Formalism.TameInertiaTowers.CentralOrderTwo.TwoAdic
-public import Formalism.TameInertiaTowers.CentralOrderTwo.MemDecompositionSubgroupIff
-public import Formalism.TameInertiaTowers.CentralOrderTwo.NegOneNeOneUnitsZmodFour
-public import Formalism.TameInertiaTowers.CentralOrderTwo.Groups
-public import Formalism.TameInertiaTowers.CentralOrderTwo.NormalOrderTwoCentral
-public import Formalism.TameInertiaTowers.CentralOrderTwo.Galois
-public import Formalism.TameInertiaTowers.CentralOrderTwo.ConjEqInvOfPowEqOne
-public import Formalism.FormalDegreeBessel.StatementBF
-public import Formalism.FormalDegreeBessel.StatementWR
-public import Formalism.RealPlaceAnalysis.StatementE
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.CompactCasimirHighestWeight
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.IsCompactInvariantCompactSpan
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.IsCompactInvariantOrthogonalInf
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.FirstSlotSliceSlotMixedCasimirZero
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.IndefiniteUnitaryPreservesForm
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.CartanInvolutionConjTransposeMul
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.ComplexifiedDerivativeCommutator
-public import Formalism.RealPlaceAnalysis.StatementU
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.MemUnitaryGroupIffMulConjTranspose
-public import Formalism.RealPlaceAnalysis.StatementA
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.QuadraticInequalityBoundHolds
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.SumOfSquaresIdentityHolds
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.CasKHW
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.HWDiag
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.TrPowSumFilterZero
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.QuantumDetHighestWeightHolds
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.ShiftedGeneratorEqIteSmulAdd
-public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.GeneratorCommutatorQuantumDet
-public import Formalism.SharpRestriction.GrowthBounds.RootWeights.TwistSubEqMatrixSubst
-public import Formalism.RealPlaceAnalysis.SmoothOnG
-public import Formalism.RealPlaceAnalysis.StatementC
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -114,8 +61,7 @@ theorem goal1 :
     refine ⟨s * t, mul_ne_zero hs ht, ?_⟩
     have e : (s * t) • (x + z) = t • (s • x) + s • (t • z) := by
       rw [smul_add, smul_smul, smul_smul, mul_comm t s]
-    rw [e]
-    exact M.add_mem (M.smul_mem t hsx) (M.smul_mem s htz)
+    simpa only [e] using M.add_mem (M.smul_mem t hsx) (M.smul_mem s htz)
   | smul a x _ hx =>
     obtain ⟨s, hs, hsx⟩ := hx
     obtain ⟨⟨n, d⟩, hnd⟩ := IsLocalization.surj (nonZeroDivisors O) a
@@ -126,7 +72,6 @@ theorem goal1 :
       simp only at hnd
       rw [hnd, algebraMap_smul]
       exact smul_comm s n x
-    rw [e]
-    exact M.smul_mem n hsx
+    simpa only [e] using M.smul_mem n hsx
 
 end Bl.general_b_fact_left_bis_form

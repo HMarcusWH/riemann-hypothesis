@@ -1,11 +1,56 @@
 module
 
-public import Mathlib
 public import CompanionTheory.SpectralGeometry.CountingDefinitions.AdelicEulerProducts.HypJ
-public import Development.AbelianVarietyTheory.Proofs.UnitaryExistence.LcscAdelicUnitaryGroup
+public import Mathlib.Tactic.Linter.HaveILetI
 public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.AdelicAnalysis.AdelicTupleLocalGlobalProperties
 public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.AdelicAnalysis.ContDiffOnChartGlobalWhittakerCoefficient
 public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.AdelicAnalysis.TotallyRealContinuousEmbeddingInfiniteAdeles
+public import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.Levelaf
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -19,15 +64,6 @@ namespace GlobalTheory.CompanionTheory.SW.BoxF
 section Alg
 
 variable {F E : Type} [Field F] [Field E] [Algebra F E]
-
-theorem repr_map {R S : Type} [CommRing R] [CommRing S] [Algebra F R] [Algebra F S]
-    (g : R →ₐ[F] S) {d : ℕ} (b : Module.Basis (Fin d) F E) (y : R ⊗[F] E) (k : Fin d) :
-    (Algebra.TensorProduct.basis S b).repr (Algebra.TensorProduct.map g (AlgHom.id F E) y) k =
-      g ((Algebra.TensorProduct.basis R b).repr y k) := by
-  induction y with
-  | add x y hx hy => simp [map_add (f := _), hx, hy]
-  | tmul r e =>
-    simp [Algebra.TensorProduct.basis_repr_tmul]
 
 theorem repr_tmul_mul {R : Type} [CommRing R] [Algebra F R] {d : ℕ} (b : Module.Basis (Fin d) F E)
     (t : R) (y : R ⊗[F] E) (k : Fin d) :
@@ -97,8 +133,7 @@ theorem ainf_ball_cpt (r : ℝ) : IsCompact {y : Ainf F | ∀ w, ‖y w‖ ≤ r
 theorem cont_norm_w (w : InfinitePlace F) : Continuous fun y : Ainf F => ‖y w‖ :=
   continuous_norm.comp (continuous_apply (A := fun w : InfinitePlace F => w.Completion) w)
 
-theorem cont_fstA : Continuous (fstA F) :=
-  (continuous_fst : Continuous (Prod.fst : Ainf F × Af F → Ainf F))
+alias cont_fstA := _root_.GlobalTheory.CompanionTheory.SW.Glue.continuous_fstA
 
 theorem cont_sndA : Continuous (sndA F) :=
   (continuous_snd : Continuous (Prod.snd : Ainf F × Af F → Af F))
@@ -177,12 +212,12 @@ theorem comp_v (v : HeightOneSpectrum (𝓞 F)) (X : Fin n → Fin M → AF F �
     (k : Fin d) :
     (Algebra.TensorProduct.basis (Fv F v) b).repr (projV v (projFin X) a i) k =
       evalV F v (sndA F ((Algebra.TensorProduct.basis (AF F) b).repr (X a i) k)) := by
-  simp only [projV, projFin, repr_map]
+  simp only [projV, projFin, _root_.GlobalTheory.CompanionTheory.SW.Glue.repr_map]
 
 theorem size_eq (X : Fin n → Fin M → AF F ⊗[F] E) :
     sizeTup b (projInf X) = ∑ a, ∑ i, ∑ k, ∑ w : InfinitePlace F,
       ‖(fstA F ((Algebra.TensorProduct.basis (AF F) b).repr (X a i) k)) w‖ := by
-  simp only [sizeTup, sizeInf, projInf, repr_map]
+  simp only [sizeTup, sizeInf, projInf, _root_.GlobalTheory.CompanionTheory.SW.Glue.repr_map]
 
 theorem cont_size : Continuous fun X : Fin n → Fin M → AF F ⊗[F] E => sizeTup b (projInf X) := by
   simp only [size_eq]
