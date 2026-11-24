@@ -1,6 +1,47 @@
 module
 
 public import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.IntegralExpRename
+public import Formalism.ThetaLogCoordinates.UniformThetaSubstitution.CyclicPowerClassOfExpEquiv
+public import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.InParamMap
+import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.IntRPsubst
+import Formalism.SharpRestriction.GrowthBounds.MultisetValuation.NatCastInvMemRp
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -25,8 +66,6 @@ def tOf {K' σ τ : Type} [Field K'] (vp : K') (μ : PowerSeries K') (L : σ →
 private theorem constantCoeff_logF_eq_zero : PowerSeries.constantCoeff (logF p) = 0 := by
   first
   | (rw [← PowerSeries.coeff_zero_eq_constantCoeff_apply]; unfold logF; simp)
-  | (unfold logF; simp)
-  | (simp [logF, ← PowerSeries.coeff_zero_eq_constantCoeff_apply])
 
 private theorem cc_subst_lemma_2 {τ S : Type} [CommRing S] {a : MvPowerSeries τ S}
     (ha : MvPowerSeries.constantCoeff a = 0) {f : PowerSeries S} (hf : PowerSeries.constantCoeff f = 0) :
@@ -34,12 +73,9 @@ private theorem cc_subst_lemma_2 {τ S : Type} [CommRing S] {a : MvPowerSeries �
   have hs : PowerSeries.HasSubst a := by
     first
     | exact PowerSeries.HasSubst.of_constantCoeff_zero ha
-    | exact PowerSeries.HasSubst.of_constantCoeff_nilpotent (by rw [ha]; exact IsNilpotent.zero)
   obtain ⟨g, rfl⟩ := PowerSeries.X_dvd_iff.mpr hf
   first
   | rw [PowerSeries.subst_mul hs, PowerSeries.subst_X hs, map_mul, ha, zero_mul]
-  | rw [← PowerSeries.coe_substAlgHom hs, map_mul, PowerSeries.coe_substAlgHom hs, PowerSeries.subst_X hs,
-      map_mul, ha, zero_mul]
 
 theorem th_lX_const (K1 : Type) [Field K1] [Algebra (K0 p) K1] {σ : Type} (i : σ) :
     MvPowerSeries.constantCoeff (PowerSeries.subst (MvPowerSeries.X i : MvPowerSeries σ K1)
@@ -66,8 +102,8 @@ theorem th_inParamK_map {σ : Type} [Finite σ] (K1 K' : Type) [Field K1] [Algeb
   congr 1
   ext n
   unfold lgF
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [PowerSeries.coeff_map, PowerSeries.coeff_mk, PowerSeries.coeff_mk, map_sum]
+
+  rw [PowerSeries.coeff_map, PowerSeries.coeff_mk, PowerSeries.coeff_mk, map_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [apply_ite (algebraMap K1 K'), map_zero, map_inv₀, map_pow, map_natCast]
 
@@ -103,11 +139,7 @@ theorem th_subst_log (K' : Type) [Field K'] [Algebra (K0 p) K'] {σ τ : Type} [
 private theorem hasSubst_of_constantCoeff_eq_zero' {κ τ S : Type} [CommRing S] [Finite κ] {a : κ → MvPowerSeries τ S}
     (h : ∀ s, MvPowerSeries.constantCoeff (a s) = 0) : MvPowerSeries.HasSubst a := by
   first
-  | exact MvPowerSeries.HasSubst.of_constantCoeff_zero' h
   | exact MvPowerSeries.hasSubst_of_constantCoeff_zero h
-  | exact MvPowerSeries.HasSubst.of_constantCoeff_nilpotent (fun s => by rw [h s]; exact IsNilpotent.zero)
-  | exact MvPowerSeries.hasSubst_of_constantCoeff_nilpotent (fun s => by rw [h s]; exact IsNilpotent.zero)
-  | exact ⟨fun s => by rw [h s]; exact IsNilpotent.zero, fun d => Set.toFinite _⟩
 
 theorem th_hasSubst_lX {σ : Type} [Finite σ] : MvPowerSeries.HasSubst
     (fun i : σ => PowerSeries.subst (MvPowerSeries.X i : MvPowerSeries σ (K0 p)) (logF p)) := by
@@ -157,8 +189,8 @@ theorem th_inParam_sum {σ α : Type} [Finite σ] (s : Finset α) (f : α → Mv
     inParam p (∑ a ∈ s, f a) = ∑ a ∈ s, inParam p (f a) := by
   have ha := th_hasSubst_lX p (σ := σ)
   unfold inParam
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← MvPowerSeries.coe_substAlgHom ha, map_sum]
+
+  rw [← MvPowerSeries.coe_substAlgHom ha, map_sum]
 
 theorem th_ren_hasSubst {κ σ R : Type} [Finite κ] [CommRing R] (φ : κ → σ) :
     MvPowerSeries.HasSubst (fun k => (MvPowerSeries.X (φ k) : MvPowerSeries σ R)) :=
@@ -221,16 +253,16 @@ theorem th_reduce {E τ : Type} [Fintype E] (be : MvPowerSeries (Fin 2) (K0 p))
   have hPsi0 : MvPowerSeries.constantCoeff
       (∑ e : E, sub2 p be (MvPowerSeries.X (Sum.inl e)) (MvPowerSeries.X (Sum.inr e)) :
         MvPowerSeries (E ⊕ E) (K0 p)) = 0 := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     exact Finset.sum_eq_zero fun e _ => by rw [substitution_of_variables]; exact th_ren_const _ hbe0
   have hPh0 : MvPowerSeries.constantCoeff Ph = 0 := by
     rw [map_sub, hPsi0, sub_zero] at hc0
     exact hc0
   have hGt0 : MvPowerSeries.constantCoeff (Gt p E c c') = 0 := by
     unfold Gt
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     exact Finset.sum_eq_zero fun e _ => th_ren_const _ hG0
   have hδ : E0 p (inParam p Ph - Gt p E c c') := by
     have e : inParam p Ph - Gt p E c c' =

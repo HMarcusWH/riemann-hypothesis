@@ -1,13 +1,45 @@
 module
 
-public import Mathlib
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MixedPointLengthFormulaStatement
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsPullHermPullLine
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsSmoothHermCombLine
-public import Development.AutomorphicSpectrum.Proofs.DivisibilityProofs.CoheightEqOneOfDimClosure
-public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.ExistsLineBundleSectionsGenerateIdealSheaf
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ClosedSubschemeModLProjective
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.DimOfIsArithVar
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.PointIdealMultiprojectivePrime
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MixedPointLengthFormula
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.Proportional
 
 @[expose] public section
 
@@ -93,11 +125,6 @@ theorem chi_eq_geoNum : ∀ (m : ℕ) (n : Fin (m + 1) → ℕ) (Z : Scheme.{0})
   haveI : IsAffine Z := by
     first
       | exact IsAffine.of_isIso Z.topIso.inv
-      | exact isAffine_of_isIso Z.topIso.inv
-      | exact AlgebraicGeometry.isAffineOpen_top_iff.mp hA
-      | exact (AlgebraicGeometry.isAffineOpen_top_iff Z).mp hA
-      | exact IsAffine.of_isIso (Scheme.topIso Z).inv
-      | exact hA.isAffine_of_top
   rw [GlobalTheory.chi_structureModule_of_isAffine Z (ZMod p)]
   have hb := bijective_top Z hd
   have hRes : CharP (Z.residueField (genericPoint Z)) p :=
@@ -111,7 +138,7 @@ theorem chi_eq_geoNum : ∀ (m : ℕ) (n : Fin (m + 1) → ℕ) (Z : Scheme.{0})
     rw [Ideal.mem_comap, Ideal.mem_span_singleton,
       ← CharP.intCast_eq_zero_iff ((MP ℤ m n).residueField (f (genericPoint Z))) p]
     simp only [ptIdeal, ReciprocityTheory.ChartRestriction.G.Geo.mCoordIdeal, RingHom.mem_ker, ReciprocityTheory.ChartRestriction.G.Geo.mConeMap,
-      MvPolynomial.aeval_C, MvPolynomial.algebraMap_apply, MvPolynomial.C_eq_zero, eq_intCast]
+      eq_intCast]
     rw [map_intCast, ← map_intCast (MvPolynomial.C : (MP ℤ m n).residueField (f (genericPoint Z)) →+*
       MvPolynomial (Fin (m + 1)) ((MP ℤ m n).residueField (f (genericPoint Z)))), MvPolynomial.C_eq_zero]
   have hchar : charOf (ptIdeal (f (genericPoint Z))) = p := by
@@ -126,7 +153,7 @@ theorem chi_eq_geoNum : ∀ (m : ℕ) (n : Fin (m + 1) → ℕ) (Z : Scheme.{0})
     exact key _ hcomap
   have hcl : topologicalKrullDim (closure ({genericPoint Z} : Set Z)) = (0 : ℕ) :=
     (dim_closure_generic Z).trans hd
-  have hL := GlobalTheory.T.mixed_point_length_formula m n Z f (genericPoint Z) hcl a
+  have hL := _root_.GlobalTheory.CompanionTheory.MixZ.PtLenProof.ptLen m n Z f (genericPoint Z) hcl a
   rw [hchar] at hL
   have hcard : Nat.card (Z.residueField (genericPoint Z)) = Nat.card Γ(Z, ⊤) :=
     (Nat.card_eq_of_bijective _ hb).symm

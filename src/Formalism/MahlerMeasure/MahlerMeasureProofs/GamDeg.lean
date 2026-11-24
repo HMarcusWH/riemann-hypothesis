@@ -1,8 +1,60 @@
 module
 
 public import Formalism.MahlerMeasure.HasOrder
-public import Formalism.MahlerMeasure.FinalM
-public import Formalism.MahlerMeasure.MahlerMeasureProofs.FreezeInto
+public import Formalism.MahlerMeasure.MahlerMeasureProofs.LevelAct
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
+public import Mathlib.Algebra.BigOperators.Field
+public import Mathlib.Data.Nat.Factorial.BigOperators
+public import Mathlib.RingTheory.Polynomial.Pochhammer
 
 @[expose] public section
 
@@ -22,7 +74,7 @@ theorem pderiv_comm' (i j : σ) (p : MvPolynomial σ R) :
   · rename_i p n hp
     have h0 : ∀ a b : σ, pderiv a (Pi.single (M := fun _ => MvPolynomial σ R) b 1 n) = 0 := by
       intro a b; rw [Pi.single_apply]; split_ifs <;> simp
-    simp only [Derivation.leibniz, map_add (f := _), smul_eq_mul, pderiv_X, h0, hp, mul_zero, zero_add, add_zero]
+    simp only [Derivation.leibniz, map_add (f := _), smul_eq_mul, pderiv_X, h0, hp, mul_zero, zero_add]
     ring
 
 noncomputable abbrev Dp (v : σ) : Module.End R (MvPolynomial σ R) := (pderiv v).toLinearMap
@@ -41,13 +93,12 @@ theorem pow_Dp_mul (v : σ) (a b : MvPolynomial σ R) (m : ℕ) :
     induction n with
     | zero => simp
     | succ n ih =>
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [Finset.sum_antidiagonal_choose_succ_nsmul (fun i j => (Dp v ^ i) a * (Dp v ^ j) b), hs, ih, map_sum,
-        ← Finset.sum_add_distrib]
+
+      rw [Finset.sum_antidiagonal_choose_succ_nsmul (fun i j => (Dp v ^ i) a * (Dp v ^ j) b), hs, ih, map_sum,
+      ← Finset.sum_add_distrib]
       refine Finset.sum_congr rfl fun ij hij => ?_
       rw [Finset.HasAntidiagonal.mem_antidiagonal] at hij
       have hsym : n.choose ij.2 = n.choose ij.1 := by rw [← hij, Nat.choose_symm_add]
-      beta_reduce
       rw [map_nsmul, hl, hs, hs, hsym]
       ring
   rw [key, Finset.Nat.sum_antidiagonal_eq_sum_range_succ (fun i j => m.choose i • ((Dp v ^ i) a * (Dp v ^ j) b))]
@@ -80,8 +131,8 @@ theorem pow_Dp_X_pow (v : σ) (m t : ℕ) :
 theorem pow_Dp_eq_zero (v : σ) (q : MvPolynomial σ R) (K : ℕ) (hq : ∀ s ∈ q.support, s v ≤ K) :
     (Dp v ^ (K + 1)) q = 0 := by
   conv_lhs => rw [q.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine Finset.sum_eq_zero fun s hs => ?_
   rw [pow_Dp_monomial, (Nat.descFactorial_eq_zero_iff_lt).2 (Nat.lt_succ_of_le (hq s hs))]
   simp
@@ -112,7 +163,7 @@ theorem fw_add_single (m : σ →₀ ℕ) (v : σ) :
     · subst h
       simp only [Finsupp.add_apply, Finsupp.single_eq_same, if_true, Nat.factorial_succ, Nat.cast_mul]
       ring
-    · simp [Finsupp.single_apply, Ne.symm h, h]
+    · simp [h]
   simp_rw [key, Finset.prod_mul_distrib, Finset.prod_ite_eq']
   simp
 
@@ -143,7 +194,7 @@ theorem fock_smul_left (c : ℚ_[p]) (F G : MvPolynomial σ ℚ_[p]) :
     M.fock p (c • F) G = c * M.fock p F G := by
   rw [fock_eq_sum' p _ G G.support (Finset.Subset.refl _), fock_eq_sum' p F G G.support (Finset.Subset.refl _),
     Finset.mul_sum]
-  exact Finset.sum_congr rfl fun m _ => by rw [coeff_smul, smul_eq_mul]; ring
+  exact Finset.sum_congr rfl fun m _ => by rw [MvPolynomial.coeff_smul, smul_eq_mul]; ring
 
 theorem fock_zero_left (G : MvPolynomial σ ℚ_[p]) : M.fock p 0 G = 0 := by
   rw [fock_eq_sum' p 0 G G.support (Finset.Subset.refl _)]
@@ -188,7 +239,7 @@ private theorem coeff_pderiv_lemma_7 (v : σ) (b : MvPolynomial σ ℚ_[p]) (m :
 theorem fock_X_mul (v : σ) (a b : MvPolynomial σ ℚ_[p]) :
     M.fock p (X v * a) b = M.fock p a (pderiv v b) := by
   have hsupp : (X v * a).support ⊆ a.support.map (addRightEmbedding (Finsupp.single v 1)) := by
-    rw [mul_comm, support_mul_X] <;> exact Finset.Subset.refl _
+    rw [mul_comm, support_mul_X]
   rw [fock_eq_sum p _ b _ hsupp, Finset.sum_map, fock_eq_sum p a _ a.support (Finset.Subset.refl _)]
   refine Finset.sum_congr rfl fun m _ => ?_
   simp only [addRightEmbedding_apply]
@@ -245,8 +296,8 @@ noncomputable def EW (w : Fin r → σ) (g : MvPolynomial σ k) : MvPolynomial �
 theorem EW_add_single (hwe : ∀ c d, w c ≠ e d) (c : Fin r) (g : MvPolynomial σ k) :
     EW w (pderiv (e c) g) = pderiv (e c) (EW w g) := by
   classical
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [EW, map_sum, Derivation.leibniz, pderiv_X, smul_eq_mul]
+
+  simp only [EW, map_sum, Derivation.leibniz, pderiv_X, smul_eq_mul]
   refine Finset.sum_congr rfl fun c' _ => ?_
   rw [Pi.single_apply, if_neg (hwe c' c), pderiv_comm' (w c') (e c)]
   simp
@@ -255,8 +306,8 @@ theorem EW_pderiv_w (hw : Function.Injective w) (c : Fin r) (g : MvPolynomial σ
     EW w (pderiv (w c) g) = pderiv (w c) (EW w g) - pderiv (w c) g := by
   classical
   have h : pderiv (w c) (EW w g) = EW w (pderiv (w c) g) + pderiv (w c) g := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [EW, map_sum, Derivation.leibniz, pderiv_X, smul_eq_mul, Pi.single_apply, hw.eq_iff]
+
+    simp only [EW, map_sum, Derivation.leibniz, pderiv_X, smul_eq_mul, Pi.single_apply, hw.eq_iff]
     rw [Finset.sum_add_distrib]
     congr 1
     · exact Finset.sum_congr rfl fun c' _ => by rw [pderiv_comm' (w c) (w c')]
@@ -269,8 +320,8 @@ private theorem tieF_apply_lemma (g : MvPolynomial σ k) :
 
 private theorem EW_sum_lemma_2 (s : Finset (Fin r)) (f : Fin r → MvPolynomial σ k) :
     EW w (∑ c ∈ s, f c) = ∑ c ∈ s, EW w (f c) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [EW, map_sum, Finset.mul_sum]
+
+  simp only [EW, map_sum, Finset.mul_sum]
   exact Finset.sum_comm
 
 theorem EW_F (hw : Function.Injective w) (hwe : ∀ c d, w c ≠ e d) (α : k) (g : MvPolynomial σ k)
@@ -298,12 +349,12 @@ theorem F_E_k (hw : Function.Injective w) (he : Function.Injective e) (hwe : ∀
   classical
   have hdE : ∀ c, pderiv (e c) (∑ c', X (w c') * X (e c') : MvPolynomial σ k) = X (w c) := by
     intro c
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, he.eq_iff, hwe]
+
+    simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, he.eq_iff, hwe]
   have hdW : ∀ c, pderiv (w c) (∑ c', X (w c') * X (e c') : MvPolynomial σ k) = X (e c) := by
     intro c
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, hw.eq_iff, fun a b => (hwe a b).symm]
+
+    simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, hw.eq_iff, fun a b => (hwe a b).symm]
   have key : ∀ c, pderiv (w c) (pderiv (e c) ((∑ c', X (w c') * X (e c')) * Y)) =
       (∑ c', X (w c') * X (e c')) * pderiv (w c) (pderiv (e c) Y) + X (e c) * pderiv (e c) Y + Y +
         X (w c) * pderiv (w c) Y := by
@@ -392,7 +443,7 @@ theorem eq_zero_of_EW (a b : ℕ) (hab : a < b) (g : MvPolynomial σ k) (h : EW 
     g = 0 := by
   ext s
   have hs := congrArg (AddMonoidAlgebra.coeff · s) h
-  rw [coeff_EW_lemma_5, coeff_smul, smul_eq_mul] at hs
+  rw [coeff_EW_lemma_5, MvPolynomial.coeff_smul, smul_eq_mul] at hs
   have hne : ((∑ c, s (w c) : ℕ) : k) ≠ (a : k) - b := by
     intro heq
     have h2 : ((∑ c, s (w c) + b : ℕ) : k) = ((a : ℕ) : k) := by rw [Nat.cast_add, heq]; ring
@@ -460,7 +511,6 @@ theorem tiePhi_eq (o n z : ℕ) (u : MvPolynomial σ k) :
     tiePhi w e o n z u = ∑ j ∈ range (o + 1), cph k (o + n + r + z - 1) j • (tieE w e ^ j) ((tieF w e ^ j) u) := by
   first
   | (simp only [tiePhi, cph, LinearMap.sum_apply, LinearMap.smul_apply, LinearMap.comp_apply]; done)
-  | simp [tiePhi, cph, LinearMap.sum_apply]
 
 theorem phi_E_step (hw : Function.Injective w) (he : Function.Injective e) (hwe : ∀ c d, w c ≠ e d)
     (o' n' z : ℕ) (Z : MvPolynomial σ k) (hW : EW w Z = (o' : k) • Z) (hE : EW e Z = (n' : k) • Z) :
@@ -479,10 +529,9 @@ theorem phi_E_step (hw : Function.Injective w) (he : Function.Injective e) (hwe 
     rw [Fpow_E hw he hwe (o' : k) (n' : k) Z hW hE t, map_add (f := _), map_smul, hE1]
   have hA1 : o' + 1 + (n' + 1) + r + z - 1 = o' + n' + r + z + 1 := by omega
   have hA2 : o' + n' + r + (z + 1) - 1 = o' + n' + r + z := by omega
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [tiePhi_eq, tiePhi_eq, hA1, hA2, map_sum, Finset.smul_sum]
+
+  rw [tiePhi_eq, tiePhi_eq, hA1, hA2, map_sum, Finset.smul_sum]
   conv_lhs => rw [Finset.sum_range_succ']
-  beta_reduce
   simp only [hG, smul_add, smul_smul, Finset.sum_add_distrib, map_smul, hE2]
   have h0 : (tieE w e ^ 0) ((tieF w e ^ 0) (tieE w e Z)) = (tieE w e ^ (0 + 1)) ((tieF w e ^ 0) Z) := by simp
   rw [h0]
@@ -490,7 +539,6 @@ theorem phi_E_step (hw : Function.Injective w) (he : Function.Injective e) (hwe 
     (fun t => cph k (o' + n' + r + z + 1) t • (tieE w e ^ (t + 1)) ((tieF w e ^ t) Z)) (o' + 1)
   rw [Finset.sum_range_succ (fun t => cph k (o' + n' + r + z + 1) t • (tieE w e ^ (t + 1)) ((tieF w e ^ t) Z))
     (o' + 1)] at hs2
-  beta_reduce at hs2
   rw [hvan, map_zero, smul_zero, add_zero] at hs2
   rw [add_right_comm, ← hs2, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun t ht => ?_
@@ -506,8 +554,8 @@ private theorem EW_E_lemma_8 (hw : Function.Injective w) (hwe : ∀ c d, w c ≠
   classical
   have hdW : ∀ c, pderiv (w c) (∑ c', X (w c') * X (e c') : MvPolynomial σ k) = X (e c) := by
     intro c
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, hw.eq_iff, fun a b => (hwe a b).symm]
+
+    simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, hw.eq_iff, fun a b => (hwe a b).symm]
   have hEW : EW w Y = ∑ c, X (w c) * pderiv (w c) Y := rfl
   simp only [tieE, LinearMap.mulLeft_apply, EW, Derivation.leibniz, smul_eq_mul, hdW, mul_add, Finset.sum_add_distrib]
   have h1 : ∑ c, X (w c) * ((∑ c', X (w c') * X (e c')) * pderiv (w c) Y) =
@@ -577,8 +625,8 @@ theorem pow_Dp_omega (he : Function.Injective e) (hwe : ∀ c d, w c ≠ e d) (�
       s.descFactorial i • (X (w ρ) ^ i * (∑ c, X (w c) * X (e c)) ^ (s - i)) := by
   classical
   have hD : pderiv (e ρ) (∑ c, X (w c) * X (e c) : MvPolynomial σ k) = X (w ρ) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, he.eq_iff, hwe]
+
+    simp [map_sum, Derivation.leibniz, pderiv_X, Pi.single_apply, he.eq_iff, hwe]
   have hX : pderiv (e ρ) (X (w ρ) : MvPolynomial σ k) = 0 := by
     rw [pderiv_X, Pi.single_apply, if_neg (hwe ρ ρ)]
   induction i with
@@ -628,8 +676,8 @@ theorem pow_Dp_X_pow_mul (v : σ) (q : MvPolynomial σ k) (K M m : ℕ) (hq : �
 
 theorem Dp_comm_F (ρ : Fin r) (g : MvPolynomial σ k) : Dp (e ρ) (tieF w e g) = tieF w e (Dp (e ρ) g) := by
   rw [tieF_apply_lemma, tieF_apply_lemma]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [Dp_apply, map_sum]
+
+  simp only [Dp_apply, map_sum]
   refine Finset.sum_congr rfl fun c _ => ?_
   rw [pderiv_comm' (e ρ) (w c), pderiv_comm' (e ρ) (e c)]
 
@@ -660,9 +708,9 @@ theorem main_expand (he : Function.Injective e) (hwe : ∀ c d, w c ≠ e d) (ρ
             (tieF w e ^ j) (X (e ρ) ^ (i + t) * (Dp (e ρ) ^ t) q)) := by
   rw [tieE_pow_apply, pow_Dp_omega_mul he hwe ρ s m, Finset.smul_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [powDp_comm_powF, mul_comm (X (e ρ) ^ m) q, pow_Dp_X_pow_mul (e ρ) q K (m - i) m hq, map_sum,
-    Finset.mul_sum, Finset.smul_sum, Finset.smul_sum]
+
+  rw [powDp_comm_powF, mul_comm (X (e ρ) ^ m) q, pow_Dp_X_pow_mul (e ρ) q K (m - i) m hq, map_sum,
+  Finset.mul_sum, Finset.smul_sum, Finset.smul_sum]
   refine Finset.sum_congr rfl fun t _ => ?_
   simp only [map_nsmul, mul_smul_comm, smul_smul]
   rw [← Nat.cast_smul_eq_nsmul k]
@@ -808,7 +856,6 @@ theorem coef_PD (o r z s j S : ℕ) (hr : 1 ≤ r) (hsj : s + j ≤ o) (hoS : o 
       ((o.factorial : k) * (j.factorial : k))))
   rw [add_zero] at hK
   refine hK.congr fun n hn => ?_
-  beta_reduce
   have hA : (o - s) + (n - s) + r + (z + s) - 1 = o + n + r + z - 1 - s := by omega
   have hc : o + n + r + z - 1 - s - j = n + (o + r + z - 1 - s - j) := by omega
   have hnat := coef_nat (o + n + r + z - 1) o s j hsj
@@ -899,10 +946,10 @@ theorem quot_mem_pol (LL : M.Letters (N + 1)) (ρ : Fin r) (e : ℕ) (f h : MvPo
     · subst hi
       rw [Finset.sum_eq_single ρ]
       · simp
-      · intro c _ hc; simp [Finsupp.single_apply, Ne.symm hc]
+      · intro c _ hc; simp [Ne.symm hc]
       · simp
     · rw [if_neg hi]
-      exact Finset.sum_eq_zero fun c _ => by simp [Finsupp.single_apply, Ne.symm hi]
+      exact Finset.sum_eq_zero fun c _ => by simp [Ne.symm hi]
   rw [hs] at h2
   show ∑ c, m (i, c) = Function.update LL.deg (Fin.last N) (LL.deg (Fin.last N) - e) i
   by_cases hi : i = Fin.last N
@@ -942,7 +989,7 @@ theorem q_isWH (LL : M.Letters (N + 1)) (ρ : Fin r) (e : ℕ) (h : MvPolynomial
     · exact hXX' i c ρ
     · exact hXX' i ρ ρ
     · intro d hd
-      rw [coeff_sub] at hd
+      rw [MvPolynomial.coeff_sub] at hd
       by_cases h1 : AddMonoidAlgebra.coeff (X (Fin.last (N + 1), ρ) * X (Fin.castSucc i, c) :
           MvPolynomial (Fin (N + 1 + 1) × Fin r) ℚ_[p]) d = 0
       · rw [h1, zero_sub, neg_ne_zero] at hd
@@ -952,8 +999,8 @@ theorem q_isWH (LL : M.Letters (N + 1)) (ρ : Fin r) (e : ℕ) (h : MvPolynomial
     have h2 := hh
     simp only [M.Pol, MvPolynomial.mem_restrictSupport_iff] at h2
     exact fun m hm => h2 hm
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [h.as_sum, map_sum]
+
+  rw [h.as_sum, map_sum]
   refine IsWeightedHomogeneous.sum _ _ _ fun m hm => ?_
   rw [aeval_monomial]
   have hmd := hsupp m hm
@@ -983,9 +1030,8 @@ theorem degH_eq (LL : M.Letters (N + 1)) (e : ℕ) (he : e ≤ LL.deg (Fin.last 
       (fun b' : Fin (N + 1 + 1) => if b' = Fin.last (N + 1) then 1 else 0) (Fin.last (N + 1))) *
         (lowerLast LL e).deg b = LL.total - e := by
   first
-  | (simp only [Fin.castSucc_ne_last, eq_self_iff_true, ↓reduceIte, zero_add, one_mul]
+  | (simp only [Fin.castSucc_ne_last, ↓reduceIte, zero_add, one_mul]
      rw [← lowerLast_total LL e he]; rfl)
-  | (simp [Fin.castSucc_ne_last]; rw [← lowerLast_total LL e he]; rfl)
 
 theorem Z_biHom (LL : M.Letters (N + 1)) (ρ : Fin r) (e : ℕ) (he : e ≤ LL.deg (Fin.last N))
     (h : MvPolynomial (Fin (N + 1) × Fin r) ℚ_[p]) (hh : h ∈ M.Pol p r (lowerLast LL e)) (m0 : ℕ) :
@@ -1011,7 +1057,7 @@ theorem Z_biHom (LL : M.Letters (N + 1)) (ρ : Fin r) (e : ℕ) (he : e ≤ LL.d
     rw [weight_ind] at hW hH
     refine ⟨?_, ?_⟩
     · simp only [Finsupp.add_apply, Finset.sum_add_distrib, hW]
-      simp [Finsupp.single_apply, (Fin.castSucc_lt_last (Fin.last N)).ne']
+      simp
     · simp only [Finsupp.add_apply, Finset.sum_add_distrib, hH]
       simp [Finsupp.single_apply, add_comm]
   · exact absurd rfl hm
@@ -1048,8 +1094,8 @@ theorem fock_expand (he : Function.Injective e) (hwe : ∀ c d, w c ≠ e d) (ρ
             ((i + t).factorial : ℚ_[p])) *
           M.fock p y (X (w ρ) ^ i * (∑ c, X (w c) * X (e c)) ^ (s + j - i) *
             (tieF w e ^ j) (X (e ρ) ^ (i + t) * (Dp (e ρ) ^ t) q))) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [fock_X_pow_mul, tiePhi_eq, map_sum, map_sum, fock_sum_right]
+
+  rw [fock_X_pow_mul, tiePhi_eq, map_sum, map_sum, fock_sum_right]
   refine Finset.sum_congr rfl fun j _ => ?_
   have hEE : (tieE w e ^ s) ((tieE w e ^ j) ((tieF w e ^ j) (X (e ρ) ^ m * q))) =
       (tieE w e ^ (s + j)) ((tieF w e ^ j) (X (e ρ) ^ m * q)) := by

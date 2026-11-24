@@ -1,7 +1,57 @@
 module
 
 public import ReciprocityTheory.AnalyticForms.RegularLocalRings.ProjHyp
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.KrullDimension.NonZeroDivisors
+public import Mathlib.RingTheory.MvPolynomial.EulerIdentity
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
 public import ReciprocityTheory.CommutativeAlgebra.PolynomialHeights.HeightAddRingKrullDimQuotientMvPolynomialField
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -89,8 +139,8 @@ theorem aeval_smul_of_isMultiHomog {T : Type*} [CommRing T] [Algebra ℂ T]
   classical
   conv_lhs => rw [f.as_sum]
   conv_rhs => rw [f.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, Finset.mul_sum]
+
+  simp only [map_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun m hm => ?_
   rw [aeval_monomial, aeval_monomial, Finsupp.prod_pow, Finsupp.prod_pow]
   have e : ∏ q : (Σ k, ι k), (c q.1 * y q) ^ m q = (∏ k, c k ^ a k) * ∏ q, y q ^ m q := by
@@ -244,7 +294,7 @@ theorem sum_blockWt_eval {f : MvPolynomial (Σ k, ι k) ℂ} {dg : K → ℕ} (h
     (k : K) (z : (Σ k, ι k) → ℂ) :
     ∑ q, (blockWt k q : ℂ) * (z q * eval z (pderiv q f)) = (dg k : ℂ) * eval z f := by
   have h := congrArg (eval z) (isWeightedHomogeneous_blockWt hf k).sum_weight_X_mul_pderiv
-  set_option synthInstance.maxHeartbeats 100000 in
-    simpa [map_sum, nsmul_eq_mul] using h
+
+  simpa [map_sum, nsmul_eq_mul] using h
 
 end ReciprocityTheory.AnForm.R

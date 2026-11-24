@@ -1,6 +1,59 @@
 module
 
 public import Formalism.LocalToGlobal.Divisibility.CoefMod
+import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
+public import Formalism.GradedWeylDivisibility.FinalB
+import Formalism.GradedWeylDivisibility.FinalD
+import Formalism.RealPlaceAnalysis.RealPlaceTaylor.ProdFactorialSupportSubSingle
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalRingCardinality.Params
 
 @[expose] public section
 
@@ -287,13 +340,13 @@ theorem tauLatG : TauLatG := by
   · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
     refine ⟨_, ⟨x, hx, rfl⟩, ?_⟩
     funext a
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [embGL_coe, Matrix.mulVec, dotProduct, map_sum]
+
+    simp [embGL_coe, Matrix.mulVec, dotProduct, map_sum]
   · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
     refine ⟨_, ⟨x, hx, rfl⟩, ?_⟩
     funext a
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [embGL_coe, Matrix.mulVec, dotProduct, map_sum]
+
+    simp [embGL_coe, Matrix.mulVec, dotProduct, map_sum]
 
 section Adj
 
@@ -357,8 +410,8 @@ theorem pderiv_blockAct [DecidableEq ι] (V : ι → Matrix (Fin n) (Fin n) K) (
   | mul_X p k hp =>
     have hX : pderiv (s, (a, t)) (Formalism.GradedWeylDivisibility.blockAct K V (X k)) =
         if k.1 = s ∧ k.2.2 = t then C (V s k.2.1 a) else 0 := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [blockAct_X, map_sum]
+
+      rw [blockAct_X, map_sum]
       by_cases hk : k.1 = s ∧ k.2.2 = t
       · obtain ⟨h1, h2⟩ := hk
         subst h1; subst h2
@@ -415,11 +468,11 @@ theorem fockL_blockAct_adj (U : ι → Matrix (Fin n) (Fin n) K) (F F' : Pol K �
       rw [map_mul, blockAct_X, Finset.mul_sum]
       refine Finset.sum_congr rfl fun j _ => ?_
       rw [smul_eq_C_mul]; ring
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [e1, map_sum, LinearMap.sum_apply]
+
+    rw [e1, map_sum, LinearMap.sum_apply]
     simp_rw [LinearMap.map_smulₛₗ, LinearMap.smul_apply, fockL_X_pderiv, hp]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [mul_comm p, fockL_X_pderiv, show v = (v.1, (v.2.1, v.2.2)) from rfl, pderiv_blockAct, map_sum]
+
+    rw [mul_comm p, fockL_X_pderiv, show v = (v.1, (v.2.1, v.2.2)) from rfl, pderiv_blockAct, map_sum]
     refine Finset.sum_congr rfl fun b _ => ?_
     rw [← smul_eq_C_mul, map_smul, Matrix.conjTranspose_apply, starRingEnd_apply]
 
@@ -606,8 +659,8 @@ theorem fockSQ : FockSQ := by
   intro K _ _ _ σ f g
   have hinj : Function.Injective (algebraMap ℚ K) := (algebraMap ℚ K).injective
   unfold fockS Formalism.GradedWeylDivisibility.fockQ mfact
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [support_map_of_injective _ hinj, map_sum]
+
+  rw [support_map_of_injective _ hinj, map_sum]
   refine Finset.sum_congr rfl fun m _ => ?_
   simp only [coeff_map, map_mul, map_natCast, eq_ratCast, star_ratCast]
 

@@ -1,10 +1,52 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.LocalDenominators
 public import Formalism.LocalToGlobal.SiegelLatticeTheory.ClosedLocalOrbits.TermLoc
+public import Formalism.GL3MeanSquares.GenusMeanAsymptotics.UnimodularClassRepresentatives.LocalDensityRatio
 public import Formalism.GL3MeanSquares.GenusMeanAsymptotics.UnimodularClassRepresentatives.ExistsBasisLocF
-public import Formalism.LocalRingCardinality.SpanPowerMembership.ExampleLayerExistsGenerators
+import Formalism.LocalRingCardinality.SpanPowerMembership.ExampleLayerExistsGenerators
+public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.LocalDenominators
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -33,12 +75,7 @@ theorem iE_mem_O_iff_D (p : PlF D) (x : D.host.E) :
       ∃ s : 𝓞 D.host.F, s ∉ p.asIdeal ∧ IsIntegral ℤ (algebraMap D.host.F D.host.E (s : D.host.F) * x) :=
   iE_mem_O_iff (D.s.atP p) conjF_invol conjF_fix x
 
-theorem baseChange_smul₂ (p : PlF D) (c : D.host.E) (x : (VS D).V) :
-    baseChange₂ D p (c • x : (VS D).V) = ((D.s.atP p).ιE c • (baseChange₂ D p x : Vp D p) : Vp D p) := by
-  funext i
-  show (D.s.atP p).ιE ((VS D).frame.repr (c • x) i) =
-    (D.s.atP p).ιE c * (D.s.atP p).ιE ((VS D).frame.repr x i)
-  rw [LinearEquiv.map_smul, Finsupp.smul_apply, smul_eq_mul, map_mul]
+alias baseChange_smul₂ := _root_.Formalism.L2.SG.TermLoc.baseChange_smul₂
 
 def chat (p : PlF D) (w : (VS D).V →ₗ[D.host.E] D.host.E) (v : Vp D p) : (D.s.atP p).Ep :=
   ∑ j, (D.s.atP p).ιE (w ((VS D).frame j)) * v j
@@ -47,8 +84,8 @@ theorem chat_bcP (p : PlF D) (w : (VS D).V →ₗ[D.host.E] D.host.E) (y : (VS D
     chat p w (baseChange₂ D p y) = (D.s.atP p).ιE (w y) := by
   unfold chat
   conv_rhs => rw [← (VS D).frame.sum_repr y]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum]
+
+  rw [map_sum, map_sum]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [LinearMap.map_smul, smul_eq_mul, map_mul, mul_comm]
   rfl
@@ -84,15 +121,12 @@ instance finVS : FiniteDimensional D.host.E (VS D).V := Module.Finite.of_basis (
 
 theorem oE_smul (c : 𝓞 D.host.E) (x : (VS D).V) : c • x = ((c : D.host.E)) • x := by
   first
-  | rfl
   | exact (algebraMap_smul D.host.E c x).symm
 
 theorem oF_coe (t : 𝓞 D.host.F) :
     ((algebraMap (𝓞 D.host.F) (𝓞 D.host.E) t : 𝓞 D.host.E) : D.host.E) = algebraMap D.host.F D.host.E (t : D.host.F) := by
   first
   | rfl
-  | simp
-  | exact (IsScalarTower.algebraMap_apply (𝓞 D.host.F) D.host.F D.host.E t).symm
 
 theorem hO : (Zd.M p).L.O = (D.s.atP p).O := by
   exact (Zd.agree p).2.2.2.1

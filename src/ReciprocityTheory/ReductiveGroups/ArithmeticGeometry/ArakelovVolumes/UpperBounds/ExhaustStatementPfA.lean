@@ -1,8 +1,49 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.ArakelovVolumes.UpperBounds.LiftFactorization
-public import ReciprocityTheory.L2DbarEstimates.LeviForms.DetMonoDetOneAdd
 public import Lemmata.PosDefOfRealQuadratic.QuadFormRealSmul
+public import ReciprocityTheory.L2DbarEstimates.JacobianInterpolationStatement
+public import Lemmata.DetMonotoneStarMulSelf.OneLeReDetOneAdd
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -54,7 +95,7 @@ theorem det_eq_ofReal {n : ℕ} {A : Matrix (Fin n) (Fin n) ℂ} (hA : A.PosDef)
 theorem det_mul_det_le_normSq_det (Z W : Matrix (Fin p) (Fin q) ℂ) (hZ : (1 - Z * Zᴴ).PosDef)
     (hW : (1 - W * Wᴴ).PosDef) :
     (1 - Z * Zᴴ).det.re * (1 - W * Wᴴ).det.re ≤ Complex.normSq (1 - Z * Wᴴ).det := by
-  have hm := ReciprocityTheory.L2DbarEstimates.I.maDet p ((1 - Z * Wᴴ) * (1 - W * Wᴴ)⁻¹ * (1 - Z * Wᴴ)ᴴ)
+  have hm := _root_.Bl.DetMonotoneStarMulSelf.goal1 p ((1 - Z * Wᴴ) * (1 - W * Wᴴ)⁻¹ * (1 - Z * Wᴴ)ᴴ)
     (1 - Z * Zᴴ) hZ.posSemidef (cross_psd Z W hW)
   obtain ⟨hb, hbi⟩ := det_re_pos_im hW
   set b := (1 - W * Wᴴ).det.re
@@ -68,7 +109,7 @@ theorem det_mul_det_le_normSq_det (Z W : Matrix (Fin p) (Fin q) ℂ) (hZ : (1 - 
 
 theorem det_re_le_one {Z : Matrix (Fin p) (Fin q) ℂ} (hZ : (1 - Z * Zᴴ).PosDef) :
     (1 - Z * Zᴴ).det.re ≤ 1 := by
-  have hm := ReciprocityTheory.L2DbarEstimates.I.maDet p 1 (1 - Z * Zᴴ) hZ.posSemidef
+  have hm := _root_.Bl.DetMonotoneStarMulSelf.goal1 p 1 (1 - Z * Zᴴ) hZ.posSemidef
     (by rw [sub_sub_cancel]; exact posSemidef_self_mul_conjTranspose Z)
   simpa using hm
 
@@ -83,20 +124,16 @@ open ReciprocityTheory.L2DbarEstimates ReciprocityTheory.ChartRestriction.G.AR.U
 theorem quad_im {m : ℕ} {A : Matrix (Fin m) (Fin m) ℂ} (hA : A.IsHermitian) (x : Fin m → ℂ) :
     (star x ⬝ᵥ (A *ᵥ x)).im = 0 := by
   rw [← Complex.conj_eq_iff_im]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [dotProduct, mulVec, map_sum, map_mul, Pi.star_apply, Complex.star_def,
-    Complex.conj_conj, Finset.mul_sum]
+
+  simp only [dotProduct, mulVec, map_sum, map_mul, Pi.star_apply, Complex.star_def,
+  Complex.conj_conj, Finset.mul_sum]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
   have h := hA.apply i j
   rw [Complex.star_def] at h
   rw [h]; ring
 
-theorem posDef_eventually {X : Type*} [TopologicalSpace X] {m : ℕ}
-    (A : X → Matrix (Fin m) (Fin m) ℂ) (hc : ∀ i j, Continuous fun x => A x i j)
-    (hH : ∀ x, (A x).IsHermitian) (x0 : X) (h0 : (A x0).PosDef) :
-    ∀ᶠ x in 𝓝 x0, (A x).PosDef := by
-  first | exact Bl.PosDefOfRealQuadratic.goal1 .. | (apply Bl.PosDefOfRealQuadratic.goal1 <;> assumption) | (intros; apply Bl.PosDefOfRealQuadratic.goal1 <;> assumption)
+alias posDef_eventually := _root_.Bl.PosDefOfRealQuadratic.goal1
 
 theorem cont_coord {n : ℕ} (i : Fin n) : Continuous fun v : V n => v i := by
   have h : (fun v : V n => v i) = ⇑(EuclideanSpace.proj i : V n →L[ℂ] ℂ) := by

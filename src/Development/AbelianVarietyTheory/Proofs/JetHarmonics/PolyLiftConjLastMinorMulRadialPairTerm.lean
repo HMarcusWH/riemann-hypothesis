@@ -1,16 +1,79 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.Definitions.Jets.BasicLiftAll
 public import Formalism.HermitianCurvature.HermitianCurvatureProofs.BasicLift
 public import Formalism.HermitianCurvature.HermitianCurvatureProofs.OperatorRepresentations
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.ActualAlgebraFacts
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.LiftCapelliOperators
 public import Formalism.HermitianCurvature.HermitianCurvatureProofs.LiftOfFunctions
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutFpmDecay
-public import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.HermitianHaarMeasure.SumFourCommVersion
 public import Development.AbelianVarietyTheory.Proofs.JetHarmonics.JdPolyOKPolynomialOperators
 public import Development.AbelianVarietyTheory.Proofs.JetHarmonics.QuantumMinorSumPolynomialOperator
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.ActualAlgebraFacts
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutFpmDecay
+import Formalism.FormalDegreeBessel.FormalDegreeRatio.IOLeft
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.BigCellValues
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.BigCellZetaMinors
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.CommuteAvrBvrOfCommuteSiteOps
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.HomogeneityNaturalDegree
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.LemmaDDeterminantIdentity
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.LiftClosedUnderOperations
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.QxChain
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.RestrictionIrrelevantDoubleLevelOperator
+import Formalism.PeriodIntegrals.ContractionsCovariantIff
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.CovariantLinearProduct.OfFnProdSmul
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.ConjugateTransposeLeibniz.YOperatorLeibnizRule
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.HermitianHaarMeasure.SumFourCommVersion
+import Formalism.RealPlaceAnalysis.RealPlaceTaylor.CartanInvolutionConjTransposeMul
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.HopfAlgebra.Basic
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -37,8 +100,8 @@ theorem der_intCast (μ : R →ₐ[ℂ] A) (a : A) (n : ℤ) : Der μ a n 0 := b
 theorem der_sum {μ : R →ₐ[ℂ] A} {a : A} {ι : Type} (s : Finset ι) {x x' : ι → R}
     (h : ∀ i ∈ s, Der μ a (x i) (x' i)) : Der μ a (∑ i ∈ s, x i) (∑ i ∈ s, x' i) := by
   unfold Der at *
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, Finset.mul_sum, Finset.sum_mul, ← Finset.sum_sub_distrib]
+
+  rw [map_sum, map_sum, Finset.mul_sum, Finset.sum_mul, ← Finset.sum_sub_distrib]
   exact Finset.sum_congr rfl h
 
 theorem der_prod_zero {μ : R →ₐ[ℂ] A} {a : A} {ι : Type} (s : Finset ι) {x : ι → R}
@@ -90,7 +153,7 @@ theorem conj_prod {a b : A} (h1 : a * b = 1) (h2 : b * a = 1) (l : List A) :
   | nil => simpa using h1
   | cons x l ih =>
     rw [List.map_cons, List.prod_cons, List.prod_cons, ← ih]
-    calc a * (x * l.prod) * b = a * x * (b * a) * l.prod * b := by rw [h2]; simp only [mul_assoc, one_mul, mul_one]
+    calc a * (x * l.prod) * b = a * x * (b * a) * l.prod * b := by rw [h2]; simp only [mul_assoc, mul_one]
       _ = _ := by simp only [mul_assoc]
 
 theorem pt_ofFn : ∀ (p : ℕ) (x h : Fin p → A),
@@ -143,7 +206,7 @@ theorem alt_average {p t : ℕ} (H : (Fin p → Fin (p + t)) → A) (W : (Fin t 
     rw [← Equiv.sum_comp (Equiv.mulRight (blk π ρ))]
     refine Finset.sum_congr rfl fun σ _ => ?_
     simp only [Equiv.coe_mulRight, Equiv.Perm.coe_mul, Function.comp, blk_left, blk_right, Equiv.Perm.sign_mul, blk_sign,
-      Units.val_mul, Int.cast_mul, ← zsmul_eq_mul, smul_mul_assoc, mul_smul_comm, mul_smul]
+      Units.val_mul, Int.cast_mul, ← zsmul_eq_mul, smul_mul_assoc, mul_smul_comm]
     simp only [smul_smul]
     congr 1
     ring
@@ -230,8 +293,8 @@ theorem lead_std {p t : ℕ} (μ : R →ₐ[ℂ] A) (E : Fin (p + t) → Fin (p 
       push_cast; ring
     have e2 : (∑ π : Equiv.Perm (Fin p), ((Equiv.Perm.sign π : ℤ) : A) * H fun i => σ (Fin.castAdd t (π i))) =
         μ (Matrix.of fun a j : Fin p => fi * η a (σ (Fin.castAdd t j))).det := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [← Matrix.det_transpose, Matrix.det_apply', map_sum]
+
+      rw [← Matrix.det_transpose, Matrix.det_apply', map_sum]
       refine Finset.sum_congr rfl fun π _ => ?_
       rw [map_mul, map_intCast, ← List.prod_ofFn, map_list_prod, List.map_ofFn]
       rfl
@@ -284,14 +347,14 @@ theorem lead_conj_qdet {n p t : ℕ} (hn : n = p + t) (μ : R →ₐ[ℂ] A) (E 
   obtain ⟨F, c, hF, hs, hc⟩ := lead_std μ (Econj E Q⁻¹ Q) (Formalism.QuantumDeterminants.gl_relation_adjoint_holds A _ E _ _ hE h1)
     (fun i a => ∑ c, Q a c • Y i c) (fun i a b c => by
       have := PI.QnHermHaar.leibVec E (fun c => μ (Y i c)) Q⁻¹ Q h1 (hY i) a b c
-      set_option synthInstance.maxHeartbeats 100000 in
-        simpa only [PI.QnHermHaar.vecC, map_sum, map_smul] using this) f fi
+
+      simpa only [PI.QnHermHaar.vecC, map_sum, map_smul] using this) f fi
     (by rw [hf]; simp only [Q, Matrix.of_apply, e]) hfi u
   refine ⟨F, c, hF, fun s => ?_, ?_⟩
   · rw [hs, (Formalism.FourierDecayAlt.P.contractions_covariant A _ E _ _ hE h1 h2 u 0 0 0 0).1]
   · refine Submodule.span_le.2 ?_ hc
     rintro x ⟨e', a, b, rfl⟩
-    rw [covariant_linear A _ _ E _ _ h1]
+    rw [_root_.PI.QnCovLinW.qnCovLin A _ _ E _ _ h1]
     simp only [Finset.mul_sum, mul_smul_comm]
     exact Submodule.sum_mem _ fun a' _ => Submodule.sum_mem _ fun b' _ => Submodule.smul_mem _ _
       (Submodule.subset_span ⟨fun j => Q (e' j), a', b', rfl⟩)

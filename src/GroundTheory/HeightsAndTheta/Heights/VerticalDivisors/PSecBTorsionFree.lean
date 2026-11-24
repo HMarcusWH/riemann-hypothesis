@@ -1,7 +1,49 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.VerticalDivisors.IntToFracInjective
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -24,8 +66,8 @@ theorem span_secCoord_eq_top (Q : Ideal (MvPolynomial (Fin n) R)) (y : Par e n �
     Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_sup_right (Ideal.subset_span (Set.mem_singleton _)))
   rw [map_sub, map_one, sub_eq_zero] at h1
   have h2 : (1 : SecAlg Q y) = ∑ j, Ideal.Quotient.mk _ (C (y (.inr j))) * secCoord Q y j := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [← h1, chartForm, linForm, map_sum]
+
+    rw [← h1, chartForm, linForm, map_sum]
     simp only [map_mul, secCoord]
   rw [h2]
   exact Ideal.sum_mem _ fun j _ => Ideal.mul_mem_left _ _ (Ideal.subset_span ⟨j, rfl⟩)
@@ -150,17 +192,17 @@ theorem secIdeal_le_ker_chartPhi0 [IsLocalization S R] :
     have h := congrArg (algebraMap _ (ChartE' e Q j S)) (chartSub_rel_inl e Q j i)
     rw [map_zero] at h
     rw [← h]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [secForm, linForm, chartPar, map_sum, map_mul, chartPhi0, eval₂Hom_C, eval₂Hom_X',
-      chartHomR_algebraMap, chartHomA]
+
+    simp only [secForm, linForm, chartPar, map_sum, map_mul, chartPhi0, eval₂Hom_C, eval₂Hom_X',
+    chartHomR_algebraMap, chartHomA]
   · rw [Ideal.span_le, Set.singleton_subset_iff, SetLike.mem_coe, RingHom.mem_ker, map_sub, map_one,
       sub_eq_zero]
     have h := congrArg (algebraMap _ (ChartE' e Q j S)) (chartSub_rel_inr e Q j)
     rw [map_one] at h
     rw [← h]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [chartForm, linForm, chartPar, map_sum, map_mul, chartPhi0, eval₂Hom_C, eval₂Hom_X',
-      chartHomR_algebraMap, chartHomA]
+
+    simp only [chartForm, linForm, chartPar, map_sum, map_mul, chartPhi0, eval₂Hom_C, eval₂Hom_X',
+    chartHomR_algebraMap, chartHomA]
 
 def chartPhi [IsLocalization S R] : SecAlg (chartModel e R Q) (chartPar D e R) →+* ChartE' e Q j S :=
   Ideal.Quotient.lift _ (chartPhi0 e R Q j S) fun _ ha => secIdeal_le_ker_chartPhi0 e R Q j S ha

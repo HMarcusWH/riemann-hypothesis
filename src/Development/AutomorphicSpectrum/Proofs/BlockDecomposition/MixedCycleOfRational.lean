@@ -1,20 +1,59 @@
 module
 
-public import Mathlib
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsSmoothHermCombLine
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.PointIdealMultiprojectivePrime
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MemPointIdealIffEvalCoordsZero
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.SpecializesIffPointIdealLe
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MultiprojectivePrimeEqPointIdeal
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.HermRepMetricSmooth
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.ComplexPointLiftsToMulticone
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.RestrictedFormNonzeroOnGenericPoint
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.HolomorphicLiftGivesHolomorphicSection
-public import ReciprocityTheory.AnalyticForms.RegularLocalRings.ProjHypC
-public import GroundTheory.HeightsAndTheta.Heights.Intersections.PDiagOrd
+public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.HeightOrbitChart
 public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.FinsumLengthMulLogCardEqNegLogAdicAbvNorm
-public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitChartMult
 public import Development.AutomorphicArithmetic.IntegralCasts.CapelliIdentities.MinimalPrimesMap
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.ComplexPointLiftsToMulticone
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.HolomorphicLiftGivesHolomorphicSection
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MemPointIdealIffEvalCoordsZero
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MultiprojectivePrimeEqPointIdeal
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.PointIdealMultiprojectivePrime
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.RestrictedFormNonzeroOnGenericPoint
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.SpecializesIffPointIdealLe
+public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitChartMult
+import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitChartMultLemmas
+public import GroundTheory.HeightsAndTheta.Heights.Intersections.PDiagOrd
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+public import ReciprocityTheory.AnalyticForms.RegularLocalRings.ProjHypC
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterDivSupp
 
 @[expose] public section
 
@@ -55,15 +94,6 @@ theorem exists_point {W : Ideal (Pol n)} (hW : IsMultiProjPrime W)
 
 end Points
 
-section Krull
-
-theorem eq_or_eq_of_mem_minimalPrimes {A : Type} [CommRing A] [IsNoetherianRing A] {P Q W : Ideal A} [hP : P.IsPrime]
-    [hQ : Q.IsPrime] {s : A} (hW : W ∈ (P ⊔ Ideal.span {s}).minimalPrimes) (hPQ : P ≤ Q) (hQW : Q ≤ W) :
-    Q = P ∨ Q = W :=
-  _root_.UpperTheory.Reformulated.B.MinimalPrimesMap.eq_or_eq_of_mem_minimalPrimes hW hPQ hQW
-
-end Krull
-
 section Codim
 
 variable [IsClosedImmersion i]
@@ -78,7 +108,7 @@ theorem coheight_eq_one_of_mem_minimalPrimes {s : Pol n} (hs : s ∉ ptIdeal (i 
   · have : (ptIdeal (i y)).IsPrime := (isMultiProjPrime_ptIdeal m n _).1
     have h1 : y = genericPoint X := by
       have hle : y ⤳ z := hy.le
-      rcases eq_or_eq_of_mem_minimalPrimes hz
+      rcases _root_.UpperTheory.Reformulated.B.MinimalPrimesMap.eq_or_eq_of_mem_minimalPrimes hz
         ((specializes_iff (i := i) _ _).1 (genericPoint_specializes y))
         ((specializes_iff (i := i) _ _).1 hle) with e | e
       · exact ptIdeal_injective (i := i) e
@@ -189,8 +219,8 @@ theorem cone_of_isMultiHomog {F : Pol n} {d : Fin (m + 1) → ℕ} (hF : IsMulti
   classical
   conv_lhs => rw [F.as_sum]
   conv_rhs => rw [F.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, map_sum, Finset.sum_mul]
+
+  rw [map_sum, map_sum, map_sum, Finset.sum_mul]
   refine Finset.sum_congr rfl fun μ hμ => ?_
   have hX : ∏ p : Σ k, Bk n k, (MvPolynomial.X p.1 : MvPolynomial (Fin (m + 1)) D) ^ μ p =
       ∏ k, MvPolynomial.X k ^ d k := by
@@ -199,7 +229,7 @@ theorem cone_of_isMultiHomog {F : Pol n} {d : Fin (m + 1) → ℕ} (hF : IsMulti
     show ∏ i, (MvPolynomial.X k : MvPolynomial (Fin (m + 1)) D) ^ μ ⟨k, i⟩ = _
     rw [← hF μ hμ k, Finset.prod_pow_eq_pow_sum]
   rw [monomial_eq, Finsupp.prod_fintype _ _ (fun _ => pow_zero _)]
-  simp only [map_mul, map_prod, map_pow, cone, coe_eval₂Hom, eval₂_mul, eval₂_C, eval₂_pow, eval₂_X, mul_pow,
+  simp only [map_mul, map_prod, map_pow, cone, coe_eval₂Hom, eval₂_X, mul_pow,
     Finset.prod_mul_distrib, hX, eq_intCast, map_intCast]
   ring
 
@@ -242,8 +272,8 @@ theorem cone_eq_zero_iff {P : Ideal (Pol n)} (hh : IsMultiHomogIdeal P)
     (geoMultiHomog_iff _ _).2 (weightedHomogeneousComponent_isWeightedHomogeneous _ _)
   have hcone : cone ε F = ∑ e ∈ S, C (ε (weightedHomogeneousComponent (coordDeg n) e F)) *
       ∏ k, MvPolynomial.X k ^ e k := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      conv_lhs => rw [hsum, map_sum]
+
+    conv_lhs => rw [hsum, map_sum]
     exact Finset.sum_congr rfl fun e _ => cone_of_isMultiHomog ε (hcomp e)
   constructor
   · intro h0

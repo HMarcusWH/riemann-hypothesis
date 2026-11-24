@@ -1,7 +1,48 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.SiegelLatticeTheory.CokernelGLCounts.RankPointCounts.FStarSteps
+public import Formalism.SharpRestriction.CuspSpanNormBounds.BlockEnds
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -27,16 +68,16 @@ variable {S}
 theorem gram_comb_left {l m n : Type*} [Fintype m] (u : m → S.V) (A : Matrix m n E) (v : l → S.V) :
     gram S (comb S u A) v = gram S u v * A := by
   ext i j
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [gram, comb, Matrix.mul_apply, map_sum, map_smul, smul_eq_mul]
+
+  simp only [gram, comb, Matrix.mul_apply, map_sum, map_smul, smul_eq_mul]
   exact Finset.sum_congr rfl fun k _ => mul_comm _ _
 
 theorem gram_comb_right {l m n : Type*} [Fintype m] (u : l → S.V) (v : m → S.V) (B : Matrix m n E) :
     gram S u (comb S v B) = Bᴴ * gram S u v := by
   ext i j
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [gram, comb, Matrix.mul_apply, map_sum, LinearMap.map_smulₛₗ, LinearMap.sum_apply,
-    LinearMap.smul_apply, smul_eq_mul, Matrix.conjTranspose_apply, starRingEnd_apply]
+
+  simp only [gram, comb, Matrix.mul_apply, map_sum, LinearMap.map_smulₛₗ, LinearMap.sum_apply,
+  LinearMap.smul_apply, smul_eq_mul, Matrix.conjTranspose_apply, starRingEnd_apply]
 
 theorem gram_add_left {m n : Type*} (u₁ u₂ : n → S.V) (v : m → S.V) :
     gram S (u₁ + u₂) v = gram S u₁ v + gram S u₂ v := by
@@ -280,8 +321,8 @@ theorem frame_la {r : ℕ} {T T' : E} (F : FlagG S r T) (f₁ : Fin (r + 1) → 
     have hZc : Z *ᵥ c = 0 := by
       ext i
       have := congrArg (S.hT (f i)) hsum
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum, map_zero] at this
+
+      rw [map_sum, map_zero] at this
       simp only [map_smul, smul_eq_mul] at this
       rw [← hZ2]
       simpa [Matrix.mulVec, dotProduct, gram, mul_comm] using this

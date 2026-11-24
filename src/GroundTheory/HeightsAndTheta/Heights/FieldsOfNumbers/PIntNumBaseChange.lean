@@ -1,8 +1,58 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.FieldsOfNumbers.Statements
+public import Mathlib.RingTheory.SimpleRing.Principal
 public import GroundTheory.HeightsAndTheta.Heights.FieldsOfNumbers.PGradedFinite
+import Mathlib.Algebra.Module.StablyFree.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.LinearAlgebra.Dual.Lemmas
 
 @[expose] public section
 
@@ -54,8 +104,8 @@ theorem coeffForm_map_mul (φ : F' →ₗ[F] F) (g : MvPolynomial σ F) (f : MvP
     coeffForm φ (map (algebraMap F F') g * f) = g * coeffForm φ f := by
   classical
   ext ν
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [coeff_coeffForm, coeff_mul, map_sum, coeff_map, form_algebraMap_mul]
+
+  simp only [coeff_coeffForm, coeff_mul, map_sum, coeff_map, form_algebraMap_mul]
 
 theorem coeffForm_map (φ : F' →ₗ[F] F) (hφ : φ 1 = 1) (g : MvPolynomial σ F) :
     coeffForm φ (map (algebraMap F F') g) = g := by
@@ -194,8 +244,8 @@ theorem sum_smul_mk_monomial (E : Type*) [Field E] (J : Ideal (MRing ι E)) {B :
     (lift : B → (Σ k, ι k) →₀ ℕ) (c : B → E) :
     ∑ x, c x • Ideal.Quotient.mk J (monomial (lift x) (1 : E)) =
       Ideal.Quotient.mk J (∑ x, monomial (lift x) (c x)) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   exact Finset.sum_congr rfl fun x _ => smul_mk_monomial E J _ _
 
 variable {F : Type*} [Field F] {F' : Type*} [Field F'] [Algebra F F']
@@ -230,8 +280,8 @@ theorem finrank_gradedPiece_map (I : Ideal (MRing ι F)) (m : K → ℕ) :
     rw [← Module.forall_dual_apply_eq_zero_iff F (g x)]
     intro φ
     have hmem := coeffForm_mem φ hg'
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum] at hmem
+
+    rw [map_sum] at hmem
     simp only [coeffForm_monomial] at hmem
     rw [← Ideal.Quotient.eq_zero_iff_mem, ← sum_smul_mk_monomial] at hmem
     simp only [hlift_v] at hmem
@@ -256,8 +306,8 @@ theorem finrank_gradedPiece_map (I : Ideal (MRing ι F)) (m : K → ℕ) :
         simpa only [hlift_v] using hc
       rw [sum_smul_mk_monomial, Ideal.Quotient.eq] at hc'
       have h' := Ideal.mem_map_of_mem (map (algebraMap F F')) hc'
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sub, map_sum] at h'
+
+      rw [map_sub, map_sum] at h'
       simp only [map_monomial, map_one] at h'
       rw [← Ideal.Quotient.eq, ← sum_smul_mk_monomial] at h'
       rw [SetLike.mem_coe]

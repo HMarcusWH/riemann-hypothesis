@@ -1,0 +1,45 @@
+{
+  "schema": "OPICA_COMMUNITY_SYNC_V437_SOURCE_V1",
+  "fork_repository": "HMarcusWH/riemann-hypothesis",
+  "previous_fork_commit": "52c7dcc17b9c29b41e186741fe8296b1a52a3e4b",
+  "previous_fork_tree": "4128993ed4347f3a1def74cf643dfeb200f09c9b",
+  "upstream_repository": "leanprover-community/riemann-hypothesis",
+  "upstream_commit": "73958da58a8a4d1f61b789745c5444baf6247cae",
+  "upstream_tree": "04b243de1eb4e0bbd5885a04ca78678dd7e54a0c",
+  "upstream_root_objects": {
+    "src": "6e972745429bd501b15e5daa9db46c8a9feb85db",
+    "comparator": "a14c3e84eee63917486fb7369cc8a4cfbb8c35d4",
+    "comparator.json": "e989bcf90ff0c487a7146319a026e661a5bad47c",
+    "export-targets.txt": "e2d4c02bac8a1411eae85af0376c1aad3b6b5294",
+    "lean-toolchain": "0e037f58f9a1aa2d5139277bcc4be0061ebeeb05",
+    "lake-manifest.json": "8a747b58a34565cc6cb5341b86544aa5d3a20a2d",
+    "lakefile.toml": "43b9f74431077a10cc1edecbc15239fe38d92591",
+    "tools": "239d245677a0583c3a5676c8b2aa577be4e26e4e",
+    "README.md": "b81d305cf280189d37fab1f492216e07f83affaf",
+    "AGENTS.md": "0556fc9c40074acc927f9939879f68e57239e818",
+    "docs": "3ac5cabafd4404ed9ce24ebec52e821937026180"
+  },
+  "toolchain": "leanprover/lean4:v4.37.0-rc1",
+  "mathlib": "31ce06eaadf4a200c0e1407c5f10953cf606b8f8",
+  "allowed_workflow_files": [
+    "build-pr.yml",
+    "checks.yml",
+    "fork-pr-boundary.yml",
+    "publish-ci-cache.yml",
+    "registered-runtime-shards.yml.example",
+    "opica-community-sync-v437.yml"
+  ],
+  "frozen_fork_objects": {
+    ".github/workflows/build-pr.yml": "5b313d1bc218e6bfae6f00aa468bd729d4f8db25",
+    ".github/workflows/fork-pr-boundary.yml": "b8bd366416958fb2880baff54a3019606f0b5de4",
+    ".github/workflows/publish-ci-cache.yml": "c078e9874f129ce6120d0ad20e531c182a378f70",
+    "scripts/FORK_CI_BOUNDARY.md": "cb589eecad89504ef957a40cce019880bd1e3b66",
+    "scripts/fork_ci_identity.py": "b0f42ec2851f5441a9da18dbc5d75ba3e4a58884",
+    "scripts/test_fork_ci_identity.py": "00bd8c71a7fccfd0ac646fc9a18d96feadad8039"
+  },
+  "claim": "SOURCE_IDENTITY_AND_CHALLENGE_REHEARSAL_ONLY",
+  "full_supplier_proof": "NOT_RUN",
+  "native_c1": "OPEN",
+  "independent_native_step4": "OPEN",
+  "historical_certificates_transfer": false
+}

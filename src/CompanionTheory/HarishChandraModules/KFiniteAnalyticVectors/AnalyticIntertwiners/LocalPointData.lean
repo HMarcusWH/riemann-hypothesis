@@ -1,8 +1,56 @@
 module
 
 public import CompanionTheory.HarishChandraModules.KFiniteAnalyticVectors.AnalyticIntertwiners.LogNormEstimates
-public import CompanionTheory.HarishChandraModules.KFiniteAnalyticVectors.AnalyticIntertwiners.HarishChandraThirdIndefiniteUnitary
+public import CompanionTheory.HarishChandraModules.KFiniteAnalyticVectors.AnalyticIntertwiners.Clause1
+public import CompanionTheory.HarishChandraModules.KFiniteAnalyticVectors.AnalyticIntertwiners.AdmissibleVectors
+public import CompanionTheory.HarishChandraModules.KFiniteAnalyticVectors.AnalyticIntertwiners.BoundedOperators
+public import Development.WeilBound.HeckeVectors.SmoothVectors.SobolevApproximation.PCDense
+import Formalism.PeriodIntegrals.UnitaryGroupMassFormula.UnipotentCorrectionU1.DjCurveA
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.InnerProductSpace.Calculus
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.AnalyticVectors.Closure
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.RigidityTheorems.SopNegComm
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -39,13 +87,13 @@ theorem graphD [CompleteSpace H₁] [CompleteSpace H₂] (h₁ : IsURepOn (UJset
     show ofP (E₁ a b (κ₁ w), E₂ a b (κ₂ w)) = ofP (κ₁ (F a b w), κ₂ (F a b w))
     rw [e₁, e₂]
   have c₁ : ∀ w, casimir E₁ (κ₁ w) = κ₁ (casimir F w) := fun w => by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [casimir, LinearMap.sum_apply, Module.End.mul_apply, map_sum, e₁]
+
+    simp only [casimir, LinearMap.sum_apply, Module.End.mul_apply, map_sum, e₁]
   have cF : ∀ w, casimir F w = (c : ℂ) • w := fun w => hi (by rw [← c₁, hc, map_smul])
   have cκ : ∀ w, casimir (sE E₁ E₂) (κ w) = (c : ℂ) • κ w := fun w => by
     rw [← map_smul, ← cF]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [casimir, LinearMap.sum_apply, Module.End.mul_apply, map_sum, hκ]
+
+    simp only [casimir, LinearMap.sum_apply, Module.End.mul_apply, map_sum, hκ]
   let Γ : Submodule ℂ (WithLp 2 (H₁ × H₂)) :=
     { carrier := {x | U (ofLp x).1 = (ofLp x).2}
       add_mem' := fun {a b} ha hb => by
@@ -208,7 +256,7 @@ theorem dictD (hS : KFSm) (h : IsHCMod πU M io) {j : ℕ} (m : ℕ)
     intro Y hY v
     refine Subtype.ext ((hder.deriv _ (hex Y hY).1 (κ v)).unique ?_)
     have d1 : HasDerivAt (fun t : ℝ => (NormedSpace.exp (t • rx Y)).det) (rx Y).trace 0 :=
-      PI.UnitaryCorollaryDerivatives.DjC.hasDerivAt_det_of_one _ _ (by simp) fun a b => PI.UnitaryCorollaryDerivatives.DjC.hasDerivAt_exp_entry (rx Y) a b
+      _root_.Bl.b110.goal1 _ _ (by simp) fun a b => PI.UnitaryCorollaryDerivatives.DjC.hasDerivAt_exp_entry (rx Y) a b
     have d2 := ((((hasDerivAt_id (0 : ℝ)).ofReal_comp.mul_const Y.trace).div_const 2).const_mul (j : ℂ)).fun_neg.cexp
     have d3 := ((d1.fun_pow m).fun_mul d2).fun_smul (h.2.2 Y hY v)
     convert (preTransparency := .reducible) d3 using 1

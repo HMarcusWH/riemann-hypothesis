@@ -1,6 +1,46 @@
 module
 
-public import Formalism.LocalToGlobal.IndefiniteReal.RealSeparation.Continuous
+public import Formalism.LocalToGlobal.BesselHermitianTheta.TiedSmooth
+public import Formalism.LocalToGlobal.IndefiniteReal.LocalNewformFunction
+public import Formalism.LocalToGlobal.IndefiniteReal.RealSeparation.BesPerSt
+public import Formalism.LocalToGlobal.IndefiniteReal.LevelTypeEquivalence.GrowthNorm
+public import Formalism.LocalToGlobal.IndefiniteReal.RealSeparation.FrameMatEqGlobal
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -11,7 +51,7 @@ open Formalism.BasicNotions Formalism.BasicNotions.TH Formalism.MainNotions.Glob
 
 namespace Formalism.IndefR.Mi
 
-set_option synthInstance.maxHeartbeats 400000
+
 
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 attribute [-instance] CStarMatrix.instHMulOfFintypeOfMulOfAddCommMonoid
@@ -21,8 +61,8 @@ variable {D : D7}
 theorem rect_entry_mul_le {m n p : ℕ} (φ : AE D →+* ℂ) (X : Matrix (Fin m) (Fin n) (AE D))
     (Y : Matrix (Fin n) (Fin p) (AE D)) (i : Fin m) (j : Fin p) {bX bY : ℝ}
     (hX : ∀ i k, ‖φ (X i k)‖ ≤ bX) (hY : ∀ k j, ‖φ (Y k j)‖ ≤ bY) : ‖φ ((X * Y) i j)‖ ≤ n * (bX * bY) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [Matrix.mul_apply, map_sum]
+
+  rw [Matrix.mul_apply, map_sum]
   calc ‖∑ e, φ (X i e * Y e j)‖ ≤ ∑ e : Fin n, ‖φ (X i e * Y e j)‖ := norm_sum_le _ _
     _ ≤ ∑ _e : Fin n, bX * bY := Finset.sum_le_sum fun e _ => by
         rw [map_mul, norm_mul]
@@ -38,7 +78,7 @@ theorem entry_le_sum {m n : ℕ} (f : Fin m → Fin n → ℝ) (hf : ∀ i j, 0 
 variable {A T : HSp D} {ι : A.V →ₗ[D.host.E] T.V} {s : GA D A →* GA D T}
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem s_entry_le (θ : InfFam D) (hι : HSpace.IsIsomEmb A T ι) (hemb : IsEmbHom ι s) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (h : GA D A) (τ : D.what₂.Tau) (b : ℝ), 0 ≤ b →
       (∀ k l, ‖θ τ (infPart D (mt A h k l))‖ ≤ b) → ∀ i j, ‖θ τ (infPart D (mt T (s h) i j))‖ ≤ C * (b + 1) := by

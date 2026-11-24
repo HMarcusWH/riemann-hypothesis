@@ -1,7 +1,58 @@
 module
 
-public import Mathlib
 public import Development.AbelianVarietyTheory.PublishedTheorems.TwistedTraceFormula.RealMetaplecticRepresentation
+public import Mathlib.Analysis.CStarAlgebra.Module.Constructions
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
+import Mathlib.Algebra.Order.Archimedean.Real.Hom
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+public import Mathlib.Analysis.Matrix.Normed
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+public import Mathlib.Analysis.Normed.Module.HahnBanach
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.LinearAlgebra.Matrix.FiniteDimensional
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Analysis.Calculus.ParametricIntegral
 
 @[expose] public section
 
@@ -68,8 +119,7 @@ theorem weightOp_apply (f : Sch l) (x : EuclideanSpace ℝ l) :
     weightOp l f x = ((1 + ‖x‖ ^ 2 : ℝ) : ℂ) * f x := by
   have hπ : (π : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
   simp only [weightOp, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, ContinuousLinearMap.sum_apply,
-    ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply, SchwartzMap.sub_apply, SchwartzMap.smul_apply,
-    SchwartzMap.sum_apply, dRho_single_inr, smul_eq_mul, EuclideanSpace.real_norm_sq_eq]
+    ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply, dRho_single_inr, smul_eq_mul, EuclideanSpace.real_norm_sq_eq]
   push_cast
   rw [add_mul, one_mul, Finset.mul_sum, Finset.sum_mul, sub_eq_add_neg, ← Finset.sum_neg_distrib]
   congr 1
@@ -104,10 +154,10 @@ theorem fourierInv_besselOp (f : Sch l) : 𝓕⁻ (besselOp l f) = weightOp l (�
   have hF : ∀ g : Sch l, 𝓕⁻ g = F g := fun _ => rfl
   have h := fourierInv_dRho_inl (l := l)
   simp only [hF] at h ⊢
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [besselOp, weightOp, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.sum_apply, ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply, map_sub, map_smul,
-    map_sum, h, map_neg, neg_neg]
+
+  simp only [besselOp, weightOp, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
+  ContinuousLinearMap.sum_apply, ContinuousLinearMap.mul_apply, ContinuousLinearMap.one_apply, map_sub, map_smul,
+  map_sum, h, map_neg, neg_neg]
 
 theorem fourierInv_besselOp_pow (k : ℕ) (f : Sch l) : 𝓕⁻ ((besselOp l ^ k) f) = (weightOp l ^ k) (𝓕⁻ f) := by
   induction k with
@@ -159,8 +209,8 @@ theorem norm_multilinear_le {n : ℕ} (m : ContinuousMultilinearMap ℝ (fun _ :
     funext i
     ext k
     simp [Pi.single_apply]
-  set_option synthInstance.maxHeartbeats 100000 in
-    conv_lhs => rw [this, m.map_sum]
+
+  conv_lhs => rw [this, m.map_sum]
   rw [Finset.sum_mul]
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun r _ => ?_)
   rw [m.map_smul_univ, norm_smul, mul_comm, norm_prod]
@@ -335,8 +385,8 @@ theorem toLp_dRho_omS
       SymplecticGroup.mem_iff.1 (pr g).2, J_squared, neg_neg, one_mulVec]
   rw [ContinuousLinearMap.mul_apply]
   conv_lhs => rw [← h1, ← omS_dRho h3 h4, dRho_eq_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply, map_sum, map_smul]
+
+  simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply, map_sum, map_smul]
 
 theorem contDiff_toLp_omS
     (h3 : ∀ (g : G) (w : l ⊕ l → ℝ) (f : L2 l),
@@ -408,11 +458,11 @@ theorem hasDerivAt_toLp_omS
       rw [← quad_comm hX, sub_sub_cancel]
     rw [ContinuousLinearMap.mul_apply, ← ContinuousLinearMap.mul_apply (dRho w), e, dRho_eq_sum w,
       dRho_eq_sum (X *ᵥ w)]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply, map_sum,
-      map_smul, ofReal_neg, ofReal_zero, zero_smul, NormedSpace.exp_zero, transpose_one, mul_one, J_squared, neg_neg, one_mulVec,
-      h0, map_one, ContinuousLinearMap.one_apply, ContinuousLinearMap.sub_apply, ContinuousLinearMap.mul_apply,
-      map_sub, neg_smul, ← sub_eq_add_neg, Finset.sum_sub_distrib]
+
+    simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply, map_sum,
+    map_smul, zero_smul, NormedSpace.exp_zero, transpose_one, mul_one, J_squared, neg_neg, one_mulVec,
+    h0, map_one, ContinuousLinearMap.one_apply, ContinuousLinearMap.sub_apply, ContinuousLinearMap.mul_apply,
+    map_sub, neg_smul, ← sub_eq_add_neg, Finset.sum_sub_distrib]
     simp only [coe_smul]
     rfl
   · intro f

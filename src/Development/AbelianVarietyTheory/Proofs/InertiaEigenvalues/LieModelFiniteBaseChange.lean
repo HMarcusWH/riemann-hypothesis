@@ -1,33 +1,60 @@
 module
 
-public import Mathlib
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.PadNatZero
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.RsTermZero
-public import Development.AbelianVarietyTheory.Definitions.NonGaloisDescent.ZintZero
-public import Development.AbelianVarietyTheory.Definitions.Divisors.IsAddHaarMeasureVolumeLie
-public import Development.AbelianVarietyTheory.Definitions.Divisors.UnrOutside
 public import Development.AbelianVarietyTheory.Definitions.Divisors.IsRapidInf
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SchurDir
-public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.T2SpaceAdelicGeneralLinearGroupNumberField
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.AdelicUnitriangularMulMemUnipotentTimesIntegral
-public import Development.AbelianVarietyTheory.PublishedTheorems.GaloisCohomology₂.StrongMultiplicityOne
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CellLintegral
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ContinuousOfMemSmoothSpan
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.LintegralUnipotentCellPosLtTopContinuous
-public import Development.AbelianVarietyTheory.Definitions.Divisors.NAInterSupSSubset
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.MeasurePreservingToMixedPiSymm
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.RsIntegralEntireTheta
+public import GroundTheory.AutomorphicForms.ReductionMeasure
+public import Development.AbelianVarietyTheory.Definitions.Divisors.MemL2OfSmoothVector
+public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.CuspDiscreteDecompositionGL
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CuspFormRapidKernelSmoothSpanSmoothCuspidalBound
+public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.IsUnitaryOfCharIff
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CuspFormSmoothSpanNormLeShortRationalVector
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.DifferentiableIntegralMulCpow
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ExistsEquivariantProj
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.WhitMulLocGLDiagPowOfFixed
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ContinuousGlobalWhittakerCoefficientGLAdeles
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.FinsuppVanishingOnEquivComplProd
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.IsOpenAdelicUnipotentTimesIntegralOutsideSet
-public import GroundTheory.AutomorphicForms.MultiplicityOne.Injective
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CuspFormSmoothSpanNormLeShortRationalVectorStatement
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.CuspFormRapidKernelSmoothSpanSmoothCuspidalBoundStatement
+public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.T2SpaceAdelicGeneralLinearGroupNumberField
+public import GroundTheory.GlobalFields.IdeleGroups.IdeleNorms
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.IntegrableOnAbsDetRpowLeOneFundamentalDomain
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SummableNonzeroRationalVectorLeShortestVector
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.IntegrableOnAbsDetRpowLeOneFundamentalDomainStatement
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SchwartzBruhatIntegrableMoments
-public import GroundTheory.GlobalFields.TateThesis.GlobalZetaFinite
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ContinuousOfMemSmoothSpan
+import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SchwartzBruhatIntegrableMoments
+import GroundTheory.GlobalFields.TateThesis.GlobalZetaFinite
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Development.AbelianVarietyTheory.Definitions.Divisors.UnrOutside
 
 @[expose] public section
 
@@ -93,8 +120,8 @@ theorem exists_bound {π' : CuspSub E a} (hπ : π'.IsUnitary) {φ' : GA E a →
   obtain ⟨M, C₁, h₁⟩ := GlobalTheory.RSTheta.summable_tsum_norm_le_of_le_shortest E a J (a * Module.finrank ℚ E)
     GlobalTheory.RSTheta.finrank_pi_Cinf.le
   obtain ⟨K, hK, hGK⟩ := norm_mul_pow_le hG M
-  obtain ⟨ψ, rfl, -, -, B, hB⟩ := GlobalTheory.T.cuspFormRapidKernelSmoothSpan_smooth_cuspidal_bounded E a GlobalTheory.CuspOrth.cuspFormsBounded π' hπ φ' hφ
-  obtain ⟨C₂, h₂⟩ := GlobalTheory.T.cuspFormSmoothSpan_norm_le_shortRationalVector E a π' hπ ψ (Or.inr hφ) [] (latt a J) (GlobalTheory.RSTheta.isCompact_latt J) {1}
+  obtain ⟨ψ, rfl, -, -, B, hB⟩ := _root_.GlobalTheory.JSW.mspanR_smooth E a GlobalTheory.CuspOrth.cuspFormsBounded π' hπ φ' hφ
+  obtain ⟨C₂, h₂⟩ := _root_.GlobalTheory.MSpanDecay.norm_le_of_short_vector_mspanR E a π' hπ ψ (Or.inr hφ) [] (latt a J) (GlobalTheory.RSTheta.isCompact_latt J) {1}
     isCompact_singleton 1
   refine ⟨C₁ * (K * |B| * |C₂|), fun g => ?_⟩
   have hδ := GlobalTheory.RSnm.detAbs_pos g
@@ -130,7 +157,7 @@ theorem lintegral_low_ne_top : ∀ (E : Type) [Field E] [NumberField E] [_root_.
   intro E _ _ _ m π' hπ φ' hφ G hG μ _ 𝓕 h𝓕 x hx
   obtain ⟨C, hC⟩ := exists_bound hπ hφ hG
   have hi : IntegrableOn (fun g : GA E (m + 1) => GlobalTheory.RSnm.detAbs g ^ (x - 1))
-      (𝓕 ∩ {g | GlobalTheory.RSnm.detAbs g ≤ 1}) μ := GlobalTheory.T.integrableOn_absDet_rpow_le_one_fundamentalDomain E (m + 1) m.succ_pos μ 𝓕 h𝓕 (x - 1) (by linarith)
+      (𝓕 ∩ {g | GlobalTheory.RSnm.detAbs g ≤ 1}) μ := _root_.GlobalTheory.RSThetaLow.integrableOn_absDet_rpow_low E (m + 1) m.succ_pos μ 𝓕 h𝓕 (x - 1) (by linarith)
   refine ne_top_of_le_ne_top (hi.const_mul C).2.ne (lintegral_mono fun g => ?_)
   have hδ := GlobalTheory.RSnm.detAbs_pos g
   refine (mul_le_mul_left (hC g) _).trans ?_

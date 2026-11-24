@@ -1,6 +1,46 @@
 module
 
 public import Development.EtaleCohomology.TateTwists.EtaleSimplicialCochainExistsFromNaturalSections
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
 
 @[expose] public section
 
@@ -17,10 +57,10 @@ lemma cob_altsum (k : ℕ) : ∑ i : Fin k, (-1 : ℤ) ^ (i : ℕ) = if k % 2 = 
     rcases Nat.even_or_odd k with ⟨j, rfl⟩ | ⟨j, rfl⟩
     · have : (j + j) % 2 = 0 := by omega
       have h2 : (j + j + 1) % 2 ≠ 0 := by omega
-      simp [this, h2, ← two_mul, pow_mul]
+      simp [← two_mul, pow_mul]
     · have : (2 * j + 1) % 2 ≠ 0 := by omega
       have h2 : (2 * j + 1 + 1) % 2 = 0 := by omega
-      simp [this, h2, pow_succ, pow_mul]
+      simp [h2, pow_succ, pow_mul]
 
 lemma cob_map_zsmul {R : Type} [CommRing R] {F G : Shv R} (φ : F ⟶ G) {U : Scheme.{0}} (c : ℤ) (z : Sec F U) :
     Sec.map φ (c • z) = c • Sec.map φ z := by
@@ -111,5 +151,5 @@ theorem LateralTheory.EtaleFoundations.etaleSimplicialScheme_cocycle_vanishing_a
     · have h1 : (2 * j + 1 + 1) % 2 = 0 := by omega
       have h2 : (2 * j + 1 + 2) % 2 = 1 := by omega
       have h3 : (2 * j + 1) % 2 = 1 := by omega
-      simp only [cobB, h1, h2, h3, ↓reduceIte, one_ne_zero, one_smul, smul_smul]
+      simp only [cobB, h1, h2, h3, ↓reduceIte, one_ne_zero, smul_smul]
       rw [if_neg (by omega), cob_map_zero, zero_add, one_mul, hεε, one_smul]

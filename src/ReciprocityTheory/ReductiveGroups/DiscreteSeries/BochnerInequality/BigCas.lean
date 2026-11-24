@@ -1,7 +1,54 @@
 module
 
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.Permute
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.BigRep
-public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.BigCasA
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -104,7 +151,7 @@ theorem factorCasimir_ncV_one {F : Big n 1 M} (hF : F ∈ ncV ε V 1) :
     · by_cases h2 : q = b
       · subst h2
         simp [h1, hz _ _ hpq, fun x => hz x x rfl]
-      · simp [h1, h2, fun x => hz x x rfl]
+      · simp [h1, h2]
   · have hpq' : p ≠ q := fun h => hpq (h ▸ rfl)
     trans ∑ a, ∑ b ∈ univ.filter (fun b => ε b = ε a),
       ((if p = a then F (fun _ => (p, q)) else 0) + (if q = b then F (fun _ => (p, q)) else 0))
@@ -114,10 +161,10 @@ theorem factorCasimir_ncV_one {F : Big n 1 M} (hF : F ∈ ncV ε V 1) :
         by_cases h2 : q = b
         · subst h2
           simp [hpq', Ne.symm hpq']
-        · simp [h2, hpq', Ne.symm hpq']
+        · simp [h2, Ne.symm hpq']
       · by_cases h2 : q = b
         · subst h2
-          simp [h1, hpq', Ne.symm hpq']
+          simp [h1, hpq']
         · simp [h1, h2]
     · simp only [Finset.sum_add_distrib]
       have h1 : ∑ a, ∑ b ∈ univ.filter (fun b => ε b = ε a),
@@ -136,12 +183,7 @@ theorem factorCasimir_ncV_one {F : Big n 1 M} (hF : F ∈ ncV ε V 1) :
           Finset.filter_congr fun a _ => hbool _ _ _ hpq
         rw [hf]
         first
-          | rw [Finset.filter_card_add_filter_neg_card_eq_card, Finset.card_univ, Fintype.card_fin]
           | rw [Finset.card_filter_add_card_filter_not, Finset.card_univ, Fintype.card_fin]
-          | rw [← Finset.card_union_of_disjoint (Finset.disjoint_filter_filter_neg _ _ _),
-              Finset.filter_union_filter_neg_eq, Finset.card_univ, Fintype.card_fin]
-          | rw [← Finset.card_union_eq_card_add_card.2 (Finset.disjoint_filter_filter_neg _ _ _),
-              Finset.filter_union_filter_neg_eq, Finset.card_univ, Fintype.card_fin]
       rw [h1, h2, ← add_smul, hcard, Nat.cast_smul_eq_nsmul]
 
 theorem factorCasimir_nonneg (k : ℕ) (F : Big n k M) :
@@ -153,11 +195,11 @@ theorem factorCasimir_nonneg (k : ℕ) (F : Big n k M) :
     simp only [LinearMap.sum_apply, sum_inner, inner_sum, factorAd_adjoint]
   unfold factorCasimir casimirK
   beta_reduce
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [LinearMap.sum_apply, sum_inner, map_sum]
+
+  rw [LinearMap.sum_apply, sum_inner, map_sum]
   refine Finset.sum_nonneg fun a _ => ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [LinearMap.sum_apply, sum_inner, map_sum]
+
+  rw [LinearMap.sum_apply, sum_inner, map_sum]
   refine Finset.sum_nonneg fun b _ => ?_
   rw [Module.End.mul_apply, hadj]
   exact inner_self_nonneg
@@ -280,8 +322,8 @@ theorem crossOp_mem_ncV (hV : IsKStableSub ε E V) (k : ℕ) (i : Fin k) {F : Bi
     refine forall_congr' fun j => ?_
     by_cases hj : j = i
     · subst hj
-      simp [Function.update_apply, h1, h2]
-    · simp [Function.update_apply, hj]
+      simp [h1, h2]
+    · simp [hj]
   have hval : (crossOp ε E k i F) κ = ∑ a, ∑ b ∈ univ.filter (fun b => ε b = ε a),
       ((if (κ i).1 = a then E b a (F (Function.update κ i (b, (κ i).2))) else 0) -
         (if (κ i).2 = b then E b a (F (Function.update κ i ((κ i).1, a))) else 0)) := by

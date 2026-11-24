@@ -1,5 +1,53 @@
 module
 
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.HeightIntegralEstimates
+public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.LaTIsPrime
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.HeightTheory.KTFiniteDimensional
 
 @[expose] public section
@@ -84,8 +132,8 @@ theorem sH_rel (hd : d.AxH 𝒜) (c : ι) (i : Fin d.D) :
         (C (ratio (Ω := Ω c) (d.w j c) (d.w (d.jc c) c))) := fun j => (d.algC c _).symm
   have hx : ∀ k, ratio (Ω := Ω c) (d.w ((d.jc c).succAbove k) c) (d.w (d.jc c) c) = d.x c k :=
     fun k => rfl
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp_rw [hr, d.sH_eq, ← map_mul, ← map_sum]
+
+  simp_rw [hr, d.sH_eq, ← map_mul, ← map_sum]
   rw [Fin.sum_univ_succAbove _ (d.jc c)]
   simp only [sHp, MvPolynomial.aeval_X, pImg, sac_self, sac_succAbove, ratio_self (hd.w_base c),
     Fin.succ_ne_zero, if_false, hx, MvPolynomial.C_1, mul_one, neg_add_cancel, map_zero]
@@ -124,8 +172,8 @@ theorem evP_sHp (c : ι) (sg : K →+* ℂ) (pt : TVar d.D d.N → ℂ) (hd : d.
           have h1 := heq i'
           rw [Fin.sum_univ_succAbove _ (d.jc c), ratio_self (hd.w_base c), map_one, mul_one] at h1
           simp only [hx] at h1
-          set_option synthInstance.maxHeartbeats 100000 in
-            simp only [evP, map_neg, map_sum, map_mul, eval₂Hom_X', eval₂Hom_C, Sum.elim_inr]
+
+          simp only [evP, map_neg, map_sum, map_mul, eval₂Hom_X', eval₂Hom_C, Sum.elim_inr]
           linear_combination -h1
       · rw [sac_succAbove]
         simp [evP]
@@ -159,8 +207,8 @@ theorem emb_mem_ST (σ : OmS (Ω c) d.D d.N →+* ℂ) (hσ : σ.comp (d.KTtoS h
     rw [RingHom.comp_apply, RingHom.comp_apply, ← IsScalarTower.algebraMap_apply]
     exact h1
   · have h2 := congrArg σ (d.sH_rel hd c i)
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, map_zero] at h2
+
+    rw [map_sum, map_zero] at h2
     simp only [map_mul, d.emb_sH h c sg pt hpt σ hσ, eval₂_X] at h2
     simpa only [RingHom.comp_apply] using h2
 

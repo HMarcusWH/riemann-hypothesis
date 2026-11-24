@@ -1,6 +1,7 @@
 module
 
-public import Mathlib
+public import Mathlib.RingTheory.DiscreteValuationRing.Basic
+public import Mathlib.RingTheory.Localization.Away.Basic
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem goal1 :
     calc z * algebraMap V (FractionRing V) (ϖ ^ n)
         = z * (algebraMap V (FractionRing V) (↑u : V) * algebraMap V (FractionRing V) (↑u⁻¹ : V))
             * algebraMap V (FractionRing V) (ϖ ^ n) := by rw [hu, mul_one]
-      _ = _ := by ring
+      _ = _ := by ac_rfl
   · intro x y h
     exact ⟨1, by rw [hinj h]⟩
 

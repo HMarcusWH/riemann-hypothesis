@@ -1,11 +1,51 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.GlobalTheory.GL3.Statement
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.OrderOfSignGroupDvdTwo
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.CardTrivialFirstComponent
 public import Formalism.SharpRestriction.RamificationFrobenius.TotientGaloisClasses.FrameFacts
 public import Formalism.SharpRestriction.RamificationFrobenius.TotientGaloisClasses.HostFacts
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -29,8 +69,8 @@ private def sS (z w : VC D N N') : ℂ := ∑ τ, ∑ i, ∑ j, z τ i j * (star
 private theorem Hf_eq (T : Tor D) (z w : VC D N N') : Hf D T z w = sS z w / (area T.abelian₂ : ℂ) := rfl
 
 private theorem sS_swap (z w : VC D N N') : sS w z = (starRingEnd ℂ) (sS z w) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [sS, map_sum, map_mul, starRingEnd_self_apply]
+
+  simp only [sS, map_sum, map_mul, starRingEnd_self_apply]
   exact Finset.sum_congr rfl fun τ _ => Finset.sum_congr rfl fun i _ =>
     Finset.sum_congr rfl fun j _ => mul_comm _ _
 
@@ -194,8 +234,8 @@ theorem sum_emb_zero {ι : Type*} [Fintype ι] (b : ι → D.host.E) (g : ι →
   obtain ⟨τ, rfl | rfl⟩ := emb_cases D φ
   · exact h τ
   · have h1 := congrArg (starRingEnd ℂ) (h τ)
-    set_option synthInstance.maxHeartbeats 100000 in
-      simpa [map_sum, map_mul, Complex.conj_ofReal] using h1
+
+    simpa [map_sum, map_mul, Complex.conj_ofReal] using h1
 
 theorem card_tau : Fintype.card D.what₂.Tau = 2 * D.R.ord := by
   rw [← Nat.card_eq_fintype_card, Nat.card_congr D.eTau, Formalism.HC.Frame.natCard_Psi]
@@ -640,7 +680,7 @@ theorem La_lower {N N' : ℕ} (L : Submodule (𝓞 D.host.E) (Fin N → D.host.E
       convert h1 using 1
       funext τ i j
       simp only [ins, Pi.neg_apply]
-      split_ifs <;> simp <;> ring
+      split_ifs <;> simp
 
 theorem span_La {N N' : ℕ} (L : Submodule (𝓞 D.host.E) (Fin N → D.host.E))
     (L' : Submodule (𝓞 D.host.E) (Fin N' → D.host.E)) (hA : admitted D N N' L L')

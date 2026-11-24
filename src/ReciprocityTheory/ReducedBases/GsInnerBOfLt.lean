@@ -1,6 +1,48 @@
 module
 
-public import Mathlib
+public import Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Ring.IsFormallyReal
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -36,8 +78,6 @@ lemma b_sub_gs_mem (b : Fin d → E) (k : Fin d) : b k - gs b k ∈ span ℝ (b 
   apply hsub
   first
     | exact Submodule.coe_mem _
-    | exact Submodule.starProjection_apply_mem _ _
-    | simp
 
 lemma inner_gs_span (b : Fin d → E) (k : Fin d) {y : E} (hy : y ∈ span ℝ (b '' Set.Iio k)) :
     ⟪gs b k, y⟫_ℝ = 0 := by
@@ -107,7 +147,6 @@ private lemma mu_mul_norm_gs_sq (b : Fin d → E) (hb : LinearIndependent ℝ b)
   unfold mu
   first
     | exact div_mul_cancel₀ _ hne
-    | field_simp
 
 lemma b_eq_sum (b : Fin d → E) (hb : LinearIndependent ℝ b) (i : Fin d) :
     b i = ∑ j, mu b i j • gs b j := by
@@ -131,19 +170,15 @@ lemma sum_smul_b (b : Fin d → E) (hb : LinearIndependent ℝ b) (c : Fin d →
         refine Finset.sum_congr rfl fun j _ => ?_
         rw [nu, Finset.sum_smul]
 
-lemma inner_gs_sum (b : Fin d → E) (x : Fin d → ℝ) (j : Fin d) :
-    ⟪gs b j, ∑ k, x k • gs b k⟫_ℝ = x j * ‖gs b j‖ ^ 2 := by
-  exact inner_gs_sum_smul_gs b x j
-
 lemma inner_gs_comb (b : Fin d → E) (hb : LinearIndependent ℝ b) (c : Fin d → ℝ) (j : Fin d) :
     ⟪gs b j, ∑ l, c l • b l⟫_ℝ = nu b c j * ‖gs b j‖ ^ 2 := by
-  rw [sum_smul_b b hb c, inner_gs_sum]
+  rw [sum_smul_b b hb c, _root_.ReciprocityTheory.ReducedBases.T2.inner_gs_sum_smul_gs]
 
 lemma norm_sq_comb (b : Fin d → E) (hb : LinearIndependent ℝ b) (c : Fin d → ℝ) :
     ‖∑ l, c l • b l‖ ^ 2 = ∑ j, nu b c j ^ 2 * ‖gs b j‖ ^ 2 := by
   rw [sum_smul_b b hb c, ← real_inner_self_eq_norm_sq, sum_inner]
   refine Finset.sum_congr rfl fun j _ => ?_
-  rw [real_inner_smul_left, inner_gs_sum]
+  rw [real_inner_smul_left, _root_.ReciprocityTheory.ReducedBases.T2.inner_gs_sum_smul_gs]
   ring
 
 end ReciprocityTheory.ReducedBases.T2

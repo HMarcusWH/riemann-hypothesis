@@ -1,13 +1,48 @@
 module
 
 public import PositivityTheory.AutomorphicForms.PublishedInputs.NonzeroTypes.NonzeroBasicTwistOfSpecialForm
-public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SupercuspidalSupportUniqueGL
+import Development.AbelianVarietyTheory.Definitions.Divisors.T2SpaceGeneralLinearGroup
+import Development.AbelianVarietyTheory.Definitions.TwistedInnerProducts.NotInSupportOfSubsingleton
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.ExistsEquivProdIrrTw
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.HasSupportOfIsSubquotientProdIrr
 public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.IsSubquotientUnramPrinSeriesOfHasSupport
+public import Development.AbelianVarietyTheory.Proofs.InertiaEigenvalues.SupercuspidalSupportUniqueGL
 public import Development.AbelianVarietyTheory.Proofs.SatakeParameters.ParabolicInductionTensorProductHasFiniteLength
-public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.SchurAdmissibleAlt
-public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.ExistsCovBySubmodule
-public import Development.AbelianVarietyTheory.Definitions.Divisors.T2SpaceGeneralLinearGroup
+import Development.AbelianVarietyTheory.Proofs.TwistedOperators.ExistsCovBySubmodule
+import Development.AbelianVarietyTheory.Proofs.TwistedOperators.SchurAdmissibleAlt
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
 
 @[expose] public section
 
@@ -74,7 +109,7 @@ theorem isIrreducible_piTensor_twD (hBZ : GlobalTheory.Published.BernsteinZelevi
     (hs : ∀ a, IsSmooth (G.twD τ a)) (hi : ∀ a, (G.twD τ a).IsIrreducible) :
     (piTensor (G.twD τ)).IsIrreducible := by
   refine GlobalTheory.ProdFiniteLength.piTensor_isIrreducible_of_schur _ hi fun a => ?_
-  exact GlobalTheory.SchurAdm.schur_admissible _ (KO k (Fin (G.d a))) GlobalTheory.SplitFlip.isOpen_KO
+  exact _root_.GlobalTheory.SchurAdmissibility.schur_admissible _ (KO k (Fin (G.d a))) GlobalTheory.SplitFlip.isOpen_KO
     GlobalTheory.SplitFlip.isCompact_KO _ _ (hi a) ((hBZ k).1 (Fin (G.d a)) _ _ (hs a) (hi a))
 
 theorem hasSupport_twD {Y : Fin G.s → Type} [∀ a, AddCommGroup (Y a)] [∀ a, Module ℂ (Y a)]
@@ -101,11 +136,31 @@ open P_spSupp
 variable {k : Type} [Field k] [ValuativeRel k] [TopologicalSpace k] [IsNonarchimedeanLocalField k]
   {n : ℕ}
 
+/-- Reordering the characters of a principal series preserves irreducible subquotients. -/
+def SpecialOrderProp : Prop :=
+  GlobalTheory.Published.GeometricLemma → GlobalTheory.Published.ZelevinskyPolynomialRing →
+  GlobalTheory.Published.BernsteinZelevinskyFiniteness →
+  ∀ (V : Type) [AddCommGroup V] [Module ℂ V] (π : Representation ℂ (GL (Fin n) k) V),
+    IsSmooth π → π.IsIrreducible → ∀ c : Fin n → kˣ →* ℂˣ, (∀ i, IsSmoothChar (c i)) →
+    ∀ σ : Equiv.Perm (Fin n), IsSubquotient π (prinSeries (fun i => c (σ i))) →
+      IsSubquotient π (prinSeries c)
+
+/-- Supercuspidal-support step for the special form. -/
+def SpecialSupportProp (G : Grp k n) : Prop :=
+  SpecialOrderProp (k := k) (n := n) →
+  GlobalTheory.Published.GeometricLemma → GlobalTheory.Published.ZelevinskyPolynomialRing →
+  GlobalTheory.Published.BernsteinZelevinskyFiniteness →
+  ∀ (V : Type) [AddCommGroup V] [Module ℂ V] (π : Representation ℂ (GL (Fin n) k) V),
+    IsSmooth π → π.IsIrreducible →
+    ∀ (Y : Fin G.s → Type) [∀ a, AddCommGroup (Y a)] [∀ a, Module ℂ (Y a)]
+      (τ : ∀ a, Representation ℂ (GL (Fin (G.d a)) k) (Y a)),
+      (∀ a, IsSmooth (τ a)) → (∀ a, (τ a).IsIrreducible) →
+      ∀ ν : ∀ a, Fin (G.d a) → kˣ →* ℂˣ, (∀ a j, IsSmoothChar (ν a j)) →
+      (∀ a, IsCuspSupport (τ a) (fun _ : Fin (G.d a) => 1) (fun j => detRep (Fin 1) (ν a j))) →
+      IsSubquotient (piTensor τ) (jacU G.e π) → IsSubquotient π (prinSeries (G.cOf ν))
+
 theorem step_spSupp (G : Grp k n) : G.SpecialSupportProp := by
-  intro hOrd hLit V _ _ π hπs hπi Y _ _ τ hτs hτi ν hν hcs hjac
-  have hG := hLit.loc.geo
-  have hZ := hLit.loc.zel
-  have hBZ := hLit.loc.bz
+  intro hOrd hG hZ hBZ V _ _ π hπs hπi Y _ _ τ hτs hτi ν hν hcs hjac
   have hs' : ∀ a, IsSmooth (G.twD τ a) := fun a =>
     isSmooth_twist (hτs a) (isSmoothChar_absPow _).detChar
   have hi' : ∀ a, (G.twD τ a).IsIrreducible := fun a => GlobalTheory.LocGL.isIrreducible_twist (hτi a) _
@@ -158,6 +213,6 @@ theorem step_spSupp (G : Grp k n) : G.SpecialSupportProp := by
   have h1 : IsSubquotient π (multiProd e fun a => detRep (Fin 1) (G.cOf ν (σ a))) :=
     he.trans (.of_injective φ.toIntertwiningMap φ.toLinearEquiv.injective)
   have h2 := h1.trans (GlobalTheory.PermPrin.isSubquotient_multiProd_prinSeries e fun a => G.cOf ν (σ a))
-  exact hOrd hLit V π hπs hπi (G.cOf ν) hc σ h2
+  exact hOrd hG hZ hBZ V π hπs hπi (G.cOf ν) hc σ h2
 
 end UpperTheory.TNZ.Grp

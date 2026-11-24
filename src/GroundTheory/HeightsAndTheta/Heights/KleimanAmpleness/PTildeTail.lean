@@ -1,9 +1,52 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.Statements
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.StatementsTildeTail
 public import GroundTheory.HeightsAndTheta.Heights.KleimanAmpleness.PTildeTailLoc
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -60,8 +103,8 @@ theorem FinGradedSub.cellCone_cocycle {z : Cech.Cochain (locSys S N M.coneSub) 0
     change ({a, b} : Finset (Fin (N + 1))).erase j = K.1.1
     rw [hj, ha, Finset.pair_comm, Finset.erase_insert (Finset.notMem_singleton.mpr (Ne.symm hab))]
   have h0 := congrArg (M.cellCone Kp.1) (congrFun hz Kp)
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [Cech.d_apply, map_sum, Pi.zero_apply, map_zero] at h0
+
+  rw [Cech.d_apply, map_sum, Pi.zero_apply, map_zero] at h0
   have hterm : ∀ j : Kp.1.1, M.cellCone Kp.1 (Cech.sgn Kp.1.1 j • locResS (Cech.face Kp j).1 Kp.1
       (Cech.face_subset Kp j) (z (Cech.face Kp j))) =
       Cech.sgn Kp.1.1 j • M.cellCone (Cech.face Kp j).1 (z (Cech.face Kp j)) := by
@@ -229,8 +272,8 @@ theorem TildeTail.proof (h : SerreTail.Statement.{u, w}) : TildeTail.Statement.{
     · intro d; rw [map_zero, map_zero]; exact zero_mem _
     · intro a b _ _ ha hb d; rw [map_add (f := _), map_add (f := _)]; exact add_mem (ha d) (hb d)
     · intro p a _ ha d
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_smul, ← sum_homogeneousComponent p, Finset.sum_smul, map_sum]
+
+      rw [map_smul, ← sum_homogeneousComponent p, Finset.sum_smul, map_sum]
       refine Submodule.sum_mem _ fun k _ => ?_
       rw [coeffAt_smul_of_isHomogeneous (homogeneousComponent_isHomogeneous k p)]
       exact hmulSp _ k (homogeneousComponent_isHomogeneous k p) d _ (ha (d - k))

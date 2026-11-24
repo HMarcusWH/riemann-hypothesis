@@ -1,6 +1,57 @@
 module
 
 public import ReciprocityTheory.AnalyticForms.MaIntEmpty
+public import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Algebra.Order.Archimedean.Real.Hom
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.LocallyConvex.AbsConvexOpen
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Analysis.Calculus.ContDiff.Comp
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
 
 @[expose] public section
 
@@ -87,8 +138,8 @@ theorem lv_sum_right (a v : Fin D → ℂ) :
   rw [← vec_eq_sum] at this
   simp only [map_smul, smul_eq_mul] at this
   have h := congrArg (starRingEnd ℂ) this
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [ℓ, LinearMap.coe_mk, AddHom.coe_mk, Complex.conj_conj, map_sum, map_mul] at h
+
+  simp only [ℓ, LinearMap.coe_mk, AddHom.coe_mk, Complex.conj_conj, map_sum, map_mul] at h
   exact h
 
 theorem lv_expand (u v : Fin D → ℂ) :
@@ -230,14 +281,14 @@ theorem fderiv_sum_normSq :
     ((sqForm D).hasFDerivAt_of_bilinear (hasFDerivAt_id w) (hasFDerivAt_id w)).fderiv
   rw [h]
   ext v
-  simp [add_comm]
+  simp
 
 theorem sqForm_single (i j : Fin D) (a b : ℂ) :
     sqForm D (Pi.single i a) (Pi.single j b) = if i = j then inner ℝ a b else 0 := by
   rw [sqForm_apply, Finset.sum_eq_single i]
   · by_cases h : i = j
     · subst h; simp
-    · simp [h, Pi.single_apply, Ne.symm h]
+    · simp [h]
   · intro k _ hk; simp [hk]
   · simp
 
@@ -257,9 +308,9 @@ theorem complexHessian_sum_normSq_coord (z : Fin D → ℂ) :
     ContinuousLinearMap.flip_apply, smul_single_one, sqForm_single]
   by_cases hij : i = j
   · subst hij
-    simp [Matrix.one_apply, Complex.inner]
+    simp [Complex.inner]
     norm_num
-  · simp [Matrix.one_apply, hij, Ne.symm hij]
+  · simp [hij, Ne.symm hij]
 
 end SqForm
 

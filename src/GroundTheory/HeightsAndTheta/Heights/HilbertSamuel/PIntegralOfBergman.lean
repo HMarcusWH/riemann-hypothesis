@@ -1,7 +1,56 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsBergman
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.CStarAlgebra.Module.Constructions
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Separation.CompletelyRegular
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -207,8 +256,8 @@ lemma iSup_ratio_eq {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
     intro s
     have hs : ℓ s = ∑ a, ⟪b a, s⟫_ℂ * ℓ (b a) := by
       conv_lhs => rw [← b.sum_repr' s]
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp [map_sum, map_smul]
+
+      simp [map_sum, map_smul]
     have h1 : ‖ℓ s‖ ≤ ∑ a, ‖⟪b a, s⟫_ℂ‖ * ‖ℓ (b a)‖ := by
       rw [hs]
       exact (norm_sum_le _ _).trans (le_of_eq (by simp))
@@ -232,8 +281,8 @@ lemma iSup_ratio_eq {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
     simp only [hc, RCLike.norm_conj]
     exact hSdef.symm
   have hl : ℓ s0 = (S : ℂ) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [hs0, map_sum, hSdef, Complex.ofReal_sum]
+
+    rw [hs0, map_sum, hSdef, Complex.ofReal_sum]
     refine Finset.sum_congr rfl fun a _ => ?_
     rw [map_smul, smul_eq_mul, Complex.conj_mul', Complex.ofReal_pow]
   apply le_antisymm (ciSup_le hbound)

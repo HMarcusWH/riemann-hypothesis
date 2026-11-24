@@ -1,10 +1,52 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.DiscreteSeries.DiscreteSeriesClassification.DiscreteSeriesExhaustion.MatrixCoefficientDecay.InfinitesimalCharacterPaths.TensDecomp
-public import Formalism.RealPlaceAnalysis.ThirdArithmeticHolds
-public import Formalism.FlagUnipotentLattices.MinkowskiFactorialBounds.AntisymmetrizedProductEqFactorialSmulQdet
 public import CompanionTheory.SpectralGeometry.LocalGlobalProofs.HermitianCharacters.CharacteristicIdentity
+public import Formalism.RealPlaceAnalysis.RealPlaceTaylor.ShiftedGeneratorEqIteSmulAdd
+public import Formalism.RealPlaceAnalysis.ThirdArithmeticHolds
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -28,8 +70,7 @@ theorem term_two_by_two_exchange {A : Type} [Ring A] [Algebra ℂ A] {n : ℕ} (
     Tm E y p c * Tm E x q d - Tm E y q c * Tm E x p d - Tm E y p d * Tm E x q c + Tm E y q d * Tm E x p c := by
   simp only [Tm, Algebra.algebraMap_eq_smul_one]
   split_ifs <;>
-    simp only [add_mul, mul_add, smul_mul_assoc, mul_smul_comm, one_mul, mul_one, zero_add, zero_mul,
-      mul_zero, add_zero, smul_smul, smul_zero, zero_smul] <;>
+    simp only [add_mul, mul_add, smul_mul_assoc, mul_smul_comm, one_mul, mul_one, zero_add] <;>
     module
 
 theorem list_prod_ofFn_update_adjacent {A : Type} [Ring A] {t : ℕ} (f g : Fin t → A) (i : ℕ) (hi : i + 1 < t)
@@ -317,8 +358,8 @@ theorem coeff_mem_span (G : B[X]) (i : ℕ) :
     apply Polynomial.funext
     intro u
     have h0 : ℓ (G.eval (algebraMap ℂ B u)) = 0 := hker (Submodule.subset_span ⟨u, rfl⟩)
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [eval_eq_sum, Polynomial.sum, map_sum] at h0
+
+    rw [eval_eq_sum, Polynomial.sum, map_sum] at h0
     rw [eval_zero, ← h0, eval_finsetSum]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [← map_pow, ← Algebra.commutes, ← Algebra.smul_def, map_smul, eval_monomial, smul_eq_mul,
@@ -453,8 +494,8 @@ theorem colOp_apply (M : Fin n → Fin n → Module.End ℂ V) (w : Fin n → V)
 theorem colOp_mul (M N : Fin n → Fin n → Module.End ℂ V) :
     colOp M * colOp N = colOp (fun a d => ∑ b, M a b * N b d) := by
   refine LinearMap.ext fun w => funext fun i => ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [mul_apply_eq_comp, colOp_apply, map_sum, LinearMap.sum_apply]
+
+  simp only [mul_apply_eq_comp, colOp_apply, map_sum, LinearMap.sum_apply]
   exact Finset.sum_comm
 
 def diagHom : Module.End ℂ V →ₐ[ℂ] Module.End ℂ (Fin n → V) where
@@ -553,8 +594,8 @@ theorem resolvent {m : ℕ} (M : GMod (m + 1)) (u : ℂ) :
 theorem commute_diag_om (M : GMod n) (T : Module.End ℂ M.V) (h : ∀ a b, Commute T (M.E a b)) :
     Commute (diagHom T) (om M) := by
   refine LinearMap.ext fun w => funext fun b => ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [mul_apply_eq_comp, diagHom_apply, om_apply, map_sum]
+
+  simp only [mul_apply_eq_comp, diagHom_apply, om_apply, map_sum]
   refine Finset.sum_congr rfl fun a _ => ?_
   exact LinearMap.congr_fun (h a b).eq (w a)
 

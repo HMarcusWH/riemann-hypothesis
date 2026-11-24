@@ -1,10 +1,48 @@
 module
 
-public import Mathlib
 public import GroundTheory.AutomorphicForms.UnitaryAdmissible.Scalar
 public import GroundTheory.AutomorphicForms.TensorProductTheorem.NonemptyAdelicDecomposition
 public import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.GKStableCartan
 public import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.GKStableLaplacian
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -131,8 +169,8 @@ theorem casimirOp_gkModuleCusp {ι : Type*} [Fintype ι]
     (b : Module.Basis ι ℝ (isExpLieAlgebra K n).lieSubalgebra) (ε : ι → ℝ) :
     casimirOp (gkModuleCusp K n) b ε = uActionCusp K n (casimir b ε) := by
   unfold casimirOp casimir
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [map_smul, map_mul]
   rfl
@@ -215,9 +253,9 @@ theorem aeval_laplacian_eq_zero {d : ℕ}
     have e1 : L ψ = ω • ψ + ∑ i, (1 - ε i) • uActionCusp K n (UniversalEnvelopingAlgebra.ι ℝ (b i))
           (uActionCusp K n (UniversalEnvelopingAlgebra.ι ℝ (b i)) ψ) := by
       show uActionCusp K n (laplacianU K n b) ψ = _
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [laplacianU_eq_casimir_add b ε, map_add (f := _), LinearMap.add_apply, hω _ hψ, map_sum,
-        LinearMap.sum_apply]
+
+      rw [laplacianU_eq_casimir_add b ε, map_add (f := _), LinearMap.add_apply, hω _ hψ, map_sum,
+      LinearMap.sum_apply]
       congr 1
       refine Finset.sum_congr rfl fun i _ => ?_
       rw [map_smul, map_mul, LinearMap.smul_apply, Module.End.mul_apply]
@@ -237,8 +275,8 @@ theorem aeval_laplacian_eq_zero {d : ℕ}
   rw [e2, aeval_apply_eq_of_eqOn (L - ω • 1) B U hAU hAB q φ.2]
   have h3 := AutomorphicForm.map_aeval_apply_of_intertwine U.subtype
     (A := ∑ i, M.ρ (lapZ b ε i) * M.ρ (lapZ b ε i)) (B := B) (fun x => by
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp only [B, LinearMap.sum_apply, Module.End.mul_apply, map_sum]
+
+      simp only [B, LinearMap.sum_apply, Module.End.mul_apply, map_sum]
       rfl) q φ
   rw [Submodule.subtype_apply, Submodule.subtype_apply, hq] at h3
   exact h3.symm.trans rfl

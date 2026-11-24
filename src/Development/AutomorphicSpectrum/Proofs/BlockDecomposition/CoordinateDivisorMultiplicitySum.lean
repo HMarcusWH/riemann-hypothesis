@@ -1,16 +1,59 @@
 module
 
-public import Mathlib
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.IsSmoothHermCombLine
-public import Development.AutomorphicSpectrum.Proofs.DivisibilityProofs.CoheightEqOneOfDimClosure
 public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.ExistsLineBundleSectionsGenerateIdealSheaf
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ClosedSubschemeModLProjective
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.DimOfIsArithVar
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.PointIdealMultiprojectivePrime
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.SpecializesIffPointIdealLe
-public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MultiprojectivePrimeEqPointIdeal
+public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.HeightOrbitChart
 public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.DictExistsPtIdealEqBot
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MultiprojectivePrimeEqPointIdeal
+public import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.PointIdealMultiprojectivePrime
 public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitChartMult
+import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitChartMultLemmas
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Ideal.KrullsHeightTheorem
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.TypeStar
+import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.BirationalGeometry.InterDivSupp
+import Std.Tactic.BVDecide.Normalize.Prop
+import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.FinsumLengthMulLogCardEqNegLogAdicAbvNorm
+import Development.AutomorphicSpectrum.Proofs.BlockDecomposition.MixedCycleRationalExists
 
 @[expose] public section
 
@@ -60,19 +103,11 @@ theorem eps_X_chart {Z : Scheme.{0}} (f : Z ⟶ MP ℤ m n) (c : ∀ k, Bk n k) 
     eps f c (X ⟨k, c k⟩) = 1 := by
   rw [eps_X, GlobalTheory.CompanionTheory.MPDict.Spec.mratio_self, map_one]
 
-theorem dehomog_surj (c : ∀ k, Bk n k) : Function.Surjective (dehomog c) := by
-  intro v
-  have hle : Subring.closure (Set.range (mratio c)) ≤ (dehomog c).range := by
-    rw [Subring.closure_le]
-    rintro _ ⟨q, rfl⟩
-    exact ⟨X q, dehomog_X c q⟩
-  exact hle ((GlobalTheory.CompanionTheory.MPDict.Spec.closure_mratio c) ▸ Subring.mem_top v)
-
 theorem eps_surjective {Z : Scheme.{0}} (f : Z ⟶ MP ℤ m n) [IsClosedImmersion f] (c : ∀ k, Bk n k) :
     Function.Surjective (eps f c) := by
   intro v
   obtain ⟨s, rfl⟩ := f.app_surjective _ (GlobalTheory.CompanionTheory.MPDict.Spec.isAffineOpen_mchart c) v
-  obtain ⟨F, rfl⟩ := dehomog_surj c s
+  obtain ⟨F, rfl⟩ := _root_.GlobalTheory.CompanionTheory.MixZ.ExRat.dehomog_surjective c s
   exact ⟨F, rfl⟩
 
 @[simp] theorem gam_X {Z : Scheme.{0}} (f : Z ⟶ MP ℤ m n) (c : ∀ k, Bk n k) (p : Σ k, Bk n k) :
@@ -90,8 +125,8 @@ theorem gam_of_form {Z : Scheme.{0}} (f : Z ⟶ MP ℤ m n) (c : ∀ k, Bk n k) 
   classical
   conv_lhs => rw [F.as_sum]
   conv_rhs => rw [F.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, map_sum, Finset.sum_mul]
+
+  rw [map_sum, map_sum, map_sum, Finset.sum_mul]
   refine Finset.sum_congr rfl fun e he => ?_
   have he' : ∀ k, ∑ i, e ⟨k, i⟩ = d k := fun k => by
     rw [← GroundTheory.Heights₂.Heights.weight_coordDeg_apply, hF (mem_support_iff.mp he)]
@@ -222,32 +257,12 @@ namespace GlobalTheory.CompanionTheory.MixZ.DivCyc
 variable {m : ℕ} {n : Fin (m + 1) → ℕ}
 open GroundTheory.Heights₂.Heights (coordDeg localQuotLength)
 
-theorem length_quot_ringEquiv {A B : Type*} [CommRing A] [CommRing B] (e : A ≃+* B) (a : A) :
-    Module.length A (A ⧸ Ideal.span {a}) = Module.length B (B ⧸ Ideal.span {e a}) := by
-  letI : Algebra A B := e.toRingHom.toAlgebra
-  have hsurj : Function.Surjective (algebraMap A B) := e.surjective
-  rw [← Module.length_eq_of_surjective (S := A) (R := B) (M := B ⧸ Ideal.span {e a}) hsurj]
-  have hI : (Ideal.span {a}).map (e : A →+* B) = Ideal.span {e a} := by
-    rw [Ideal.map_span, Set.image_singleton]
-    rfl
-  let q : (A ⧸ Ideal.span {a}) ≃+* (B ⧸ Ideal.span {e a}) := Ideal.quotientEquiv _ _ e hI.symm
-  let ql : (A ⧸ Ideal.span {a}) ≃ₗ[A] (B ⧸ Ideal.span {e a}) :=
-    { q.toAddEquiv with
-      map_smul' := fun r x => by
-        obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective x
-        show q (r • Ideal.Quotient.mk _ b) = r • q (Ideal.Quotient.mk _ b)
-        have h1 : r • (Ideal.Quotient.mk (Ideal.span {a}) b) = Ideal.Quotient.mk _ (r * b) := rfl
-        have h2 : ∀ y : B, r • (Ideal.Quotient.mk (Ideal.span {e a}) y) = Ideal.Quotient.mk _ (e r * y) := fun y => rfl
-        have h3 : ∀ y : A, q (Ideal.Quotient.mk _ y) = Ideal.Quotient.mk _ (e y) := fun y => rfl
-        rw [h1, h3, h3, h2, map_mul] }
-  exact ql.length_eq
-
 theorem length_quot_of_isLocalization {O S : Type*} [CommRing O] [CommRing S] [Algebra O S] (p : Ideal O) [p.IsPrime]
     [IsLocalization.AtPrime S p] (g : O) :
     Module.length S (S ⧸ Ideal.span {algebraMap O S g}) =
       Module.length (Localization.AtPrime p) (Localization.AtPrime p ⧸ Ideal.span {algebraMap O (Localization.AtPrime p) g}) := by
   let e : Localization.AtPrime p ≃ₐ[O] S := IsLocalization.algEquiv p.primeCompl _ _
-  rw [length_quot_ringEquiv e.toRingEquiv]
+  rw [_root_.GlobalTheory.OrderNorm.length_quot_ringEquiv e.toRingEquiv]
   have : e.toRingEquiv (algebraMap O _ g) = algebraMap O S g := e.commutes g
   rw [this]
 

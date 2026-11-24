@@ -1,15 +1,19 @@
 module
 
-public import Mathlib
+public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
+public import Mathlib.Algebra.Field.Defs
+import Mathlib.NumberTheory.NumberField.Basic
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 @[expose] public section
 
-open NumberField IsDedekindDomain Module
+open NumberField Module
 
 namespace Bl.PeriodicFunctions
 
 variable {K : Type} [Field K]
 
+omit [Field K] in
 private theorem periodic_apply_mul_add (M : ℕ) (g : ℕ → K) (hg : ∀ i, g (i + M) = g i) (k x : ℕ) :
     g (M * k + x) = g x := by
   induction k with

@@ -1,7 +1,47 @@
 module
 
 public import Formalism.SharpRestriction.GrowthBounds.ScaleEdges.FramesOf
-public import Formalism.PolynomialDimension.FinalNum
+public import Formalism.PolynomialDimension.StatementNum
+public import Formalism.SharpRestriction.GrowthBounds.ScaleEdges.ManyEdges
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -51,7 +91,7 @@ structure Basic (p n' m r : ℕ) (TT : Finset (Fin n')) (L₁ : ℕ) (de h x a Y
   two_le_Y : 2 ≤ Y
 
 
-set_option maxHeartbeats 800000 in
+
 theorem hyps_basic {C : ℝ} (hC : 1 ≤ C) {p n' m r : ℕ} {TT : Finset (Fin n')} {L₁ L₂ : ℕ} {de h x : ℝ}
     {lam0 : Fin n' → Fin (m + 1) → ℤ} {aT bT : Fin n' → ℤ} {a Y : ℝ} {cpp c0 Dp cStar : ℕ}
     (H : Hyps C p n' m r TT L₁ L₂ de h x lam0 aT bT a Y cpp c0 Dp cStar) :
@@ -193,19 +233,12 @@ section Fr
 
 variable {n' r : ℕ} [NeZero n']
 
-theorem fr_mono {F : Frames n' r} {L₁ N₁ : ℕ} (hV : F.Valid L₁ N₁) (j : ℤ) : ∀ i, i < r → F.fr j 0 ≤ F.fr j i := by
-  obtain ⟨_, _, hmono, _⟩ := hV
-  intro i hi
-  induction i with
-  | zero => exact le_rfl
-  | succ k ih => exact le_trans (ih (by omega)) (le_of_lt (hmono j k (by omega)))
-
 theorem Qj_le {TT : Finset (Fin n')} {L₁ L₂ N₁ G' : ℕ} {F : Frames n' r} (hF : FramesOK TT L₁ L₂ N₁ G' F)
     (hr : 1 ≤ r) (p : ℕ) (hp : 1 ≤ p) (j : ℤ) : Qj F p j ≤ p ^ G' := by
   obtain ⟨_, hV, hGap, _⟩ := hF
   have h1 := hGap (j + 1)
   rw [add_sub_cancel_right] at h1
-  have h2 := fr_mono hV j (r - 1) (by omega)
+  have h2 := _root_.Formalism.MainNotions.G.WittFrameLocaliserOrders.frame_first_entry_le hV j (r - 1) (by omega)
   show p ^ (zF F (j + 1) - zF F j).toNat ≤ p ^ G'
   apply Nat.pow_le_pow_right hp
   show (F.fr (j + 1) (r - 1) - F.fr j (r - 1)).toNat ≤ G'
@@ -289,7 +322,7 @@ def GainBoundAt (CLa Crk Cdeg : ℝ) (p n' : ℕ) [NeZero n'] (O : Type) [CommRi
 def E0 (p r k N₁ G' c' : ℕ) : ℕ := 15 * c' * (N₁ + r * k) * (p ^ G') ^ 2
 
 
-set_option maxHeartbeats 800000 in
+
 theorem symbol_space_at (D : Formalism.BasicNotions.D7) (CLa Ck Crk Cdeg : ℝ) (h26 : Formalism.MainNotions.SelectionLemmas.Conclusion2 D CLa Ck Crk Cdeg) :
     ∃ C₁ : ℝ, 1 ≤ C₁ ∧ ∀ C : ℝ, C₁ ≤ C →
     ∀ (p : ℕ) (W Qq O Kf : Type) [CommRing W] [IsDomain W] [IsDiscreteValuationRing W] [Field Qq] [Algebra W Qq]
@@ -441,7 +474,7 @@ theorem symbol_space_at (D : Formalism.BasicNotions.D7) (CLa Ck Crk Cdeg : ℝ) 
     linarith
 
 
-set_option maxHeartbeats 800000 in
+
 theorem hypII_at (CLa' CD Csz : ℝ) :
     ∃ C₁ : ℝ, 1 ≤ C₁ ∧ ∀ C : ℝ, C₁ ≤ C →
     ∀ (p n' m r : ℕ) [NeZero n'] (TT : Finset (Fin n')) (L₁ L₂ : ℕ) (de h x : ℝ)
@@ -480,7 +513,6 @@ theorem hypII_at (CLa' CD Csz : ℝ) :
     unfold Real.logb
     rw [mul_div_assoc']
     gcongr
-    all_goals first | exact hlp.le | exact hlogc
   have hlogb0 : 0 ≤ Real.logb p (⌈a⌉₊ : ℝ) := Real.logb_nonneg hp1 (by linarith)
   have hlogba : 0 ≤ Real.logb p a := Real.logb_nonneg hp1 (by linarith)
   refine ⟨?_, ?_⟩

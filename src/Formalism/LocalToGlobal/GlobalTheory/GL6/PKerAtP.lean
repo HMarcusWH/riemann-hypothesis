@@ -1,10 +1,51 @@
 module
 
-public import Formalism.LocalToGlobal.UnitaryNorms.UnramT
-public import Formalism.LocalToGlobal.GlobalTheory.GL6.PDnDil
-public import Formalism.LocalToGlobal.GlobalTheory.GL6.PBwLcInt
+public import Formalism.LocalToGlobal.GlobalTheory.EqGlobOfHat
+public import Formalism.LocalToGlobal.HermitianForms.PrkSmul
+public import Formalism.LocalToGlobal.GlobalTheory.GL6.PBwLocBases
+public import Formalism.LocalToGlobal.GlobalTheory.GL6.PBwLocGen
+public import Formalism.LocalToGlobal.GlobalTheory.GL6.PRLocV
 public import Formalism.LocalToGlobal.GlobalTheory.GL6.PRLocW
-public import Formalism.LocalToGlobal.GlobalTheory.GL4.PFrames
+public import Formalism.LocalToGlobal.UnitaryNorms.RamificationIdxEqOneOfNotDvd
+public import Formalism.LocalToGlobal.UnitaryNorms.UnramT
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -112,7 +153,7 @@ theorem sf_mulVec_smul {n : ℕ} (v : HeightOneSpectrum (𝓞 F))
   ring
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem sf_of_gen {n : ℕ} (v : HeightOneSpectrum (𝓞 F)) (L2 Lb : Submodule (𝓞 E) (Fin n → E))
     {Mm : Type} [AddCommGroup Mm] [Module (intV E v) Mm]
     (f : latS (F := F) (v.adicCompletion F) (intV E v) Lb →ₗ[intV E v] Mm)
@@ -196,7 +237,7 @@ theorem sf_bc_eq {n : ℕ} (v : HeightOneSpectrum (𝓞 F)) (y1 y2 : GL (Fin n) 
   rfl
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem sf_two {n : ℕ} (v : HeightOneSpectrum (𝓞 F)) (L1 L2 Lb : Submodule (𝓞 E) (Fin n → E))
     {Mm : Type} [AddCommGroup Mm] [Module (intV E v) Mm]
     (f : latS (F := F) (v.adicCompletion F) (intV E v) Lb →ₗ[intV E v] Mm)

@@ -1,6 +1,49 @@
 module
 
-public import Formalism.LocalToGlobal.CharacterGerms.RowTiePCEqSum2
+public import Formalism.LocalToGlobal.CharacterGerms.RowTieFB
+public import Formalism.FormalGroupLog.FormalGroupLogProofs.ChainRule
+public import Formalism.LocalToGlobal.CharacterGerms.RowTieCartFB
+public import Formalism.LocalToGlobal.CharacterGerms.RowTiePGerm
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import Formalism.LocalToGlobal.CharacterGerms.RowTiePCEqOf
 
 @[expose] public section
 
@@ -88,8 +131,8 @@ theorem pderiv_uncurry (f : PS C 1 dd) (i : Fin dd) :
 theorem uncurry_linear_combination (r : Fin dd → C) (f : Fin dd → PS C 1 dd) :
     un1 (∑ i, MvPowerSeries.C (r i) * f i) = ∑ i, MvPowerSeries.C (r i) * un1 (f i) := by
   simp only [uncurry_eq_subst]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← MvPowerSeries.coe_substAlgHom hasSubst_snd, map_sum]
+
+  rw [← MvPowerSeries.coe_substAlgHom hasSubst_snd, map_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [map_mul, MvPowerSeries.coe_substAlgHom, MvPowerSeries.subst_C]
 
@@ -111,8 +154,8 @@ theorem ev_pt_dF (Y : FBChart C V O dd) (v : Fin dd → C) (g' : Fin 2) (j : Fin
 theorem pderiv_lin {κ : Type} [Fintype κ] (X : RawChart C d I κ) (g : Fin 2) (k : I g) (i : κ) :
     MvPowerSeries.pderiv (R := C) k (∑ c : I g, X.u g c i • (MvPowerSeries.X c : MvPowerSeries (I g) C)) =
       MvPowerSeries.C (X.u g k i) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, Finset.sum_eq_single k]
+
+  rw [map_sum, Finset.sum_eq_single k]
   · rw [Derivation.map_smul, MvPowerSeries.pderiv_X_self, MvPowerSeries.smul_eq_C_mul, mul_one]
   · intro c _ hc
     rw [Derivation.map_smul, MvPowerSeries.pderiv_X_of_ne hc, smul_zero]

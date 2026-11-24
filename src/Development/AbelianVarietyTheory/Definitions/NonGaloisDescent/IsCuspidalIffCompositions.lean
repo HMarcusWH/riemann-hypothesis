@@ -1,10 +1,58 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.Divisibility.DefGroup
 public import Development.AbelianVarietyTheory.PublishedTheorems.PublishedFoundations.BlockTriangularOfSubOne
 public import Development.AbelianVarietyTheory.Definitions.Foundations.SmoothPartStable
 public import Development.AbelianVarietyTheory.Definitions.Divisors.SplitDoublingNBlock
+public import Mathlib.LinearAlgebra.Matrix.Permutation
+public import Mathlib.LinearAlgebra.PiTensorProduct.Basic
+public import Mathlib.RepresentationTheory.FDRep
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.Fin.Tuple.Sort
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -396,16 +444,16 @@ theorem bijective_fixed_mkQ (ρ : Representation ℂ G V) (U : Subgroup G) [Fini
     obtain ⟨v, rfl⟩ := Submodule.mkQ_surjective _ q
     have hf : (Fintype.card U : ℂ)⁻¹ • S v ∈ fixed ρ U := by
       refine Submodule.smul_mem _ _ (mem_fixed.2 fun n hn => ?_)
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [hS, map_sum]
+
+      rw [hS, map_sum]
       exact Fintype.sum_equiv (Equiv.mulLeft (⟨n, hn⟩ : U)) _ _ fun u => by simp
     refine ⟨⟨_, hf⟩, ?_⟩
     show (twKer ρ U 1).mkQ ((Fintype.card U : ℂ)⁻¹ • S v) = _
     have h2 : ∀ u : U, (twKer ρ U 1).mkQ (ρ u v) = (twKer ρ U 1).mkQ v := fun u =>
       (Submodule.Quotient.eq _).2 (Submodule.subset_span ⟨u, v, by simp⟩)
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_smul, hS, map_sum, Finset.sum_congr rfl fun u _ => h2 u, Finset.sum_const, Finset.card_univ,
-      ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀ hc, one_smul]
+
+    rw [map_smul, hS, map_sum, Finset.sum_congr rfl fun u _ => h2 u, Finset.sum_const, Finset.card_univ,
+    ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀ hc, one_smul]
 
 def Embeds (ρ : Representation ℂ G V) (σ : Representation ℂ G W) : Prop :=
   ∃ f : ρ.IntertwiningMap σ, Function.Injective f

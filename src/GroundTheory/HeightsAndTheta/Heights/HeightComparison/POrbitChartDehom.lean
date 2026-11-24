@@ -1,13 +1,56 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.HeightOrbitChartDehom
 public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.HeightOrbitChartMax
 public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.HeightOrbitChartQuot
-public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitCurve
-public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitCenterDivSuppLemmas
-public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PSupSpanMultiHomog
 public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PMinimalPrimeMultiHomog
+public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.PSupSpanMultiHomog
+public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitCenterDivSuppLemmas
+public import GroundTheory.HeightsAndTheta.Heights.HeightComparison.POrbitCurve
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.LocalProperties.Reduced
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import GroundTheory.HeightsAndTheta.Heights.DiscreteValuationNumbers.Objects
 
 @[expose] public section
 
@@ -63,13 +106,13 @@ theorem ker_dehomFrac
   have hz : ∀ k, classFrac V (X ⟨k, c k⟩) ≠ 0 := fun k h ↦ hc k ((classFrac_eq_zero_iff V _).mp h)
   have hle : V ⊔ chartOneIdeal c ≤ RingHom.ker (dehomFrac V c) := by
     refine sup_le (fun f hf ↦ ?_) (Ideal.span_le.mpr ?_)
-    set_option synthInstance.maxHeartbeats 100000 in
-      · rw [RingHom.mem_ker, ← sum_weightedHomogeneousComponent (w := coordDeg n) f,
-        finsum_eq_sum _ (weightedHomogeneousComponent_finsupp f), map_sum]
-        refine Finset.sum_eq_zero fun b _ ↦ ?_
-        rw [dehomFrac_of_isWeightedHomogeneous c _ b
-            (weightedHomogeneousComponent_isWeightedHomogeneous b f),
-          (classFrac_eq_zero_iff V _).mpr (hVh f hf b), zero_mul]
+
+    · rw [RingHom.mem_ker, ← sum_weightedHomogeneousComponent (w := coordDeg n) f,
+      finsum_eq_sum _ (weightedHomogeneousComponent_finsupp f), map_sum]
+      refine Finset.sum_eq_zero fun b _ ↦ ?_
+      rw [dehomFrac_of_isWeightedHomogeneous c _ b
+          (weightedHomogeneousComponent_isWeightedHomogeneous b f),
+        (classFrac_eq_zero_iff V _).mpr (hVh f hf b), zero_mul]
     · rintro _ ⟨k, rfl⟩
       rw [SetLike.mem_coe, RingHom.mem_ker, map_sub, map_one, dehomFrac, aeval_X]
       exact sub_eq_zero.mpr (div_self (hz k))

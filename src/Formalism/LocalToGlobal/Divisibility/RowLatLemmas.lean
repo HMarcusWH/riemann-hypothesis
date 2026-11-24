@@ -1,14 +1,61 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.Divisibility.RowLat
-public import Formalism.LocalToGlobal.Divisibility.ProjLemmas
+public import Formalism.LocalToGlobal.Divisibility.ClassSumLemmas
 public import Formalism.LocalToGlobal.Divisibility.FramesLemmas
+public import Formalism.LocalToGlobal.Divisibility.ProjLemmas
+import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.AuxStatement14
+import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.ClassSumDualGeOfFamily
+import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.LocBasis
+import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.ReductionLemmaFirst
 public import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.SecondStepGluing
-public import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.PlaceSumSquares
-public import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.LocBasis
-public import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.ConjTransposeEqOfPosDef
-public import Formalism.QuotientMetricDivisors.HermitianTwistDivisors.ReductionLemmaFirst
+import Mathlib.Algebra.AffineMonoid.UniqueSums
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.LinearAlgebra.Eigenspace.Triangularizable
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -223,8 +270,8 @@ variable {K : Type} [Field K] [NumberField K] [StarRing K] (S : CSD K)
 theorem gaMat_eq_toMatrix (a : MonoidAlgebra K G) :
     S.gaMat r a = LinearMap.toMatrix S.basis S.basis (S.gaOp r a) := by
   unfold CSD.gaMat CSD.gaOp CSD.actMat
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   simp only [map_smul]
 
 theorem gaMat_mulVec_equivFun (a : MonoidAlgebra K G) (φ : S.Forms) :
@@ -411,8 +458,8 @@ theorem part_top {v0 : InfinitePlace K} (hv0 : IsConjAt v0) {s : ℕ} (h : B.Ok 
   choose yy hyy using key
   have hsum : y = ∑ i, yy i := by
     apply B.toF_injective ℓ Z
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, Finset.sum_congr rfl fun i _ => hyy i]
+
+    rw [map_sum, Finset.sum_congr rfl fun i _ => hyy i]
     exact (sum_eigProj h.comm h.split _ hex h1).symm
   rw [hsum]
   refine Submodule.sum_mem _ fun i _ => Submodule.mem_iSup_of_mem i ?_
@@ -549,7 +596,7 @@ theorem gaMat_single (g : G) : B.S.gaMat B.r (MonoidAlgebra.single g 1) = B.S.ac
   rw [Finset.sum_eq_single g]
   · simp
   · intro b _ hb
-    simp [hb, Ne.symm hb]
+    simp [hb]
   · intro h
     exact absurd (Finset.mem_univ g) h
 
@@ -700,8 +747,8 @@ theorem sum_partPr (t : Bs.Tup) (hi : iSupIndep (Df.Qp t)) (ht : (⨆ p, Df.Qp t
     intro p
     unfold partPr
     rw [dif_pos (hc p)]
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp_rw [hp, ← map_sum]
+
+  simp_rw [hp, ← map_sum]
   rw [← LinearMap.toMatrix'_id]
   congr 1
   apply LinearMap.ext

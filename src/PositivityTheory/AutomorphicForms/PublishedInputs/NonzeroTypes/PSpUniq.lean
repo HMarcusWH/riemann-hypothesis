@@ -1,7 +1,42 @@
 module
 
 public import PositivityTheory.AutomorphicForms.PublishedInputs.NonzeroTypes.NonzeroBasicTwistOfSpecialForm
+public import Development.AbelianVarietyTheory.Definitions.NonGaloisDescent.MkMemAdmissibleAtIffCocycle
+import Development.AbelianVarietyTheory.Definitions.Divisors.T2SpaceGeneralLinearGroup
 public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.InSupportOfIsSubquotient
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -103,8 +138,8 @@ theorem avg_apply (ρ : Representation ℂ (LG G) W) (w : W) :
 theorem avg_intertwine {W' : Type} [AddCommGroup W'] [Module ℂ W'] {ρ : Representation ℂ (LG G) W}
     {ρ' : Representation ℂ (LG G) W'} (F : ρ.IntertwiningMap ρ') (w : W) :
     F (avg G U ρ w) = avg G U ρ' (F w) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [avg_apply, avg_apply, map_sum]
+
+  rw [avg_apply, avg_apply, map_sum]
   refine Finset.sum_congr rfl fun c _ => ?_
   rw [map_smul, F.isIntertwining]
 
@@ -141,8 +176,8 @@ theorem avg_mem_etaSp (ρ : Representation ℂ (LG G) W) {w : W}
     have h2 := eta_ne_zero G m
     have h3 := eta_ne_zero G (c.out : LG G)
     field_simp
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [avg_apply, map_sum, Finset.sum_congr rfl fun c _ => key c, ← Finset.smul_sum]
+
+  rw [avg_apply, map_sum, Finset.sum_congr rfl fun c _ => key c, ← Finset.smul_sum]
   congr 1
   exact Fintype.sum_equiv (MulAction.toPerm m') _ _ (fun c => rfl)
 

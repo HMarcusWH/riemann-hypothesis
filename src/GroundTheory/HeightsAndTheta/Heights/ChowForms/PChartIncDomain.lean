@@ -1,7 +1,49 @@
 module
 
-public import Mathlib
 public import GroundTheory.HeightsAndTheta.Heights.ChowForms.ImportsBis
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -64,8 +106,8 @@ theorem ker_aeval_eta (I : Ideal (MvPolynomial (Fin n) F)) (t : Fin n → F) (hI
       ∑ d ∈ Finset.range (g.totalDegree + 1), τ⁻¹ ^ d * aeval ξ (homogeneousComponent d g) := by
     intro g
     conv_lhs => rw [← sum_homogeneousComponent g]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     exact Finset.sum_congr rfl fun d _ => hhom _ _ (homogeneousComponent_isHomogeneous d g)
   apply le_antisymm
   · intro g hg
@@ -73,8 +115,8 @@ theorem ker_aeval_eta (I : Ideal (MvPolynomial (Fin n) F)) (t : Fin n → F) (hI
     set D := g.totalDegree
     set G := ∑ d ∈ Finset.range (D + 1), homogeneousComponent d g * linForm t ^ (D - d)
     have hGξ : aeval ξ G = τ ^ D * aeval (τ⁻¹ • ξ) g := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [hcomp, Finset.mul_sum, map_sum]
+
+      rw [hcomp, Finset.mul_sum, map_sum]
       refine Finset.sum_congr rfl fun d hd => ?_
       have hdD : d ≤ D := Nat.lt_succ_iff.mp (Finset.mem_range.mp hd)
       rw [map_mul, map_pow, ← mul_assoc, mul_comm (aeval ξ _)]
@@ -93,10 +135,10 @@ theorem ker_aeval_eta (I : Ideal (MvPolynomial (Fin n) F)) (t : Fin n → F) (hI
       rw [← sub_eq_zero, ← map_one (Ideal.Quotient.mk J), ← map_sub, Ideal.Quotient.eq_zero_iff_mem]
       exact Ideal.mem_sup_right (Ideal.mem_span_singleton_self _)
     have hG : Ideal.Quotient.mk J G = Ideal.Quotient.mk J g := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        simp only [G, map_sum, map_mul, map_pow, h1, one_pow, mul_one]
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [← map_sum, sum_homogeneousComponent]
+
+      simp only [G, map_sum, map_mul, map_pow, h1, one_pow, mul_one]
+
+      rw [← map_sum, sum_homogeneousComponent]
     rw [← Ideal.Quotient.eq_zero_iff_mem, ← hG, Ideal.Quotient.eq_zero_iff_mem]
     exact Ideal.mem_sup_left hGI
   · refine sup_le ?_ ?_

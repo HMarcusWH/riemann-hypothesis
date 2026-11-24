@@ -1,11 +1,54 @@
 module
 
-public import Mathlib
 public import GroundTheory.ProfiniteCohomology.RealPlaces.GSDefs
+public import GroundTheory.ProfiniteCohomology.PoincareDuality.Induced
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.Brauer
+import GroundTheory.GlobalFields.CompletionAtPlace.Integers
+import GroundTheory.ProfiniteCohomology.CohomologicalDimension.SubsingletonCohomologyOfPrimaryOfFinite
+import GroundTheory.ProfiniteCohomology.Colimit
+public import GroundTheory.ProfiniteCohomology.LocalClassFormation.FiniteVanishing.Vanishing
+public import GroundTheory.ProfiniteCohomology.RealPlaces.LocalDualityPlace
+public import GroundTheory.ProfiniteCohomology.RealPlaces.VanishingCriterion
 public import GroundTheory.ProfiniteCohomology.RealPlaces.VanishingIndex
 public import GroundTheory.ProfiniteCohomology.RestrictedRamification.Dimension
-public import GroundTheory.ProfiniteCohomology.Colimit
-public import GroundTheory.ProfiniteCohomology.RealPlaces.LocalDualityPlace
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -28,7 +71,7 @@ variable {K : FiniteSubfield} (S : Set (HeightOneSpectrum (𝓞 K.1)))
 section Local
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem subsingleton_cohomology_gsFinFamily_of_three_le {n : ℕ} (hn : n ≠ 0)
     (M : Rep.{0} (ULift.{0} ℤ) (galUnramifiedOutside K.1 ℚ̄ S)) [IsDiscreteRep M]
     (hM : ∀ m : M, n • m = 0) (v : S) {j : ℕ} (hj : 3 ≤ j) :
@@ -39,7 +82,7 @@ theorem subsingleton_cohomology_gsFinFamily_of_three_le {n : ℕ} (hn : n ≠ 0)
   exact_mod_cast hℓ.ne_zero
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem subsingleton_cohomology_real_of_odd (v : {v : InfinitePlace K.1 // v.IsReal}) {n : ℕ}
     (hn : Odd n) (A : Rep.{0} (ULift.{0} ℤ) Gal(AlgebraicClosure v.1.Completion / v.1.Completion))
     [IsDiscreteRep A] (hA : ∀ a : A, n • a = 0) {j : ℕ} (hj : 1 ≤ j) :

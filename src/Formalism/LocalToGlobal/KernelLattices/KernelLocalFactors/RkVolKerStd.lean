@@ -1,66 +1,41 @@
 module
 
-public import Formalism.LocalToGlobal.AlgebraicTheory.StatementEig
-public import Formalism.LocalToGlobal.AlgebraicTheory.StatementNorm
-public import Formalism.LocalToGlobal.KernelLattices.KerStd
 public import Formalism.LocalToGlobal.KernelLattices.ColumnData
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.BaseLinkOfNonzeroDelta
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.BaseExP
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ProvisionExtensionLink
-public import Mathlib
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.CardTrivialFirstComponent
-public import Formalism.SharpRestriction.RamificationFrobenius.TotientGaloisClasses.FrameFacts
-public import Development.AutomorphicArithmetic.WeightCongruences.IsRootOfIntegral
-public import Formalism.FrobeniusOrbits.FrobeniusOrbitsProofs.MuCardLeTwo
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.DetIdealsKernelNormOne
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.IsAdmissibleFlagPairOfUnitriangularLeftAutomorph
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.GMConjTranspose
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.MemSmulLat
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.NormOneUnitIdeal
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.Reduction
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.EqPOf
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SplitPairOfGen
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.JArith
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.JFinal
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SecondConstantOfTrianglesData
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.ZeroInjectionMemFourthPower
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.OneEntryMem
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.PullMulRight
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SecondConstantHolds
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.JNoEig
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.JNormOne
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.MemStandardThetaLatticeIffAdelicIdeal
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.FinrankRow
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.MuConc
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.MuFinal
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.NormOneUnitIdealAlt
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.CharacterFactorUnitaryAction
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.ReductionOf
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqFacts
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqFinal
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLComm
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLInput
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLLaw
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLMain
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLMat
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.SqLTop
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ColumnDataEquations.RightMoveTrianglesOfUnit
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.Family
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.HfArith
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.LinkThIndepOfGen
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.HermitianPairingIntegral
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.HfTrace
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.AmbOfENeSd
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.IopIso
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.IopNorm
-public import Formalism.LocalToGlobal.GlobalTheory.GL3.PFourSq
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.LinkThIndep
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.LinkThU
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.SelfDual
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.Smooth
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.StdLat
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.StdOKP
-public import Formalism.LocalToGlobal.KernelLattices.ColumnData.ThIndep
+public import Formalism.LocalToGlobal.AlgebraicTheory.StatementKer
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 

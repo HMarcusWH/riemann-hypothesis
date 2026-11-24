@@ -1,10 +1,63 @@
 module
 
-public import Mathlib
-public import Formalism.SubspaceCounting.ChoiceOfTopsRefined
-public import Formalism.SatakeDualWeyl.Statement
-public import Formalism.SatakeDualWeyl.StatementE
+public import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.Tjcosets
+public import Formalism.SubspaceCounting.StatementB
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.RingTheory.SimpleRing.Principal
 public import Formalism.SharpRestriction.GenusPolyhedralBounds.RelativeIndexClassSets.LevGapLoc
+public import Formalism.SubspaceCounting.ChoiceOfTopsRefined
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Coalgebra.IsFrobenius
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.HopfAlgebra.Basic
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Presheaf
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -121,7 +174,7 @@ theorem finrank_ker_mulVecLin {K : Type*} [Field K] {n : Type*} [Fintype n] [Dec
     finrank K (LinearMap.ker A.mulVecLin) = Fintype.card n - A.rank := by
   have h := LinearMap.finrank_range_add_finrank_ker A.mulVecLin
   rw [Module.finrank_pi] at h
-  have : A.rank = finrank K (LinearMap.range A.mulVecLin) := rfl
+  have : A.rank = finrank K (LinearMap.range A.mulVecLin) := (Matrix.finrank_range_mulVecLin A).symm
   omega
 
 theorem residue_unif_eq_zero {ϖ : O} (hϖ : Irreducible ϖ) : IsLocalRing.residue O ϖ = 0 := by
@@ -256,8 +309,12 @@ theorem rank_red {ϖ : O} (hϖ : Irreducible ϖ) {n : Type} [Fintype n] [Decidab
     rw [← Matrix.map_mul, hMM]
     ext i j
     simp [Matrix.smul_apply, residue_unif_eq_zero O hϖ]
+  have hrk : ∀ A : Matrix n n (IsLocalRing.ResidueField O),
+      finrank (IsLocalRing.ResidueField O) (LinearMap.range A.mulVecLin) = A.rank := by
+    intro A
+    exact Matrix.finrank_range_mulVecLin A
   have hr12 : r2 ≤ Fintype.card n - r1 := by
-    rw [hr2, ← finrank_ker_mulVecLin]
+    rw [hr2, ← finrank_ker_mulVecLin, ← hrk]
     apply Submodule.finrank_mono
     rintro x ⟨y, rfl⟩
     rw [LinearMap.mem_ker, Matrix.mulVecLin_apply, Matrix.mulVecLin_apply, Matrix.mulVec_mulVec, hz,
@@ -510,6 +567,10 @@ theorem card_filter_reps {ϖ : O} (hϖ : Irreducible ϖ) {n e : ℕ} {γ : GL (F
       Nat.card {U : Submodule (IsLocalRing.ResidueField O) (Fin n → IsLocalRing.ResidueField O) //
         finrank (IsLocalRing.ResidueField O) U = n - e ∧ P U} := by
   set K := Formalism.UG.GLint (Fin n) O
+  have hrk : ∀ A : Matrix (Fin n) (Fin n) (IsLocalRing.ResidueField O),
+      finrank (IsLocalRing.ResidueField O) (LinearMap.range A.mulVecLin) = A.rank := by
+    intro A
+    exact Matrix.finrank_range_mulVecLin A
   have htype : ∀ h ∈ R, IsType O ϖ e h := by
     intro h hh
     obtain ⟨k₁, hk₁, k₂, hk₂, rfl⟩ := hR.1 h hh
@@ -520,7 +581,7 @@ theorem card_filter_reps {ϖ : O} (hϖ : Irreducible ϖ) {n e : ℕ} {γ : GL (F
     obtain ⟨u, hu, hd⟩ := (htype h hh).det
     have := (rank_red O hϖ (htype h hh).int (htype h hh).intInv hu hd).2
     rw [Fintype.card_fin] at this
-    exact this
+    exact (hrk _).trans this
   have he : e ≤ n := by
     obtain ⟨u, hu, hd⟩ := hγ.det
     have := (rank_red O hϖ hγ.int hγ.intInv hu hd).1
@@ -533,13 +594,13 @@ theorem card_filter_reps {ϖ : O} (hϖ : Irreducible ϖ) {n e : ℕ} {γ : GL (F
     obtain ⟨u, hu, hd⟩ := h0.det
     have := (rank_red O hϖ h0.int h0.intInv hu hd).2
     rw [Fintype.card_fin] at this
-    exact this
+    exact (hrk _).trans this
   have hrγ : finrank (IsLocalRing.ResidueField O)
       (LinearMap.range (redM O (γ : Matrix (Fin n) (Fin n) L)).mulVecLin) = n - e := by
     obtain ⟨u, hu, hd⟩ := hγ.det
     have := (rank_red O hϖ hγ.int hγ.intInv hu hd).2
     rw [Fintype.card_fin] at this
-    exact this
+    exact (hrk _).trans this
 
   obtain ⟨g, hg, hgr⟩ := exists_GLint_map O h0.int _ (hr0.trans hrγ.symm)
   have hg0 : IsType O ϖ e (g * γ0) := by
@@ -608,7 +669,7 @@ theorem countBelow_zero_space {K : Type} [Field K] (A : Submodule K (Fin 0 → K
 
 theorem card_subspaces_eq {K : Type} [Field K] [Fintype K] {n k : ℕ} (hk : k ≤ n) :
     Nat.card {U : Submodule K (Fin n → K) // finrank K U = n - k ∧ True} = Formalism.G0.gaussBinom (Fintype.card K) n k := by
-  have H := Formalism.G0.Top.typeIIDown (F := K) (P := Fin 0 → K) (Q := Fin n → K) 0 0 n k (by simp) (by simp)
+  have H := _root_.Formalism.G0.countAboveRangeCodimFormula (F := K) (P := Fin 0 → K) (Q := Fin n → K) 0 0 n k (by simp) (by simp)
   have hL : Nat.card {U : Submodule K (Fin n → K) // LinearMap.range (0 : (Fin 0 → K) →ₗ[K] (Fin n → K)) ≤ U ∧
       finrank K U + k = 0 + n} = Nat.card {U : Submodule K (Fin n → K) // finrank K U = n - k ∧ True} := by
     apply Nat.card_congr
@@ -637,8 +698,6 @@ theorem card_reps {ϖ : O} (hϖ : Irreducible ϖ) [Fintype (IsLocalRing.ResidueF
   classical
   have h1 := card_filter_reps O hϖ hα hR (fun _ => True)
   first
-    | simp only [Finset.filter_True] at h1
-    | rw [Finset.filter_true_of_mem (fun _ _ => trivial)] at h1
     | simp only [Finset.filter_true_of_mem, implies_true] at h1
   obtain ⟨u, hu, hd⟩ := hα.det
   have hk : k ≤ n := by

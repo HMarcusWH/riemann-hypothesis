@@ -1,16 +1,57 @@
 module
 
-public import Mathlib
 public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerLocalDefs
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalRestriction
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.Splitting
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.SumInvariants
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.RealPlaces
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalDegrees
-public import GroundTheory.ProfiniteCohomology.ClassFormations.IsIsoCohomologyMapAlongResSubgroupOfHom
+public import GroundTheory.GlobalFields.NormResidueSymbol.CyclotomicCompositum
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.ResLocal
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerDefs
+import GroundTheory.ProfiniteCohomology.GaloisCohomology.BrauerInflation
 public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.CupDecompositionGlobal
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.RealPlaces
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.Splitting
 public import GroundTheory.ProfiniteCohomology.InflationRestriction
 public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerSplitLayers
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.SUnits
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.NumberField.Cyclotomic.Embeddings
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+public import GroundTheory.GlobalFields.CyclotomicCharacters.PadicUnitsLog
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalDegrees.Layers
 
 @[expose] public section
 
@@ -127,7 +168,7 @@ theorem gsRestrict_comp_galToFixing :
     (AlgEquiv.restrictNormal_commutes σ (maxUnramifiedOutside K.1 ℚ̄ S) y).symm
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem gsBrauerInfl_injective : Function.Injective (gsBrauerInfl K S 2).hom := by
   set_option backward.isDefEq.respectTransparency.instanceSearchTypes false in rw [injective_iff_map_eq_zero]
   intro x hx
@@ -177,7 +218,7 @@ theorem gsBrauerInfl_comp_unitsLocalRes (n : ℕ) :
 end Local
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem brauerLocal_gsBrauerInfl_inr (ιs : LocalEmbeddings K) (v : HeightOneSpectrum (𝓞 K.1))
     (x : cohomology (uliftIntToIntRep (galUnits K.1 (maxUnramifiedOutside K.1 ℚ̄ S))) 2) :
     brauerLocal ιs ((gsBrauerInfl K S 2).hom x) (.inr v) = (gsLocalRes S (ιs.fin v) 2).hom x := by

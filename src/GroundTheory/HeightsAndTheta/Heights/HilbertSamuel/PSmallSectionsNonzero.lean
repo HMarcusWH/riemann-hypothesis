@@ -1,7 +1,54 @@
 module
 
-public import Mathlib
+import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.PSectionBoundedMul
 public import GroundTheory.HeightsAndTheta.Heights.HilbertSamuel.StatementsSmallSectionsNonzero
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -103,46 +150,7 @@ theorem X_mem_mCoordIdeal (y : (Σ k, ι k) → Ω) (p : Σ k, ι k) (h0 : y p =
 theorem exists_form_of_mem_chartRingZ (y : (Σ k, ι k) → Ω) (c : ∀ k, ι k) (hc : ∀ k, y ⟨k, c k⟩ ≠ 0) {x : Ω}
     (hx : x ∈ chartRingZ y c) :
     ∃ (δ : K → ℕ) (e : MRing ι), IsMultiHomog e δ ∧ aeval y e = x * ∏ k, y ⟨k, c k⟩ ^ δ k := by
-  classical
-  have hpow : ∀ δ₁ δ₂ : K → ℕ, ∏ k, y ⟨k, c k⟩ ^ (δ₁ + δ₂) k =
-      (∏ k, y ⟨k, c k⟩ ^ δ₁ k) * ∏ k, y ⟨k, c k⟩ ^ δ₂ k := fun δ₁ δ₂ => by
-    rw [← Finset.prod_mul_distrib]
-    exact Finset.prod_congr rfl fun k _ => by rw [Pi.add_apply, pow_add]
-  rw [chartRingZ] at hx
-  induction hx using Algebra.adjoin_induction with
-  | mem x hx =>
-    obtain ⟨p, rfl⟩ := hx
-    obtain ⟨k₀, j⟩ := p
-    refine ⟨fun k => ∑ i, (Finsupp.single (⟨k₀, j⟩ : Σ k, ι k) 1) ⟨k, i⟩, X ⟨k₀, j⟩, ?_, ?_⟩
-    · have h := isMultiHomog_monomial (ι := ι) (Finsupp.single (⟨k₀, j⟩ : Σ k, ι k) 1) 1
-      rwa [← X] at h
-    · have h1 : ∏ k, y ⟨k, c k⟩ ^ (∑ i, (Finsupp.single (⟨k₀, j⟩ : Σ k, ι k) 1) ⟨k, i⟩) = y ⟨k₀, c k₀⟩ := by
-        simp only [sum_single_apply]
-        rw [Finset.prod_eq_single k₀ (fun k _ hk => by rw [if_neg (Ne.symm hk), pow_zero])
-          (fun h => absurd (Finset.mem_univ _) h)]
-        simp
-      rw [aeval_X, h1, div_mul_cancel₀ _ (hc k₀)]
-  | algebraMap r =>
-    refine ⟨fun _ => 0, C r, ?_, by simp⟩
-    have h := isMultiHomog_monomial (ι := ι) 0 r
-    simpa using h
-  | add x w _ _ hx hw =>
-    obtain ⟨δ₁, e₁, h₁, v₁⟩ := hx
-    obtain ⟨δ₂, e₂, h₂, v₂⟩ := hw
-    refine ⟨δ₁ + δ₂, e₁ * chartMono c δ₂ + e₂ * chartMono c δ₁, ?_, ?_⟩
-    · intro m hm
-      rcases Finset.mem_union.mp (support_add hm) with hm | hm
-      · exact isMultiHomog_mul h₁ (isMultiHomog_chartMono c δ₂) m hm
-      · rw [add_comm δ₁]
-        exact isMultiHomog_mul h₂ (isMultiHomog_chartMono c δ₁) m hm
-    · rw [map_add (f := _), map_mul, map_mul, v₁, v₂, aeval_chartMono, aeval_chartMono, hpow]
-      ring
-  | mul x w _ _ hx hw =>
-    obtain ⟨δ₁, e₁, h₁, v₁⟩ := hx
-    obtain ⟨δ₂, e₂, h₂, v₂⟩ := hw
-    refine ⟨δ₁ + δ₂, e₁ * e₂, isMultiHomog_mul h₁ h₂, ?_⟩
-    rw [map_mul, v₁, v₂, hpow]
-    ring
+  apply GroundTheory.Heights₂.Heights.HilbertSamuel.SectionBoundedMul.exists_form_of_mem_chartRingZ <;> assumption
 
 theorem exists_chartForm (y : (Σ k, ι k) → Ω) (a : K → ℤ) (n : ℕ) {s : Ω} (hs : s ∈ chartLat y a n)
     (c : ∀ k, ι k) (hc : ∀ k, y ⟨k, c k⟩ ≠ 0) :

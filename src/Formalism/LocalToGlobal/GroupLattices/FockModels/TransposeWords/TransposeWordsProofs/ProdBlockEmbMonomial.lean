@@ -1,7 +1,53 @@
 module
 
 public import Formalism.LocalToGlobal.GroupLattices.FockModels.TransposeWords.FockPairingHighestWeight
+import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
 public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LClosedeqLemmas
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Formalism.FockPairing
 
 @[expose] public section
 
@@ -18,75 +64,52 @@ section general
 variable {σ R : Type*} [CommRing R]
 
 lemma fockR_eq_sum (f g : MvPolynomial σ R) (s : Finset (σ →₀ ℕ)) (h : f.support ⊆ s) :
-    fockR f g = ∑ m ∈ s, f.coeff m * g.coeff m * ((∏ k ∈ m.support, (m k).factorial : ℕ) : R) := by
-  unfold fockR
-  apply Finset.sum_subset h
-  intro m _ hm
-  simp [MvPolynomial.notMem_support_iff.mp hm]
+    fockR f g = ∑ m ∈ s, f.coeff m * g.coeff m * ((∏ k ∈ m.support, (m k).factorial : ℕ) : R) :=
+  FockPairing.pair_eq_sum f g s h
 
-lemma fockR_symm (f g : MvPolynomial σ R) : fockR f g = fockR g f := by
-  classical
-  rw [fockR_eq_sum f g (f.support ∪ g.support) Finset.subset_union_left,
-    fockR_eq_sum g f (f.support ∪ g.support) Finset.subset_union_right]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  ring
+lemma fockR_symm (f g : MvPolynomial σ R) : fockR f g = fockR g f :=
+  FockPairing.pair_comm f g
 
 lemma fockR_add_left (f f' g : MvPolynomial σ R) :
-    fockR (f + f') g = fockR f g + fockR f' g := by
-  classical
-  rw [fockR_eq_sum _ _ (f.support ∪ f'.support) MvPolynomial.support_add,
-    fockR_eq_sum f g (f.support ∪ f'.support) Finset.subset_union_left,
-    fockR_eq_sum f' g (f.support ∪ f'.support) Finset.subset_union_right,
-    ← Finset.sum_add_distrib]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  simp only [MvPolynomial.coeff_add]; ring
+    fockR (f + f') g = fockR f g + fockR f' g :=
+  FockPairing.pair_add_left f f' g
 
 lemma fockR_smul_left (c : R) (f g : MvPolynomial σ R) :
-    fockR (c • f) g = c * fockR f g := by
-  classical
-  rw [fockR_eq_sum _ _ f.support (MvPolynomial.support_smul), fockR, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  simp only [coeff_smul, smul_eq_mul]; ring
+    fockR (c • f) g = c * fockR f g :=
+  FockPairing.pair_smul_left c f g
 
 lemma fockR_add_right (f g g' : MvPolynomial σ R) :
-    fockR f (g + g') = fockR f g + fockR f g' := by
-  rw [fockR_symm, fockR_add_left, fockR_symm g, fockR_symm g']
+    fockR f (g + g') = fockR f g + fockR f g' :=
+  FockPairing.pair_add_right f g g'
 
 lemma fockR_smul_right (c : R) (f g : MvPolynomial σ R) :
-    fockR f (c • g) = c * fockR f g := by
-  rw [fockR_symm, fockR_smul_left, fockR_symm g]
+    fockR f (c • g) = c * fockR f g :=
+  FockPairing.pair_smul_right c f g
 
-lemma fockR_zero_left (g : MvPolynomial σ R) : fockR 0 g = 0 := by
-  simp [fockR]
+lemma fockR_zero_left (g : MvPolynomial σ R) : fockR 0 g = 0 :=
+  FockPairing.pair_zero_left g
 
 lemma fockR_sum_left {ι : Type*} (t : Finset ι) (f : ι → MvPolynomial σ R) (g : MvPolynomial σ R) :
-    fockR (∑ i ∈ t, f i) g = ∑ i ∈ t, fockR (f i) g := by
-  classical
-  induction t using Finset.induction_on with
-  | empty => simp [fockR_zero_left]
-  | insert a t ha ih => rw [Finset.sum_insert ha, Finset.sum_insert ha, fockR_add_left, ih]
+    fockR (∑ i ∈ t, f i) g = ∑ i ∈ t, fockR (f i) g :=
+  FockPairing.pair_sum_left t f g
 
 lemma fockR_sum_right {ι : Type*} (t : Finset ι) (f : MvPolynomial σ R) (g : ι → MvPolynomial σ R) :
-    fockR f (∑ i ∈ t, g i) = ∑ i ∈ t, fockR f (g i) := by
-  rw [fockR_symm, fockR_sum_left]
-  exact Finset.sum_congr rfl fun i _ => fockR_symm _ _
+    fockR f (∑ i ∈ t, g i) = ∑ i ∈ t, fockR f (g i) :=
+  FockPairing.pair_sum_right t f g
 
 lemma fockR_monomial [DecidableEq (σ →₀ ℕ)] (m m' : σ →₀ ℕ) (a b : R) :
     fockR (monomial m a) (monomial m' b) =
       if m = m' then a * b * ((∏ k ∈ m.support, (m k).factorial : ℕ) : R) else 0 := by
   classical
-  rw [fockR_eq_sum _ _ {m} support_monomial_subset, Finset.sum_singleton, coeff_monomial, coeff_monomial]
+  change FockPairing.pair (monomial m a) (monomial m' b) = _
+  rw [FockPairing.pair_monomial_left, coeff_monomial]
   by_cases h : m = m'
-  · subst h; simp
-  · have h' : ¬ m' = m := fun e => h e.symm
-    simp [h, h']
+  · subst m'; simp [FockPairing.weight]
+  · simp [h, Ne.symm h]
 
 lemma fockR_map {S : Type*} [CommRing S] (φ : R →+* S) (f g : MvPolynomial σ R) :
-    fockR (map φ f) (map φ g) = φ (fockR f g) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [fockR_eq_sum _ _ f.support (support_map_subset φ f), fockR, map_sum]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  simp only [coeff_map, map_mul, map_natCast]
+    fockR (map φ f) (map φ g) = φ (fockR f g) :=
+  FockPairing.pair_map φ f g
 
 end general
 
@@ -145,8 +168,8 @@ lemma prod_blockEmb_expand [DecidableEq S] (F : S → MvPolynomial (Fin k × Fin
       = ∏ s, ∑ m ∈ (F s).support, blockEmb K s (monomial m (AddMonoidAlgebra.coeff (F s) m)) := by
         refine Finset.prod_congr rfl fun s _ => ?_
         conv_lhs => rw [(F s).as_sum]
-        set_option synthInstance.maxHeartbeats 100000 in
-          rw [map_sum]
+
+        rw [map_sum]
     _ = ∑ p ∈ Fintype.piFinset (fun s => (F s).support),
           ∏ s, blockEmb K s (monomial (p s) (AddMonoidAlgebra.coeff (F s) (p s))) := Finset.prod_univ_sum _ _
     _ = _ := Finset.sum_congr rfl fun p _ => prod_blockEmb_monomial _ _

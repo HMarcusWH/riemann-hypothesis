@@ -1,10 +1,40 @@
 module
 
-public import Mathlib
-public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.StrictHenselianAcyclic
-public import Development.AbelianVarietyTheory.Definitions.NonGaloisDescent.SignAtBasePlaceEqEmbedding
-public import Development.AbelianVarietyTheory.Definitions.NonGaloisDescent.NoFormsOff
-public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.PlaceModelImp
+public import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.CopyAll
+public import Development.AbelianVarietyTheory.Definitions.AutomorphicMembership.RingSpecNormalisedCharacterEq
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -14,24 +44,9 @@ open Formalism.BasicNotions Formalism.MainNotions Formalism.MainNotions.N Formal
 
 attribute [local instance] Formalism.BasicNotions.Host.cmStar
 
-set_option synthInstance.maxHeartbeats 400000
+
 
 namespace GlobalTheory.HeightCounting.SideCopy
-
-structure CopyAll (D D' : D7) (ι : D.what₂.LL →+* D'.what₂.LL) (e : ↥D'.LL0 ≃+* ↥D.LL0) : Prop where
-  cp : CopyTw D D' ι e
-  jL : HEq D.ntw.jL D'.ntw.jL
-  s2 : HEq D.ntw.s2 D'.ntw.s2
-  lamG : HEq D.ntw.lamG D'.ntw.lamG
-  Xv : HEq D.ntw.Xv D'.ntw.Xv
-  qs : HEq D.ntw.qs D'.ntw.qs
-  pl : HEq D.naut.plGw D'.naut.plGw
-
-structure SameFrame {D D' : D7} (cf : CharFrame D) (cf' : CharFrame D') : Prop where
-  mu0 : HEq cf.mu0 cf'.mu0
-  eta : HEq cf.eta cf'.eta
-  del : HEq cf.del cf'.del
-  del' : HEq cf.del' cf'.del'
 
 structure RingPart (D : D7) (cf : CharFrame D) (low : Finset ℕ) where
   twF : TwFrameC D
@@ -71,7 +86,7 @@ def RowEig (D : D7) (S : RatDat D.ntw) (eig : ℕ → D.what₂.FT → ℕ → P
 
 
 
-set_option maxHeartbeats 4000000 in
+
 set_option maxRecDepth 100000 in
 theorem sigSpan_copy {D D' : D7} {ι : D.what₂.LL →+* D'.what₂.LL} {e : ↥D'.LL0 ≃+* ↥D.LL0} (h : CopyAll D D' ι e)
     (hs : D.ntw.SigSpan) : D'.ntw.SigSpan := by

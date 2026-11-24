@@ -1,6 +1,6 @@
 module
 
-public import Mathlib
+public import Mathlib.NumberTheory.Padics.Complex
 
 @[expose] public section
 

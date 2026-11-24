@@ -1,7 +1,8 @@
 module
 
-public import Mathlib
-public import GroundTheory.GlobalFields.LocalAtPlace
+public import Mathlib.NumberTheory.LocalField.Basic
+public import Mathlib.NumberTheory.NumberField.Completion.FinitePlace
+import GroundTheory.GlobalFields.LocalAtPlace
 
 @[expose] public section
 

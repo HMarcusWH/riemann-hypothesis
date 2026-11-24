@@ -1,7 +1,52 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.UnitaryAdmissibility.ArchimedeanUnitaryDual.StSandwich
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.Analysis.Normed.Group.Ultra
 
 @[expose] public section
 
@@ -58,8 +103,8 @@ theorem lat_bdd {V' : Type} [AddCommGroup V'] [Module L V'] {Λ : AddSubgroup V}
   have hx' := (hb x).1 hx
   have key : c • P x = ∑ i, b.repr x i • (c • P (b i)) := by
     conv_lhs => rw [← b.sum_repr x]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [map_sum, map_smul, Finset.smul_sum]
+
+    simp only [map_sum, map_smul, Finset.smul_sum]
     exact Finset.sum_congr rfl fun i _ => smul_comm _ _ _
   rw [key]
   exact AddSubgroup.sum_mem _ fun i _ => lat_smul_mem hΛ₀ (hx' i) (hc i)
@@ -251,7 +296,6 @@ theorem restrict_isMax (hS : StSandwich) [ProperSpace L] [FiniteDimensional L V]
   have hlatU := restrict_isLat hS hh hδ0 he hf hef hU hΛ.1
   refine ⟨hlatU, fun x hx => hΛ.2.1 _ hx, fun N hN hNint hle => ?_⟩
   set P := prU hh hδ0 he hf hef hU with hP
-  have hPv : ∀ x, ((P x : U) : V) = pr hh δ e f x := fun _ => rfl
   set M := bigLat (ca hh δ f) (cb hh δ e) P N with hM
   have hΛM : Λ ≤ M := fun x hx => by
     obtain ⟨h1, h2, h3⟩ := coef_int hs hδ0 hh hΛ.1 hpair heΛ hfΛ hx

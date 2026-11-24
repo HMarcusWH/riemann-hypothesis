@@ -1,9 +1,53 @@
 module
 
 public import Development.AutomorphicArithmetic.CommutativeAlgebra.BconeDefs
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ChosenInjectiveResolutionEtaleSheafPropertiesStatement
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ChosenInjectiveResolutionEtaleSheafSectionsExactStatement
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.BigEtaleModuleSheafMonoEpiIffSectionsStatement
+public import Development.AbelianVarietyTheory.Definitions.Divisors.SecClass
+public import Mathlib.Algebra.Homology.HomotopyCategory.KInjective
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ChosenInjectiveResolutionEtaleSheafProperties
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ChosenInjectiveResolutionEtaleSheafSectionsExactStatement
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -17,10 +61,10 @@ private lemma exists_lift {M F : Shv ℤ} (g : M ⟶ (res ℤ F).X 0) (hg : g �
     ∃ f : M ⟶ F, f ≫ resι ℤ F = g := by
   classical
   have hinj : ∀ U : Scheme, Function.Injective (Sec.map (resι ℤ F) (U := U)) :=
-    fun U => (GlobalTheory.T.chosenInjectiveResolutionEtaleSheaf_sections_exactness ℤ F U).2.1
+    fun U => (_root_.GlobalTheory.EtC.resSec ℤ F U).2.1
   have hex : ∀ (U : Scheme) (x : Sec M U), ∃ a : Sec F U, Sec.map (resι ℤ F) a = Sec.map g x := by
     intro U x
-    refine ((GlobalTheory.T.chosenInjectiveResolutionEtaleSheaf_sections_exactness ℤ F U).1 _).1 ?_
+    refine ((_root_.GlobalTheory.EtC.resSec ℤ F U).1 _).1 ?_
     rw [← sec_comp, hg]
     rfl
   let φ : ∀ U : Scheme, Sec M U → Sec F U := fun U x => (hex U x).choose
@@ -51,7 +95,7 @@ private lemma exists_lift {M F : Shv ℤ} (g : M ⟶ (res ℤ F).X 0) (hg : g �
         refine n1.trans ?_
         refine Eq.trans ?_ n2.symm
         exact congrArg _ (hφ _ x).symm }
-  refine ⟨⟨η⟩, (GlobalTheory.T.bigEtaleModuleSheaf_mono_epi_iff_sections ℤ (⟨η⟩ ≫ resι ℤ F)).2.2.2 g (fun U a => ?_)⟩
+  refine ⟨⟨η⟩, (_root_.GlobalTheory.EtC.mono_epi_sections ℤ (⟨η⟩ ≫ resι ℤ F)).2.2.2 g (fun U a => ?_)⟩
   rw [sec_comp]
   exact hφ U a
 
@@ -60,8 +104,8 @@ private lemma sgl_f {M F : Shv ℤ} (f : M ⟶ F) :
     sglι M ≫ ((CochainComplex.singleFunctor (Shv ℤ) 0).map f ≫ resAug F).f 0 = f ≫ resι ℤ F := by
   rw [HomologicalComplex.comp_f, ← Category.assoc]
   have h : sglι M ≫ ((CochainComplex.singleFunctor (Shv ℤ) 0).map f).f 0 = f ≫ sglι F := by
-    simp [sglι, CochainComplex.singleFunctor, CochainComplex.singleFunctors, HomologicalComplex.single_map_f_self]
-  rw [h, Category.assoc, (GlobalTheory.T.chosenInjectiveResolution_etaleSheaf_properties ℤ F).2.2.2.2.1]
+    simp [sglι, CochainComplex.singleFunctor, HomologicalComplex.single_map_f_self]
+  rw [h, Category.assoc, (_root_.GlobalTheory.EtC.ResBasic.res_basic ℤ F).2.2.2.2.1]
 
 set_option backward.isDefEq.respectTransparency false in
 theorem UpperTheory.bijective_cl_hypercohomology_singleton_zero :
@@ -70,7 +114,7 @@ theorem UpperTheory.bijective_cl_hypercohomology_singleton_zero :
   have hz : ∀ p : ℤ, p ≠ 0 → IsZero ((sgl M).X p) := fun p hp =>
     HomologicalComplex.isZero_single_obj_X _ _ _ _ hp
   have hL : IsZero ((res ℤ F).X (-1)) := by
-    haveI := (GlobalTheory.T.chosenInjectiveResolution_etaleSheaf_properties ℤ F).2.2.1
+    haveI := (_root_.GlobalTheory.EtC.ResBasic.res_basic ℤ F).2.2.1
     exact CochainComplex.isZero_of_isStrictlyGE _ 0 (-1) (by norm_num)
   have hβ0 : ∀ β : Cochain (sgl M) (res ℤ F) (-1), β = 0 := by
     intro β
@@ -86,7 +130,7 @@ theorem UpperTheory.bijective_cl_hypercohomology_singleton_zero :
     apply Cocycle.ext
     rw [← hβ, hβ0 β, δ_zero]
     rfl
-  have hmono : Mono (resι ℤ F) := (GlobalTheory.T.chosenInjectiveResolution_etaleSheaf_properties ℤ F).2.2.2.2.2.1
+  have hmono : Mono (resι ℤ F) := (_root_.GlobalTheory.EtC.ResBasic.res_basic ℤ F).2.2.2.2.2.1
   have hsg : IsIso (sglι M) := by
     dsimp [sglι]
     infer_instance

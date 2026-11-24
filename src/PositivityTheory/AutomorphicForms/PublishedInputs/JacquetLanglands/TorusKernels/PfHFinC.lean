@@ -1,9 +1,57 @@
 module
 
 public import PositivityTheory.AutomorphicForms.PublishedInputs.JacquetLanglands.TorusKernels.IsHolVOf
-public import Development.AutomorphicArithmetic.AutomorphicVarieties.AutomorphicForms.TemperedLocalComponents.PCuspFin
-public import Development.AutomorphicArithmetic.AutomorphicVarieties.AutomorphicForms.TemperedLocalComponents.GlobFixed
+public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.HarishChandraFinite
 public import Development.AutomorphicArithmetic.AutomorphicVarieties.AutomorphicForms.KLevTop
+public import Development.AutomorphicArithmetic.AutomorphicVarieties.AutomorphicForms.TemperedLocalComponents.GlobFixed
+public import Development.AutomorphicArithmetic.AutomorphicVarieties.AutomorphicForms.TemperedLocalComponents.PCuspFin
+import Mathlib.Algebra.Module.StablyFree.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Algebra.Star.Unitary
+import Std.Tactic.BVDecide.Normalize.Prop
+import Development.AutomorphicArithmetic.AutomorphicVarieties.IdeleGenerators.ConstSmall
+public import Lean.Meta.ExprDefEq
 
 @[expose] public section
 
@@ -126,7 +174,7 @@ noncomputable def eps (s : InfinitePlace F → ℤˣ) : TR.Kinf F 2 :=
 omit [NumberField F] in
 theorem rot_add (θ η : TR.Rinf F) : rot (θ + η) = rot θ * rot η := by
   ext i j v
-  fin_cases i <;> fin_cases j <;> simp [rot, Matrix.mul_apply, Fin.sum_univ_succ, Real.cos_add, Real.sin_add] <;> ring
+  fin_cases i <;> fin_cases j <;> simp [rot, Real.cos_add, Real.sin_add] <;> ring
 
 omit [NumberField F] in
 theorem rot_zero : rot (0 : TR.Rinf F) = 1 := by
@@ -157,7 +205,7 @@ theorem dec (x : TR.Kinf F 2) : ∃ s θ, x = eps s * rot θ := by
     (by simpa using e 0 0 v) (by simpa using e 0 1 v) (by simpa using e 1 1 v)
   refine ⟨s, θ, ?_⟩
   ext i j v
-  fin_cases i <;> fin_cases j <;> simp [rot, eps, Matrix.mul_apply, Fin.sum_univ_succ, h1, h2, h3, h4]
+  fin_cases i <;> fin_cases j <;> simp [rot, eps, h1, h2, h3, h4]
 
 variable [IsTotallyReal F]
 
@@ -176,8 +224,8 @@ theorem rot_eig (φ : TR.Sm F 2) (z : InfinitePlace F → ℂ) (h : ∀ v, TR.Eo
     ext i j u
     fin_cases i <;> fin_cases j <;> simp [X, Finset.sum_apply, Pi.single_apply]
   have hL : TR.lie F 2 X φ = μ • φ := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [hX, map_sum, LinearMap.sum_apply, hμ, Finset.sum_smul]
+
+    rw [hX, map_sum, LinearMap.sum_apply, hμ, Finset.sum_smul]
     refine Finset.sum_congr rfl fun v _ => ?_
     rw [map_smul, map_sub, LinearMap.smul_apply, LinearMap.sub_apply, mul_comm, mul_smul, Complex.coe_smul, ← h v]
     simp only [TR.Eop]

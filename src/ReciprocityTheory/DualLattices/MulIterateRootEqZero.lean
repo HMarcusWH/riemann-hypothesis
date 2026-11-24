@@ -1,7 +1,48 @@
 module
 
-public import Mathlib
 public import ReciprocityTheory.DualLattices.CyclicRecursionStatement
+import Mathlib.RingTheory.WittVector.Complete
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -15,44 +56,11 @@ section Witt
 
 variable {p : ℕ} [hp : Fact p.Prime] {R : Type*} [CommRing R] [CharP R p] [PerfectRing R p]
 
-private lemma frob_bij : Function.Bijective (WittVector.frobenius : WittVector p R → WittVector p R) := by
-  constructor
-  · intro x y h
-    ext n
-    have h' := congrArg (fun z => WittVector.coeff z n) h
-    simp only [WittVector.coeff_frobenius_charP] at h'
-    apply (frobeniusEquiv R p).injective
-    rw [_root_.frobeniusEquiv_apply, _root_.frobeniusEquiv_apply, frobenius_def, frobenius_def]
-    exact h'
-  · intro x
-    refine ⟨WittVector.mk p (fun n => (frobeniusEquiv R p).symm (x.coeff n)), ?_⟩
-    ext n
-    rw [WittVector.coeff_frobenius_charP, WittVector.coeff_mk]
-    have h := (frobeniusEquiv R p).apply_symm_apply (x.coeff n)
-    rwa [_root_.frobeniusEquiv_apply, frobenius_def] at h
+lemma mem_span_p_iff (x : WittVector p R) : x ∈ span {(p : WittVector p R)} ↔ x.coeff 0 = 0 :=
+  WittVector.mem_span_p_iff_coeff_zero_eq_zero x
 
-lemma mem_span_p_iff (x : WittVector p R) : x ∈ span {(p : WittVector p R)} ↔ x.coeff 0 = 0 := by
-  constructor
-  · intro hx
-    obtain ⟨y, rfl⟩ := Ideal.mem_span_singleton'.mp hx
-    rw [← WittVector.verschiebung_frobenius, WittVector.verschiebung_coeff_zero]
-  · intro hx
-    obtain ⟨y, hy⟩ := (frob_bij (p := p) (R := R)).2 (WittVector.mk p (fun n => x.coeff (n + 1)))
-    refine Ideal.mem_span_singleton'.mpr ⟨y, ?_⟩
-    rw [← WittVector.verschiebung_frobenius, hy]
-    ext n
-    cases n with
-    | zero => rw [WittVector.verschiebung_coeff_zero, hx]
-    | succ n => exact WittVector.verschiebung_coeff_succ _ n
-
-lemma p_mul_eq_zero (x : WittVector p R) (h : x * p = 0) : x = 0 := by
-  rw [← WittVector.verschiebung_frobenius] at h
-  have h2 : WittVector.frobenius x = 0 := by
-    ext n
-    have h3 := congrArg (fun z => WittVector.coeff z n.succ) h
-    simpa only [WittVector.verschiebung_coeff_succ, WittVector.zero_coeff] using h3
-  apply (frob_bij (p := p) (R := R)).1
-  rw [h2, map_zero]
+lemma p_mul_eq_zero (x : WittVector p R) (h : x * p = 0) : x = 0 :=
+  WittVector.eq_zero_of_p_mul_eq_zero x h
 
 lemma p_mem_nonZeroDivisors : (p : WittVector p R) ∈ nonZeroDivisors (WittVector p R) := mem_nonZeroDivisors_iff.mpr
   ⟨fun x hx => p_mul_eq_zero x (by rwa [mul_comm] at hx), fun x hx => p_mul_eq_zero x hx⟩

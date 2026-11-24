@@ -1,11 +1,48 @@
 module
 
 public import Formalism.LocalToGlobal.IndefiniteReal.ZeroPartEigenvalueConvention
+public import Formalism.LocalToGlobal.IndefiniteReal.NormalDecomposition.LiftHeckeOperators
+public import Formalism.LocalToGlobal.IndefiniteReal.ConcretePkgSpec
+public import Formalism.LocalToGlobal.IndefiniteReal.LinksLemmas
 public import Formalism.LocalToGlobal.IndefiniteReal.EvTieP
 public import Formalism.LocalToGlobal.IndefiniteReal.ExistsSumOfMemISup
 public import Formalism.LocalToGlobal.IndefiniteReal.NormalDecomposition.UnitaryTwoPackage
-public import Formalism.LocalToGlobal.IndefiniteReal.NormalDecomposition.LiftHeckeOperators
-public import Formalism.LocalToGlobal.IndefiniteReal.IsometricPeriodsOfUnitHypotheses
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -80,29 +117,24 @@ theorem conv_of (hC : R.WeakCharacterisation F) (H : HkDat3 A3) : IndefConv A3.f
 theorem kFormR_of (hM : R.toRealDat.IsModels) : (R.toCx3 F).KFormR := by
   first
     | exact RealDat.kFormR_of (R := R.toRealDat) (F := F.lv2) hM
-    | exact RealDat.kFormR_of hM
 
 theorem kFormL_of (hM : R.toRealDat.IsModels) : (R.toCx3 F).KFormL := by
   first
     | exact RealDat.kFormL_of (R := R.toRealDat) (F := F.lv2) hM
-    | exact RealDat.kFormL_of hM
 
 theorem jIsoR_of (hM : R.toRealDat.IsModels) : (R.toCx3 F).JIsoR F.cv := by
   first
     | exact RealDat.jIsoR_of (R := R.toRealDat) (F := F.lv2) hM
-    | exact RealDat.jIsoR_of hM
 
 theorem jIsoL_of (hM : R.toRealDat.IsModels) : (R.toCx3 F).JIsoL F.cv := by
   first
     | exact RealDat.jIsoL_of (R := R.toRealDat) (F := F.lv2) hM
-    | exact RealDat.jIsoL_of hM
 
 theorem kForm_of (h : R.toRealDat.LUnif) (b : Bool) : (R.toCx3 F).KForm b := RealDat.kForm (F := F.lv2) h b
 
 theorem ewNorm (b : Bool) : (R.toCx3 F).EWnorm b := by
   first
     | exact RealDat.ewNorm (R := R.toRealDat) (F := F.lv2) b
-    | exact RealDat.ewNorm b
 
 theorem height_change_of_D0 (h : R.IsTup) : (R.toCx3 F).H0 := by
   refine ⟨h.mu_conj, fun w => ⟨h.mu_ne w, fun hne => ?_⟩⟩
@@ -161,7 +193,7 @@ private theorem smul_tw_map_adjoint_apply_of_unit_modulus {s : Bool} {E F : Type
   rw [phase_cancel hc]
   exact tw_map_adjoint_apply_of_eigen f l e he
 
-set_option maxHeartbeats 1000000 in
+
 theorem thmAop_of (hph : R.phase) (h : R.PThmA) (b : Bool) : (R.toCx3 F).ThmAop b := by
   intro j t p w hw
   have hw1 : Tw.out (s := twAt D.what₂.embLL A3.A.v0) w ∈ R.Wp3 j p := (Submodule.mem_inf.mp hw).1
@@ -170,7 +202,7 @@ theorem thmAop_of (hph : R.phase) (h : R.PThmA) (b : Bool) : (R.toCx3 F).ThmAop 
   refine smul_tw_map_adjoint_apply_of_unit_modulus hc (R.thG j t) (R.lam3 j t p A3.A.v0) w ?_
   exact h j t p _ hw1
 
-set_option maxHeartbeats 1000000 in
+
 theorem thmBop_of (h : R.PThmB) (b : Bool) : (R.toCx3 F).ThmBop b := by
   intro t p e he
   have he1 : Tw.out (s := twAt D.what₂.embLL A3.A.v0) (E := R.HE.H) e ∈ R.EEp3 p := he.1

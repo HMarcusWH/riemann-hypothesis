@@ -1,13 +1,44 @@
 module
 
-public import Mathlib
-public import Formalism.LocalRingCardinality.RhoDetPrimeEqMuTildeMulChiPow
-public import Formalism.SharpRestriction.ParConsts
-public import Formalism.SharpRestriction.GrowthBounds.Imports
-public import Formalism.SharpRestriction.GrowthBounds.DataG
-public import Formalism.SharpRestriction.GrowthBounds.DataGChain
 public import Formalism.SharpRestriction.GrowthBounds.SelectionLemmas
 public import Formalism.SharpRestriction.GrowthBounds.IsResidueClassZero
+public import Formalism.SharpRestriction.ElevenLe
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -537,8 +568,7 @@ def LowAt (j : ℕ) (v : X.Pl) (g : ℝ) : Prop :=
         (X.ThZA Y.Kc j (MvPowerSeries.map (algebraMap (K0 p) Y.Kc) (expS p (-Y.PhAt j v)) * U))) n) g
 
 theorem geC_mono {x : Y.Kc} {g g' : ℝ} (h : g' ≤ g) (hx : Y.geC x g) : Y.geC x g' := by
-  intro a b hb hab
-  exact hx a b hb (hab.trans (mul_le_mul_of_nonneg_right h (by exact_mod_cast hb.le)))
+  exact fun a b hb hab => hx a b hb (hab.trans (mul_le_mul_of_nonneg_right h (Nat.cast_nonneg b)))
 
 theorem LowAt.mono {j : ℕ} {v : X.Pl} {g g' : ℝ} (h : g' ≤ g) (hg : Y.LowAt j v g) : Y.LowAt j v g' := fun U hU I n => Y.geC_mono h (hg U hU I n)
 
@@ -722,11 +752,9 @@ def LowTermBound (_D : Formalism.BasicNotions.D7) {p : ℕ} [Fact p.Prime] (X : 
 theorem lowAt_max (D : Formalism.BasicNotions.D7) {p : ℕ} [Fact p.Prime] (X : Sys p) (Y : Pend X) (hU : VolumeRatio₂ D X Y)
     (hZ : adm11 D X Y) (v : X.Pl) (j : ℕ) (hj : j < X.mm) (g : ℝ) (hg : g ≤ max (X.g0v v (j + 1)) 0) :
     Y.LowAt j v g := by
-  rcases le_total (X.g0v v (j + 1)) 0 with h0 | h0
-  · rw [max_eq_right h0] at hg
-    exact Pend.LowAt.mono Y hg (hZ v j hj)
-  · rw [max_eq_left h0] at hg
-    exact Pend.LowAt.mono Y hg (hU v j hj)
+  rcases le_max_iff.mp hg with h | h
+  · exact Pend.LowAt.mono Y h (hU v j hj)
+  · exact Pend.LowAt.mono Y h (hZ v j hj)
 
 def NumCmp (D : Formalism.BasicNotions.D7) (L : SizeData₂ D) (X : Inst D L) (Y : LatInst D) (K : Consts) : Prop :=
   ∀ hT : GatTies D, LatTied hT X Y → ∀ (u : D.what₂.Word) (w : D.what₂.places.Pl)

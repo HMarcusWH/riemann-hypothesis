@@ -1,9 +1,51 @@
 module
 
-public import Mathlib
 public import GroundTheory.AutomorphicForms.TensorProductTheorem.GKTensor
-public import GroundTheory.AutomorphicForms.GKModules.Casimir
+public import GroundTheory.AutomorphicForms.GKModules.ZKFinite
 public import GroundTheory.AutomorphicForms.AutomorphicFormSpaces.GKStableLaplacian
+import Mathlib.Algebra.Module.StablyFree.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.LinearAlgebra.Charpoly.Basic
+import Mathlib.LinearAlgebra.Eigenspace.Triangularizable
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -106,8 +148,8 @@ theorem σ_mul_casimirOp [DecidableEq ι] (M : h.GKModule K V)
     have e2 := congrArg A e
     rw [AdLie_AdLie_inv] at e2
     conv_lhs => rw [e2]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [map_smul]
     congr 2
@@ -116,8 +158,8 @@ theorem σ_mul_casimirOp [DecidableEq ι] (M : h.GKModule K V)
   have hsum : ∀ j l, ∑ i, ε i * B (b j) (f i) * B (b l) (f i) = B (b j) (b l) := by
     intro j l
     conv_rhs => rw [hexp (b l)]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum, Finset.sum_congr rfl]
+
+    rw [map_sum, Finset.sum_congr rfl]
     intro i _
     rw [map_smul, smul_eq_mul]
     ring
@@ -125,8 +167,8 @@ theorem σ_mul_casimirOp [DecidableEq ι] (M : h.GKModule K V)
   have hρf : ∀ i, M.ρ (f i) = ∑ j, (ε j * B (b j) (f i)) • M.ρ (b j) := by
     intro i
     conv_lhs => rw [eq_sum_of_orthogonal hε horth (f i)]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [map_smul]
   have hcas : ∑ i, ε i • (M.ρ (f i) * M.ρ (f i)) = casimirOp M b ε := by
@@ -313,8 +355,8 @@ theorem aeval_eq_zero_of_equiv (M : h.GKModule K V) {ι : Type*} [Fintype ι]
       show (∑ i, M.ρ (Z i) * M.ρ (Z i)) (w : V) = _
       rw [LinearMap.sum_apply]
       rfl
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [e, map_sum, LinearMap.sum_apply]
+
+    rw [e, map_sum, LinearMap.sum_apply]
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [Module.End.mul_apply]
     rw [map_ρ_of_equivariant M hFs fm hfm (hZ i) ⟨_, ρ_mem_of_stable M hFs (hZ i) w.2⟩,

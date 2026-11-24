@@ -1,14 +1,92 @@
 module
 
-public import Mathlib
+public import Mathlib.Algebra.BigOperators.Group.Finset.Defs
+public import Mathlib.Data.Fintype.Basic
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Formalism.LocalToGlobal.KernelLattices.FirstKernelLawReading
-public import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.ThDistC
-public import Formalism.LocalRingCardinality.RankBoundMonotoneInDimension
 public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.DualWeylPoint
 public import Formalism.GradedWeylDivisibility.FockSpaceTableaux.TensorBasis
 public import Formalism.LocalRingCardinality.CoeNeZeroOfNotMem
-public import Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE
+public import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.ThDistC
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+import Formalism.GradedWeylDivisibility.DualWeylDominanceOf
+import Formalism.GradedWeylDivisibility.FockSpaceTableaux.LSatLemmas
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Std.Tactic.BVDecide.Normalize.Prop
 
+-- This file was produced by scripts/clump.py from the modules listed below.
+-- Members: Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE, Development.AbelianVarietyTheory.Proofs.SatakeParameters.ThetaDistributionUnfolded
+
+-- ===== clump member: Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE =====
+-- clump-header: {"m": "Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE", "h": "module\n\npublic import Mathlib.Algebra.BigOperators.Group.Finset.Defs\npublic import Mathlib.Data.Fintype.Basic\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.Normed.Algebra.GelfandRadius\nimport Mathlib.Analysis.SpecialFunctions.Bernstein\nimport Mathlib.Analysis.SpecialFunctions.Gamma.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Data.Nat.Choose.Multinomial\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Topology.Sheaves.Init\npublic import Mathlib.Algebra.BigOperators.Group.Finset.Basic\n\n"}
+section -- clump:auto
+@[expose] public section
+
+namespace GlobalTheory.ProdFinCastLE
+
+theorem prod_fin_eq_prod_castLE {a b : ℕ} {M : Type} [CommMonoid M] (h : a ≤ b) (f : Fin b → M)
+    (hf : ∀ r : Fin b, a ≤ (r : ℕ) → f r = 1) :
+    ∏ r : Fin b, f r = ∏ r : Fin a, f (Fin.castLE h r) := by
+  symm
+  rw [show (∏ r : Fin a, f (Fin.castLE h r)) =
+      ∏ x ∈ Finset.univ.map ⟨Fin.castLE h, Fin.castLE_injective h⟩, f x by
+    rw [Finset.prod_map]
+    rfl]
+  refine Finset.prod_subset (Finset.subset_univ _) fun x _ hx => hf x ?_
+  by_contra hlt
+  push Not at hlt
+  exact hx (Finset.mem_map.2 ⟨⟨x, hlt⟩, Finset.mem_univ _, Fin.ext rfl⟩)
+
+end GlobalTheory.ProdFinCastLE
+end -- clump:auto
+end -- clump:auto
+-- ===== end clump member: Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE =====
+
+-- ===== clump member: Development.AbelianVarietyTheory.Proofs.SatakeParameters.ThetaDistributionUnfolded =====
+-- clump-header: {"m": "Development.AbelianVarietyTheory.Proofs.SatakeParameters.ThetaDistributionUnfolded", "h": "module\n\npublic import Formalism.LocalToGlobal.KernelLattices.FirstKernelLawReading\npublic import Development.AbelianVarietyTheory.Proofs.SatakeParameters.ProdFinEqProdCastLE\nimport Formalism.GradedWeylDivisibility.DualWeylDominanceOf\npublic import Formalism.GradedWeylDivisibility.FockSpaceTableaux.DualWeylPoint\nimport Formalism.GradedWeylDivisibility.FockSpaceTableaux.LSatLemmas\npublic import Formalism.GradedWeylDivisibility.FockSpaceTableaux.TensorBasis\npublic import Formalism.LocalRingCardinality.CoeNeZeroOfNotMem\npublic import Formalism.LocalToGlobal.KernelLattices.KernelLocalFactors.ThDistC\nimport Mathlib.Algebra.Order.Floor.Extended\nimport Mathlib.Algebra.Order.Floor.Semifield\nimport Mathlib.Algebra.Order.Interval.Basic\nimport Mathlib.Analysis.Complex.UpperHalfPlane.Basic\nimport Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp\nimport Mathlib.Combinatorics.Enumerative.DyckWord\nimport Mathlib.Combinatorics.SimpleGraph.Triangle.Removal\nimport Mathlib.Data.NNRat.Floor\nimport Mathlib.Geometry.Euclidean.Volume.Basic\nimport Mathlib.NumberTheory.Chebyshev\nimport Mathlib.NumberTheory.Height.NumberField\nimport Mathlib.NumberTheory.Height.Projectivization\nimport Mathlib.NumberTheory.LucasLehmer\nimport Mathlib.NumberTheory.SelbergSieve\nimport Mathlib.RingTheory.Radical.NatInt\nimport Mathlib.Tactic.Basify\nimport Mathlib.Tactic.ENatToNat\nimport Mathlib.Tactic.Echelon.Zsqrtd\nimport Mathlib.Tactic.Inclusion.Extension.Core.Core\nimport Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp\nimport Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic\nimport Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses\nimport Mathlib.Tactic.Linter.Style\nimport Mathlib.Tactic.NormNum.Irrational\nimport Mathlib.Tactic.NormNum.IsCoprime\nimport Mathlib.Tactic.NormNum.IsSquare\nimport Mathlib.Tactic.NormNum.LegendreSymbol\nimport Mathlib.Tactic.NormNum.ModEq\nimport Mathlib.Tactic.NormNum.NatFib\nimport Mathlib.Tactic.NormNum.NatLog\nimport Mathlib.Tactic.NormNum.NatSqrt\nimport Mathlib.Tactic.NormNum.Ordinal\nimport Mathlib.Tactic.NormNum.Parity\nimport Mathlib.Tactic.NormNum.Prime\nimport Mathlib.Tactic.NormNum.RealSqrt\nimport Mathlib.Tactic.Polynomial.Basic\nimport Mathlib.Tactic.ReduceModChar\nimport Mathlib.Topology.Sheaves.Init\nimport Std.Tactic.BVDecide.Normalize.Prop\n\n"}
+section -- clump:auto
 @[expose] public section
 
 open NumberField IsDedekindDomain
@@ -24,16 +102,6 @@ section Wt
 open MvPolynomial Formalism.L2.DIV
 
 variable {K : Type} [Field K] {ι : Type} [Fintype ι] {a b n : ℕ}
-
-theorem prod_castLE {M : Type} [CommMonoid M] (h : a ≤ b) (f : Fin b → M) (h0 : ∀ r : Fin b, a ≤ r.1 → f r = 1) :
-    ∏ r, f r = ∏ r : Fin a, f (Fin.castLE h r) := by
-  first
-  | exact @_root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE
-  | exact _root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE
-  | (apply _root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE <;> assumption)
-  | (intros; apply _root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE <;> assumption)
-  | (intros; apply @_root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE <;> first | assumption | infer_instance)
-  | (intros; exact _root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE ..)
 
 theorem sum_castLE {M : Type} [AddCommMonoid M] (h : a ≤ b) (f : Fin b → M) (h0 : ∀ r : Fin b, a ≤ r.1 → f r = 0) :
     ∑ r, f r = ∑ r : Fin a, f (Fin.castLE h r) := by
@@ -98,9 +166,9 @@ theorem liftL_subD (h : a ≤ b) {β : ι → Matrix (Fin b) (Fin b) K} (hβ : I
     apply MvPolynomial.algHom_ext
     rintro ⟨τ, α, s⟩
     have hs : s.1 < b := lt_of_lt_of_le s.2 h
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [AlgHom.comp_apply, subD, colSub, aeval_X, dif_pos hs, map_sum, map_mul, liftL, Sum.elim_inl, Sum.elim_inr, rename_X,
-      algHom_C, algebraMap_eq]
+
+    simp only [AlgHom.comp_apply, subD, colSub, aeval_X, dif_pos hs, map_sum, map_mul, liftL, Sum.elim_inl, Sum.elim_inr, rename_X,
+    algHom_C, algebraMap_eq]
     have h1 : ∀ r : Fin a, (r : ℕ) < b := fun r => lt_of_lt_of_le r.2 h
     simp only [dif_pos (h1 _)]
     simp only [Finset.sum_mul, Finset.mul_sum]
@@ -124,7 +192,7 @@ theorem jet_weight : JetWt := by
   rw [jetMap_zero, ← jetLin_liftL, liftL_subD h hβ, hQ _ (isBor_resB h hβ), map_smul, map_smul]
   congr 1
   refine Finset.prod_congr rfl fun τ _ => ?_
-  rw [prod_castLE h]
+  rw [_root_.GlobalTheory.ProdFinCastLE.prod_fin_eq_prod_castLE h]
   · refine Finset.prod_congr rfl fun r _ => ?_
     simp only [resB, extNu]
     rw [dif_pos (show ((Fin.castLE h r : Fin b) : ℕ) < a from r.2)]
@@ -320,8 +388,8 @@ theorem colSc_hom {ν : Fin n → ℕ} {F : MvPolynomial (Fin r × Fin n) K} (hF
   classical
   conv_lhs => rw [F.as_sum]
   conv_rhs => rw [F.as_sum]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, Finset.smul_sum]
+
+  rw [map_sum, Finset.smul_sum]
   refine Finset.sum_congr rfl fun m hm => ?_
   rw [colSc_monomial]
   congr 2
@@ -357,8 +425,8 @@ theorem colOne_eq (β : Matrix (Fin n) (Fin n) K) (hβ : ∀ w s, s < w → β w
   simp only [colOne, colSc, colAddS, AlgHom.comp_apply, aeval_X]
   split_ifs with h
   · rw [sum_split t _ fun w hw => by rw [hβ w t hw, C_0, zero_mul]]
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_add (f := _), aeval_X, if_pos h, map_sum]
+
+    rw [map_add (f := _), aeval_X, if_pos h, map_sum]
     congr 1
     · obtain ⟨a, s⟩ := v
       simp only at h
@@ -386,8 +454,8 @@ theorem colSub1_cut (β : Matrix (Fin n) (Fin n) K) (t : Fin n) (hid : ∀ s, s 
   simp only [colSub1, colOne, AlgHom.comp_apply, aeval_X]
   split_ifs with h
   · subst h
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine Finset.sum_congr rfl fun w _ => ?_
     rw [map_mul, algHom_C, aeval_X]
     by_cases hw : s < w
@@ -523,7 +591,7 @@ theorem coeff_colSc (t : Fin n) (d : K) (F : MvPolynomial (Fin r × Fin n) K) (m
   classical
   induction F using MvPolynomial.induction_on' with
   | monomial m' c =>
-    rw [colSc_monomial, coeff_smul, coeff_monomial, smul_eq_mul]
+    rw [colSc_monomial, MvPolynomial.coeff_smul, coeff_monomial, smul_eq_mul]
     split_ifs with h
     · rw [h]
     · simp
@@ -585,7 +653,7 @@ theorem mem_dualWeyl_of_bor [Infinite K] {ν : Fin n → ℕ} {F : MvPolynomial 
         (fun w => by rw [Matrix.diagonal_apply_eq]; split_ifs; exacts [hx, one_ne_zero])
       rw [colSub1_diag] at h2
       have h3 := congrArg (AddMonoidAlgebra.coeff · m) h2
-      rw [coeff_colSc, coeff_smul, smul_eq_mul] at h3
+      rw [coeff_colSc, MvPolynomial.coeff_smul, smul_eq_mul] at h3
       have h4 : (∏ y, (Matrix.diagonal (fun s => if s = t then x else 1) : Matrix (Fin n) (Fin n) K) y y ^ ν y) = x ^ ν t := by
         rw [Finset.prod_eq_single t]
         · rw [Matrix.diagonal_apply_eq, ite_eq_left rfl]
@@ -690,7 +758,7 @@ theorem coeff_psi_mem [Fintype ι] [Infinite K] {ν : ι → Fin n → ℕ} {Q :
     · rw [Function.update_of_ne h]
       exact ⟨fun w s hws => Matrix.one_apply_ne hws.ne', fun w => by simp⟩
   have h3 := congrArg (fun x => AddMonoidAlgebra.coeff (psi τ x) r) (hQ _ hB)
-  simp only [psi_colSub, coeff_map, map_smul, coeff_smul] at h3
+  simp only [psi_colSub, coeff_map, map_smul, MvPolynomial.coeff_smul] at h3
   have h4 : (∏ σ, ∏ x, (Function.update (1 : ι → Matrix (Fin n) (Fin n) K) τ β) σ x x ^ ν σ x) = ∏ x, β x x ^ ν τ x := by
     rw [Finset.prod_eq_single τ]
     · rw [Function.update_self]
@@ -744,7 +812,7 @@ theorem coeff_psi_atPos (τ : ι) (π : MvPolynomial (Fin n × Fin n) K →ₗ[K
       rw [coe_basisMonomials, smul_monomial, smul_eq_mul, mul_one]
     have h2 : (monomial (gOf τ m) c : MvPolynomial (Fin n × Fin n) K) = c • monomial (gOf τ m) 1 := by
       rw [smul_monomial, smul_eq_mul, mul_one]
-    rw [psi_monomial, h, map_smul, atPos, Module.Basis.constr_basis, map_smul, psi_psi', coeff_smul, coeff_monomial, coeff_monomial, h2]
+    rw [psi_monomial, h, map_smul, atPos, Module.Basis.constr_basis, map_smul, psi_psi', MvPolynomial.coeff_smul, coeff_monomial, coeff_monomial, h2]
     split_ifs
     · rw [map_smul]
     · rw [smul_zero, map_zero]
@@ -1005,3 +1073,7 @@ theorem tied_on_models : TiedOnModels := by
 end Unf
 
 end GlobalTheory.KerWt
+end -- clump:auto
+end -- clump:auto
+end -- clump:auto
+-- ===== end clump member: Development.AbelianVarietyTheory.Proofs.SatakeParameters.ThetaDistributionUnfolded =====

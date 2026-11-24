@@ -1,13 +1,69 @@
 module
 
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFHypS
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomPtwAsm
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.DominatedL2TruncationBoundHolds
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomEmpty
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomVMul
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFHatProdKBStmt
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFOpOKMulG
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomPtw
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutFpmDecay
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutLemB
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFBddPtw
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFCoreN
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFCoreNExt
 public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFCutSup
-public import Formalism.HermitianCurvature.HermitianCurvatureProofs.DominatedL2OperatorBoundHolds
 public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFLeibMain
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFOpOKMulGPf
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomEmpty
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomPtwAsm
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTopDomVMul
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutNFTrNormKB
+public import Formalism.HermitianCurvature.HermitianCurvatureProofs.CutSEPairAtDeriv
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.IsAdmissibleSplittingCharPairMulTwist
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.OpApplyContinuousOn
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.TriangleInequalityAtPlace
+import Formalism.HermitianCurvature.HermitianCurvatureProofs.VectorVanishesBigCell
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Algebra.Ring.IsFormallyReal
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -271,8 +327,8 @@ theorem nFCoreNC_of_cut (hL : NFLeibV) (hT : NFTieHatC) (hH : NFHatProdKBS) (hN 
   set Y : Fin (Q' + 1) → (Wq →L[ℂ] Wp) := fun j => p.V (B.opApply (L' j) f) γ with hY
   have hnorm : ‖B.hsVec ((p.TP.E ρ).comp (((G ^ p₀ : ℝ) : ℂ) • ∑ j, ((cc qq' j : ℝ) : ℂ) • Y j))‖ ≤
       G ^ p₀ * ∑ j, cc qq' j * ‖Λ (Y j)‖ := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [← hΛ, map_smul, map_sum, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg hG0 _)]
+
+    rw [← hΛ, map_smul, map_sum, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg hG0 _)]
     refine mul_le_mul_of_nonneg_left (le_trans (norm_sum_le _ _) (le_of_eq (Finset.sum_congr rfl fun j _ => ?_)))
       (pow_nonneg hG0 _)
     rw [map_smul, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Nat.cast_nonneg _)]

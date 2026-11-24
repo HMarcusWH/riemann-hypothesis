@@ -1,13 +1,57 @@
 module
 
-public import Mathlib
-public import GroundTheory.ProfiniteCohomology.RestrictedRamification.Brauer
 public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BaseChangeMackey
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.SumInvariants
-public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.RealPlaces
 public import GroundTheory.ProfiniteCohomology.CompactSupportCohomology
 public import GroundTheory.ProfiniteCohomology.PoincareDuality.Torsion
+public import GroundTheory.GlobalFields.CompletionAtPlace.Integers
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.EqZeroOfBrauerLocalApplyEqZero
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerDefs
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerLocalDefs
+public import Mathlib.NumberTheory.NumberField.InfinitePlace.TotallyRealComplex
 public import GroundTheory.ProfiniteCohomology.CohomologicalDimension.SubsingletonCohomologyOfPrimaryOfFinite
+import GroundTheory.ProfiniteCohomology.CupProducts.Cocycles
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.RealPlaces
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.SumInvariants
+public import GroundTheory.ProfiniteCohomology.RestrictedRamification.Brauer
+import GroundTheory.ProfiniteCohomology.RestrictedRamification.BrauerSplit
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
 
 @[expose] public section
 
@@ -182,9 +226,19 @@ theorem gsLocalInvRootsQZ_cohomologyMapAlong (v : S) (x : cohomology (gsRoots S 
   refine congrArg (brauerInvZOfIsSepClosure ((v : HeightOneSpectrum (𝓞 K.1)).adicCompletion K.1)
     (AlgebraicClosure ((v : HeightOneSpectrum (𝓞 K.1)).adicCompletion K.1))) ?_
   refine (AddMonoidHom.comp_apply _ _ _).trans ?_
-  exact cohomologyMap_uliftInt_cohomologyMapAlong (gsFinFamily S ιs v).toMonoidHom (continuous_toMonoidHom _)
+  have hres : gsLocalRes S (ιs v) 2 =
+      cohomologyMapAlong (gsFinFamily S ιs v).toMonoidHom (continuous_toMonoidHom _)
+        (embUnitsMorZ S (ιs v)) 2 := rfl
+  have hmap := cohomologyMap_uliftInt_cohomologyMapAlong (gsFinFamily S ιs v).toMonoidHom
+    (continuous_toMonoidHom _)
     (rootsOfUnityToSUnits S (maxUnramifiedOutside K.1 ℚ̄ S) n) (sUnitsToUnits S (maxUnramifiedOutside K.1 ℚ̄ S))
     (rootsLocalMorZ S ιs n v) (embUnitsMorZ S (ιs v)) (fun _ => rfl) 2 x
+  let y := cohomologyULiftIntAddEquiv (galUnits K.1 (maxUnramifiedOutside K.1 ℚ̄ S)) 2
+    ((cohomologyMap (sUnitsToUnits S (maxUnramifiedOutside K.1 ℚ̄ S)) 2).hom
+      ((cohomologyMap (rootsOfUnityToSUnits S (maxUnramifiedOutside K.1 ℚ̄ S) n) 2).hom x))
+  have happly := congrArg (fun f => ModuleCat.Hom.hom f y) hres.symm
+  simp only [LinearMap.toAddMonoidHom_coe, AddEquiv.coe_toAddMonoidHom]
+  with_reducible exact hmap.trans happly
 
 
 omit [Fintype S] [NeZero n] in
@@ -212,8 +266,8 @@ theorem sumPlaceInv_eq_sum_of_placeInv (T : Finset (Place K.1)) (y : ⨁ w : Pla
     (hT : ∀ w ∉ T, placeInv w (y w) = 0) : sumPlaceInv K y = ∑ w ∈ T, placeInv w (y w) := by
   classical
   conv_lhs => rw [← DirectSum.sum_support_of y]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   simp_rw [sumPlaceInv_of]
   calc ∑ w ∈ DFinsupp.support y, placeInv w (y w)
       = ∑ w ∈ DFinsupp.support y ∪ T, placeInv w (y w) :=
@@ -316,14 +370,16 @@ noncomputable def gsCompactInv (hn : Odd n ∨ IsTotallyComplex K.1) (h3 : Subsi
     (localToCompact_two_surjective S ιs n h3) (gsSumInvRoots S ιs n) (ker_localToCompact_le S ιs n hn)
 
 
-set_option maxHeartbeats 1600000 in
+
 theorem gsCompactInv_localToCompact (hn : Odd n ∨ IsTotallyComplex K.1)
     (h3 : Subsingleton (cohomology (gsRoots S n) 3))
     (ξ : ∀ v : S, cohomology (Rep.res (gsFinFamily S ιs v).toMonoidHom (gsRoots S n)) 2) :
     gsCompactInv S ιs n hn h3 ((localToCompact (gsFinFamily S ιs) (gsRoots S n) _ (fun _ => 𝟙 _) 2).hom ξ) =
-      gsSumInvRoots S ιs n ξ :=
-  descendAlong_apply (localToCompact (gsFinFamily S ιs) (gsRoots S n) _ (fun _ => 𝟙 _) 2).hom
+      gsSumInvRoots S ιs n ξ := by
+  delta gsCompactInv
+  have h := descendAlong_apply (localToCompact (gsFinFamily S ιs) (gsRoots S n) _ (fun _ => 𝟙 _) 2).hom
     (localToCompact_two_surjective S ιs n h3) (gsSumInvRoots S ιs n) (ker_localToCompact_le S ιs n hn) ξ
+  with_reducible exact h
 
 end
 

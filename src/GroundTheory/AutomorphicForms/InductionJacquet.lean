@@ -1,7 +1,49 @@
 module
 
-public import Mathlib
 public import GroundTheory.AutomorphicForms.SmoothRep
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -184,8 +226,8 @@ theorem exists_fixedVectors_mk_eq_of_fixed (hρ : IsSmooth ρ) (hKc : IsCompact 
   set y : V := ∑ c : K ⧸ S.subgroupOf K, ρ ((Quotient.out c : K) : G) w with hy
   have hyK : y ∈ fixedVectors ρ K := by
     intro k hk
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [hy, map_sum]
+
+    rw [hy, map_sum]
     simp only [← Module.End.mul_apply, ← map_mul]
     calc ∑ c : K ⧸ S.subgroupOf K, ρ (k * ((Quotient.out c : K) : G)) w
         = ∑ c : K ⧸ S.subgroupOf K,
@@ -196,9 +238,9 @@ theorem exists_fixedVectors_mk_eq_of_fixed (hρ : IsSmooth ρ) (hKc : IsCompact 
             (fun c => by rw [MulAction.toPerm_apply])
   have hyq : Representation.Coinvariants.mk (ρ.comp N.subtype) y =
       n • Representation.Coinvariants.mk (ρ.comp N.subtype) w := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [hy, map_sum, Finset.sum_congr rfl fun c _ => hterm _ (Quotient.out c).2,
-      Finset.sum_const, Finset.card_univ, ← Nat.cast_smul_eq_nsmul ℂ]
+
+    rw [hy, map_sum, Finset.sum_congr rfl fun c _ => hterm _ (Quotient.out c).2,
+    Finset.sum_const, Finset.card_univ, ← Nat.cast_smul_eq_nsmul ℂ]
   refine ⟨n⁻¹ • y, Submodule.smul_mem _ _ hyK, ?_⟩
   rw [map_smul, hyq, smul_smul, inv_mul_cancel₀ hn, one_smul]
 

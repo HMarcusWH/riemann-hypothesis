@@ -1,26 +1,73 @@
 module
 
-public import Mathlib
-public import Development.AbelianVarietyTheory.Definitions.TwistedInnerProducts.RealLowestKTypeCoeffSquareIntegrable
-public import Formalism.LocalToGlobal.IndefiniteReal.BaseLiftsPackageOfPrimitiveLinks
-public import Formalism.LocalToGlobal.IndefiniteReal.NormalDecomposition.LiftHeckeOperators
-public import Development.AbelianVarietyTheory.PublishedTheorems.GaloisGeometry₂.HoweUnram
-public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.ExistsNormLeHeightPow
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.FinRepApply
-public import Formalism.LocalToGlobal.IndefiniteReal.IsMultMapUnivZero
-public import Formalism.LocalToGlobal.IndefiniteReal.PartsRow
 public import Development.AbelianVarietyTheory.Definitions.Divisors.InstCMHostS
 public import Development.AbelianVarietyTheory.PublishedTheorems.AutomorphicForms₂.HarishChandraFinite
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsGoodFixedVectorOfTypeOccurringInRows
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.FinrankWEigenpartEqRowsFullHecke
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.FiniteDimensionalFixed
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.CoreClausesOfWeakCharacterisation
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsFiniteAdelicIsometryMatchingFrames
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsBaseLevelVectorOfPrincipalLevelFixed
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.StarRowsLevelCharacterEqLiftsLevelCharacter
+public import Development.AbelianVarietyTheory.Definitions.GaloisGeometry.NormalFam
+public import Formalism.LocalToGlobal.IndefiniteReal.ConjSubConjSub
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ConjugateModelsMultiplicityEqual
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.HeckeCompatFiniteIsometry
-public import Development.AbelianVarietyTheory.Proofs.TwistedOperators.ComplexConjugationMapsMultiplicitySpaceStatement
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsBaseLevelVectorOfPrincipalLevelFixed
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsFiniteAdelicIsometryMatchingFrames
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsGoodFixedVectorOfTypeOccurringInRows
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.FiniteDimensionalFixed
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.FinrankWEigenpartEqRowsFullHecke
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.GoodFormsEqKilledByGroupAlgebraStatement
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.HeckeCompatFiniteIsometry
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.IdemOfCoeffRealStatement
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.IsometryMatchesParahoricLevelsStatement
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.LevelTypeHeckeKilledCorrespondMatchingIsoStatement
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.SignAtBasePlaceEqEmbedding
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.StarRowsLevelCharacterEqLiftsLevelCharacter
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.TypePlacesNotPairwiseConjugateStatement
+import Development.AbelianVarietyTheory.Proofs.IwasawaDecomposition.ContDiffDerivSnoc
+import Development.AbelianVarietyTheory.Proofs.SatakeParameters.ExistsLevelVectorGoodTypeStableSubspace
+import Development.AbelianVarietyTheory.Proofs.TwistedOperators.ComplexConjugationMapsMultiplicitySpaceStatement
+import Formalism.LocalToGlobal.Divisibility.ProjLemmas
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+public import Mathlib.LinearAlgebra.Matrix.Swap
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Etale.Weakly
+import Mathlib.RingTheory.Finiteness.ModuleFinitePresentation
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.TotallySplit
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+import Development.AbelianVarietyTheory.Definitions.TwistedInnerProducts.RealLowestKTypeCoeffSquareIntegrable
 
 @[expose] public section
 
@@ -137,7 +184,7 @@ theorem block_frame_conjugation_identity {R : Type} [CommRing R] {a b c : ℕ} (
     _ = _ := by rw [hJ, Matrix.mul_one, hW, Matrix.one_mul, Matrix.mul_one]
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem frames_inner : ∀ {D : D7} (Y W : HSp D) {n : ℕ} (hF : D.host.F = maximalRealSubfield D.host.E) (PY : principalLevelFrame.RowPsi Y n) (PW : principalLevelFrame.RowPsi W n), GlobalTheory.StdFrame.StdPsi hF PY → GlobalTheory.StdFrame.StdPsi hF PW → Odd Y.rank → ∀ (β : GL (Fin Y.rank) (Lev.EAf D)) (β' : GL (Fin W.rank) (Lev.EAf D)) (Pg : Finset (Pl D.host.E)) (j : Matrix (Fin W.rank) (Fin Y.rank) (Lev.EAf D)) (Φ : GfC Y ≃ₜ* GfC W), GlobalTheory.CuspMult.IsFinIso Y W β β' Pg j Φ → ∃ h : Formalism.AUTREP.GAf D.host.E n, ∀ κ, ((Φ ⟨PY.ψ κ, PY.into κ⟩ : GfC W) : GA D W) = PW.ψ (h * κ * h⁻¹) := by
   intro D Y W n hF PY PW hY hW hodd β β' Pg j Φ hI
   obtain ⟨⟨bY, bY', hY1, hY2, hYf⟩, -⟩ := hY
@@ -192,7 +239,7 @@ theorem frames_inner : ∀ {D : D7} (Y W : HSp D) {n : ℕ} (hF : D.host.F = max
   exact ⟨⟨h, hU⟩, fun κ => Subtype.ext ((hg κ).symm.trans (hh κ.1))⟩
 
 
-set_option maxHeartbeats 1000000 in
+
 theorem exists_conj_map : ∀ {D : D7} {G : Type} [Group G] [Fintype G] {Pl0 T : Type} {A : FamIn D.what₂.LL G Pl0 T D.R.m} {Ks : Type} [Field Ks] [NumberField Ks] [Algebra Ks D.what₂.LL] (R : RealDat D A Ks) (F : Face D A) {n : ℕ} (PY : principalLevelFrame.RowPsi (Yc D 0) n) π, π ∈ principalLevelFrame.OccRows R.θ PY (R.MY 0) (fun b => (levS _ (R.βY 0) (R.dat0 (R.levR F b)))) (fun b => (levChi _ (R.βY 0) (R.dat0 (R.levR F b)))) (fun _ => R.e0) → ∃ (M₀ : DSModel (Yc D 0) (parA (Ptw D) 0)) (f : π.S →ₗ[ℂ] MMap M₀), f ≠ 0 ∧ principalLevelFrame.IsEqvA (principalLevelFrame.actM PY M₀) π f ∧ ∀ x, f x ∈ GlobalTheory.CuspMult.allMaps R.θ M₀ := by
   intro D G _ _ Pl0 T A Ks _ _ _ R F n PY π hπ
   obtain ⟨b, hb⟩ := hπ
@@ -314,7 +361,7 @@ theorem exists_good_base_vec : ∀ {D : D7} {G : Type} [Group G] [Fintype G] {Pl
   have hX : ∀ χ ∈ A.X, IsAbsIrrChar χ := hOk.irr
   have hcen : ∀ g h : G, RealDat.eC (A := A) D.what₂.embLL (g * h * g⁻¹) = RealDat.eC (A := A) D.what₂.embLL h := fun g h => by
     unfold RealDat.eC
-    rw [GlobalTheory.BaseVec.coeff_conj_of_central _ (fun b => idemOf_central A.X hX b) g h]
+    rw [_root_.GlobalTheory.Hk3.coeff_conj_central _ (fun b => idemOf_central A.X hX b) g h]
   have hgoodv : ∑ g, RealDat.eC (A := A) D.what₂.embLL g • Formalism.L2.NG.rt D.host.E n (k g) v = v := hgood k hk
   have hgoodW : ∀ w ∈ Ws, ∑ g, RealDat.eC (A := A) D.what₂.embLL g • Formalism.L2.NG.rt D.host.E n (k g) w = w := by
     intro w hw
@@ -323,8 +370,8 @@ theorem exists_good_base_vec : ∀ {D : D7} {G : Type} [Group G] [Fintype G] {Pl
       obtain ⟨h, rfl⟩ := hx
       simp only [hprod _ h v hvWs]
       conv_rhs => rw [← hgoodv]
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sum]
+
+      rw [map_sum]
       simp only [map_smul, hprod h _ v hvWs]
       refine Fintype.sum_equiv (MulAut.conj h⁻¹).toEquiv _ _ fun g => ?_
       simp only [MulEquiv.toEquiv_eq_coe, MulEquiv.coe_toEquiv, MulAut.conj_apply]
@@ -442,11 +489,7 @@ theorem isAdmissible_of [TopologicalSpace H] [IsTopologicalGroup H]
 
 end Abstract
 
-theorem odd_r (R : Ranks) : Odd R.r := by
-  obtain ⟨a, ha⟩ := R.k_even
-  obtain ⟨b, hb⟩ := R.m_even
-  have h2 := R.two_le_m
-  exact ⟨a + b - 1, by simp only [Ranks.r]; omega⟩
+alias odd_r := _root_.Formalism.L2.NTheta.odd_r
 
 def eqv {D : D7} {Y : HSp D} {n : ℕ} (P : principalLevelFrame.RowPsi Y n) : Formalism.AUTREP.GAf D.host.E n ≃* GfC Y :=
   MulEquiv.ofBijective (P.ψ.codRestrict (GfC Y) P.into)
@@ -455,8 +498,8 @@ def eqv {D : D7} {Y : HSp D} {n : ℕ} (P : principalLevelFrame.RowPsi Y n) : Fo
       exact ⟨h, Subtype.ext hh⟩⟩
 
 
-set_option maxHeartbeats 2000000 in
-set_option synthInstance.maxHeartbeats 400000 in
+
+
 theorem exists_mem_isotL (hP : GlobalTheory.Published.HarishChandraFinite) {D : D7} {G : Type} [Group G] [Fintype G] {Pl0 T : Type} {A : FamIn D.what₂.LL G Pl0 T D.R.m} {Ks : Type} [Field Ks] [NumberField Ks] [Algebra Ks D.what₂.LL] (R : RealDat D A Ks) (F : Face D A) {s : ℕ} (hOk : A.fam.Ok s) (hC : GlobalTheory.Hk3.Core R F) (hM : MultEq R) (hX : Formalism.L2.DIV.GoodStable A.X) (hgen : ∀ χ ∈ A.X, chiIdem χ * lvlIdem F.P0 F.ψ0 ≠ 0) {n : ℕ} (hF : D.host.F = maximalRealSubfield D.host.E) (PY : principalLevelFrame.RowPsi (Yc D 0) n) (i : Fin D.R.m) (PW : principalLevelFrame.RowPsi (Wc D i) n) (hPY : GlobalTheory.StdFrame.StdPsi hF PY) (hPW : GlobalTheory.StdFrame.StdPsi hF PW) (π : Formalism.L2.NG.FinTyp D.host.E n) (hπ : π ∈ principalLevelFrame.OccRows R.θ PY (R.MY 0) (fun b => (levS _ (R.βY 0) (R.dat0 (R.levR F b)))) (fun b => (levChi _ (R.βY 0) (R.dat0 (R.levR F b)))) (fun _ => R.e0)) :
     ∃ w ∈ principalLevelFrame.isotL R.θ PW (R.MW i (sg0 D A))
       (levS _ (R.βW i) (R.datWp i (R.levL F false (sg0 D A))))
@@ -492,8 +535,8 @@ theorem exists_mem_isotL (hP : GlobalTheory.Published.HarishChandraFinite) {D : 
     · have := hyG (fun g => e.symm (κ g)) (fun g => by
         have e1 : PY.ψ (e.symm (κ g)) = (κ g : GA D (Yc D 0)) := congrArg Subtype.val (e.apply_symm_apply (κ g))
         rw [e1]; exact hκ g)
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [map_sub, map_sum, LinearMap.sub_apply, LinearMap.sum_apply, Representation.asAlgebraHom_single, map_one, one_smul, Module.End.one_apply, sub_eq_zero]
+
+      rw [map_sub, map_sum, LinearMap.sub_apply, LinearMap.sum_apply, Representation.asAlgebraHom_single, map_one, one_smul, Module.End.one_apply, sub_eq_zero]
       apply Subtype.ext
       rw [Submodule.coe_sum]
       refine Eq.trans (Finset.sum_congr rfl fun g _ => ?_) this

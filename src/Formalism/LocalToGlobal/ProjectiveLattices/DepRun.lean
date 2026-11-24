@@ -3,6 +3,41 @@ module
 public import Formalism.LocalToGlobal.ProjectiveLattices.DepLaws
 public import Formalism.LocalToGlobal.ProjectiveLattices.DepthTie
 public import Formalism.LocalToGlobal.ProjectiveLattices.ConjNeSelfOfCM
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -33,7 +68,6 @@ theorem satDir_of (hS : ChartSaturated Xo c) {T : CDVR} {io : c.F →+* T.Fr} {y
   have hwA : (Matrix.of w) * (Matrix.of A) = 1 := by
     first
       | exact mul_eq_one_comm.mp hAw
-      | exact (Matrix.mul_eq_one_comm_of_equiv (Equiv.refl _)).mp hAw
   refine ⟨fun i j => A j (emb i), fun i i' => ?_⟩
   letI := io.toAlgebra
   have e1 : ∀ j, C.ch.uvec ⟨τ, i'⟩ j * algebraMap T.V T.Fr (A j (emb i)) =
@@ -41,8 +75,8 @@ theorem satDir_of (hS : ChartSaturated Xo c) {T : CDVR} {io : c.F →+* T.Fr} {y
     intro j
     rw [huv, map_mul, hw]
   refine (Finset.sum_congr rfl (fun j _ => e1 j)).trans ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← map_sum]
+
+  rw [← map_sum]
   have h3 := congrFun (congrFun hwA (emb i')) (emb i)
   simp only [Matrix.mul_apply, Matrix.of_apply, Matrix.one_apply] at h3
   rw [h3]

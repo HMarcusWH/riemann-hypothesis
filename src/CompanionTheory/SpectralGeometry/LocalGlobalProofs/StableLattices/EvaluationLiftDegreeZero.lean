@@ -1,9 +1,55 @@
 module
 
-public import Mathlib
 public import CompanionTheory.RealGroups.DiscreteSeries.DiscreteSeriesClassification.DiscreteSeriesExhaustion.FarRegularity.LKTExists
-public import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.LowKTypeMultiplicityOneUnconditional
+public import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.CreationOperators.CreAnnApply
+import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.CreationOperators.CreApply
 public import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.CreationOperators.DifferentialCommutesWeightOperator
+public import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.CreationOperators.GeneralizedVermaModulePolynomial
+public import CompanionTheory.HarishChandraModules.LowKTypeMultiplicity.EigenspaceCyclicDensity.CreationOperators.KoszulDifferentialAnticommutator
+import CompanionTheory.SpectralGeometry.LocalGlobalProofs.StableLattices.MemFiltOfWords
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Presheaf
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -77,16 +123,14 @@ theorem bd_supp (lev : Fin n → ℕ) (E : Fin n → Fin n → Module.End ℂ V)
       show lev i.1.1 < lev i.1.2
       rw [t2, t3]
       have : lev i'.1.2 = lev j.1.1 := by rw [t1]
-      have u1' : lev i'.1.1 < lev i'.1.2 := u1
-      have u2' : lev j.1.1 < lev j.1.2 := u2
       omega
     · exact h _ h5 i (mem_insert_of_mem (mem_insert_of_mem (mem_erase.2 ⟨hk, hi⟩)))
 
 theorem lift_adL (φ : V →ₗ[ℂ] W) (p q : Fin n) (x : Cn n V) :
     lift n φ (adL p q x) = adL p q (lift n φ x) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [adL, LinearMap.sum_apply, LinearMap.smul_apply, Module.End.mul_apply, map_sum, map_smul, lift_cre,
-    lift_ann]
+
+  simp only [adL, LinearMap.sum_apply, LinearMap.smul_apply, Module.End.mul_apply, map_sum, map_smul, lift_cre,
+  lift_ann]
 
 theorem lift_lF (φ : V →ₗ[ℂ] W) (E : Fin n → Fin n → Module.End ℂ V) (F : Fin n → Fin n → Module.End ℂ W)
     (h : ∀ a b x, φ (E a b x) = F a b (φ x)) (p q : Fin n) (x : Cn n V) :
@@ -116,8 +160,8 @@ theorem bd_lift_comm (lev : Fin n → ℕ) (E : Fin n → Fin n → Module.End �
     (hT : ∀ i : Pos n, inU lev i → Commute (E i.1.1 i.1.2) T) {x : Cn n V} (hx : SuppIn (inU lev) x) :
     bd (allT n) E (lift n T x) = lift n T (bd (allT n) E x) := by
   funext A
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [lift_apply, bd_apply, bd_apply, map_add (f := _), map_sum, map_sum]
+
+  rw [lift_apply, bd_apply, bd_apply, map_add (f := _), map_sum, map_sum]
   congr 1
   · refine Finset.sum_congr rfl fun i _ => ?_
     rw [if_pos rfl, if_pos rfl]
@@ -132,11 +176,11 @@ theorem bd_lift_comm (lev : Fin n → ℕ) (E : Fin n → Fin n → Module.End �
         rw [show ann i (lift n T x) A = T (ann i x A) from congrFun (lift_ann T i x).symm A, e, map_zero]
       rw [e, e', map_zero, map_zero]
   · refine Finset.sum_congr rfl fun i _ => ?_
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine Finset.sum_congr rfl fun k _ => ?_
     split_ifs
     · rw [← lift_ann, ← lift_ann, ← lift_cre]; rfl
@@ -366,7 +410,6 @@ theorem acycU (lev : Fin n → ℕ) (E : Fin n → Fin n → Module.End ℂ Z) (
           intro y hy1 hy2 hs hd hc
           have hne : ((m : ℂ) + (j + 1 : ℕ)) ≠ 0 := by exact_mod_cast (by omega : m + (j + 1) ≠ 0)
           have hHy := hHs y hs hd
-          have hbs : SuppIn (inU lev) (bd (allT n) E y) := bd_supp lev E hs
           have hL : ∀ A, (bd (allT n) E (H y) - Da (H y)) A + H (bd (allT n) E y - Da y) A ∈ G k := fun A =>
             Submodule.add_mem _ (hρ k _ (hHG k y hy1) hHy.1 A) (hHG k _ (hρ (k + 1) y hy1 hs) A)
           have hw : ∀ A, (bd (allT n) E (H y) - ((m : ℂ) + (j + 1 : ℕ)) • y) A =
@@ -590,7 +633,6 @@ theorem sum_cU {M : Type} [AddCommGroup M] [Module ℂ M] {lev : Fin n → ℕ} 
     ∑ j, cU lev p q l j • g j =
       (if h : q = l.1.1 then g ⟨(p, l.1.2), hlev.reflect_lt (by rw [hpq, h]; exact hl)⟩ else 0) -
       (if h : l.1.2 = p then g ⟨(l.1.1, q), hlev.reflect_lt (by rw [← hpq, ← h]; exact hl)⟩ else 0) := by
-  have hlt : lev l.1.1 < lev l.1.2 := hl
   rw [← sum_root g (q = l.1.1) p l.1.2 (fun h => hlev.reflect_lt (by rw [hpq, h]; exact hl)),
     ← sum_root g (l.1.2 = p) l.1.1 q (fun h => hlev.reflect_lt (by rw [← hpq, ← h]; exact hl)),
     ← Finset.sum_sub_distrib]

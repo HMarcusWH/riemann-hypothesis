@@ -1,7 +1,55 @@
 module
 
-public import Mathlib
+public import GroundTheory.AutomorphicForms.GKModules.RightRegular
 public import GroundTheory.AutomorphicForms.GKModules.ZKFinite
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.Order.CompletePartialOrder
+import Mathlib.RingTheory.Finiteness.Lattice
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -46,8 +94,8 @@ theorem eq_sum_of_orthogonal [DecidableEq ι] (hε : ∀ i, ε i * ε i = 1)
   congr 1
   have e : B (b j) Y = b.repr Y j * ε j := by
     have := congrArg (B (b j)) (b.sum_repr Y)
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [← this, map_sum]
+
+    rw [← this, map_sum]
     simp [horth]
   rw [e, ← mul_assoc, mul_comm (ε j), mul_assoc, hε, mul_one]
 
@@ -76,9 +124,9 @@ theorem casimir_mem_center [DecidableEq ι] (hε : ∀ i, ε i * ε i = 1)
       noncomm_ring
     rw [e1]
     conv_lhs => rw [eq_sum_of_orthogonal hε horth ⁅X, b i⁆]
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [map_sum, map_smul, Finset.sum_mul, Finset.mul_sum, smul_mul_assoc, mul_smul_comm,
-      ← Finset.sum_add_distrib, ← smul_add, T]
+
+    simp only [map_sum, map_smul, Finset.sum_mul, Finset.mul_sum, smul_mul_assoc, mul_smul_comm,
+    ← Finset.sum_add_distrib, ← smul_add, T]
   have hS : ∑ i, ∑ j, a i j • T i j = 0 := by
     set S := ∑ i, ∑ j, a i j • T i j
     have : S = -S := by
@@ -222,9 +270,9 @@ theorem exists_aeval_laplacian_eq_zero [DecidableEq ι] (K : Subgroup G)
 
   have hΔ : h.laplacian (F := F) b = h.rightUAction (casimir b ε) +
       ∑ i, (1 - ε i) • (h.rightDerivEnd (h.ofLie (b i)) * h.rightDerivEnd (h.ofLie (b i))) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [laplacian, casimir, map_sum, map_smul, map_mul, rightUAction_ι,
-      ← Finset.sum_add_distrib]
+
+    simp only [laplacian, casimir, map_sum, map_smul, map_mul, rightUAction_ι,
+    ← Finset.sum_add_distrib]
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [← add_smul, add_sub_cancel, one_smul]
   have hΩ := casimir_mem_center (hε2) horth hsymm hinv (b := b)
@@ -276,8 +324,8 @@ theorem exists_aeval_laplacian_eq_zero [DecidableEq ι] (K : Subgroup G)
       Q = ∑ j : Fin (n + 1), Polynomial.C (g j) * Polynomial.X ^ (j : ℕ) := ⟨_, rfl⟩
   have hQf : Polynomial.aeval Δ Q f = 0 := by
     have e1 : Polynomial.aeval Δ Q f = ∑ j : Fin (n + 1), g j • (Δ ^ (j : ℕ)) f := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [hQdef, map_sum, LinearMap.sum_apply]
+
+      rw [hQdef, map_sum, LinearMap.sum_apply]
       refine Finset.sum_congr rfl fun j _ => ?_
       rw [map_mul, Polynomial.aeval_C, map_pow, Polynomial.aeval_X, Module.End.mul_apply,
         Module.algebraMap_end_apply]

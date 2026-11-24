@@ -1,16 +1,50 @@
 module
 
-public import Mathlib
-public import Development.ResolutionOfSingularities.EmbeddedResolution.IteratedBlowups.StrictTransform
-public import Development.ResolutionOfSingularities.Foundations.Blowup.StrictTransform
 public import Development.ResolutionOfSingularities.EmbeddedResolution.EtaleCoordinates.EtaleChartExistence
-public import Development.ResolutionOfSingularities.EmbeddedResolution.EtaleCoordinates.StrictNormalCrossings
-public import Development.ResolutionOfSingularities.EmbeddedResolution.DerivativeIdeal.IdealSheafOrder
-public import Development.ResolutionOfSingularities.EmbeddedResolution.IdealPrincipalization.MarkedBlowupSequence.BlowupSequenceData
 public import Development.ResolutionOfSingularities.EmbeddedResolution.IdealPrincipalization.MarkedBlowupSequence.ControlledTransform
-public import Development.ResolutionOfSingularities.EmbeddedResolution.IdealPrincipalization.MarkedBlowupSequence.IdealBlowupSequence
-public import Development.ResolutionOfSingularities.Foundations.BlowupUniversalProperty
-public import Development.ResolutionOfSingularities.EmbeddedResolution.ResolutionOfSingularities
+public import Development.ResolutionOfSingularities.EmbeddedResolution.IteratedBlowups.StrictTransform
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -249,61 +283,7 @@ private theorem eq_of_exceptionalIdeal_pow_mul_eq_mul {Y Y' : Scheme.{u}} {π : 
   rw [Blowup.exceptionalIdeal_eq_comap] at e
   exact eq_of_isLocallyGeneratedByNonZeroDivisor_pow_mul_eq_mul h.1 n e
 
-private theorem projectionToBase_eq_projectionToBase_toBlowupSequenceData (u : MarkedBlowupSequenceData p I m E) (i : ℕ) :
-    u.proj i = u.toBlowupSequenceData.projectionToBase i := by
-  induction i with
-  | zero => rw [u.proj_zero, BlowupSequenceData.projectionToBase_zero]
-  | succ j ih => rw [u.proj_succ j, BlowupSequenceData.projectionToBase_succ, ih]
-
-private theorem toBlowupSequenceData_boundary_eq_boundary (u : MarkedBlowupSequenceData p I m E) :
-    ∀ i, i ≤ u.length → u.toBlowupSequenceData.boundaryFrom E i = u.boundary i := by
-  intro i
-  induction i with
-  | zero =>
-      intro _
-      rw [BlowupSequenceData.boundary_zero, u.boundary_zero]
-  | succ j ih =>
-      intro hj
-      have hjlt : j < u.length := hj
-      rw [BlowupSequenceData.boundary_succ, ih (le_of_lt hjlt), u.boundary_succ j hjlt]
-
-private theorem toBlowupSequenceData_controlledTransform_eq_ideal (u : MarkedBlowupSequenceData p I m E) :
-    ∀ i, i ≤ u.length → u.toBlowupSequenceData.controlledTransform I m i = u.ideal i := by
-  intro i
-  induction i with
-  | zero =>
-      intro _
-      rw [BlowupSequenceData.controlledTransform_zero, u.ideal_zero]
-  | succ j ih =>
-      intro hj
-      have hjlt : j < u.length := hj
-      have hIH : u.toBlowupSequenceData.controlledTransform I m j = u.ideal j := ih (le_of_lt hjlt)
-      have hex : ∃ B : (u.obj (j + 1)).IdealSheafData,
-          Blowup.exceptionalIdeal (u.map j) (u.center j) ^ m * B =
-            (u.toBlowupSequenceData.controlledTransform I m j).comap (u.map j) := by
-        refine ⟨u.ideal (j + 1), ?_⟩
-        rw [hIH]
-        exact u.ideal_succ j hjlt
-      have key := u.toBlowupSequenceData.pow_exceptionalIdeal_mul_controlledTransform_succ I m j hex
-      refine eq_of_exceptionalIdeal_pow_mul_eq_mul (u.isBlowup j hjlt) m ?_
-      rw [key, hIH]
-      exact (u.ideal_succ j hjlt).symm
-
-theorem isMarked (u : MarkedBlowupSequenceData p I m E) : u.toBlowupSequenceData.IsMarked p I m E := by
-  refine ⟨?_, ?_, ?_, ?_⟩
-  · intro i hi
-    refine ⟨u.ideal (i + 1), ?_⟩
-    rw [toBlowupSequenceData_controlledTransform_eq_ideal u i (le_of_lt hi)]
-    exact u.ideal_succ i hi
-  · intro i hi
-    rw [toBlowupSequenceData_controlledTransform_eq_ideal u i (le_of_lt hi)]
-    exact u.center_order i hi
-  · intro i hi
-    have h := u.center_smooth i hi
-    rwa [projectionToBase_eq_projectionToBase_toBlowupSequenceData u i] at h
-  · intro i hi
-    have h := u.center_snc i hi
-    rwa [projectionToBase_eq_projectionToBase_toBlowupSequenceData u i, ← toBlowupSequenceData_boundary_eq_boundary u i (le_of_lt hi)] at h
+alias isMarked := _root_.FunctorialResolution.EmbeddedResolution.MarkedBlowupSequenceData.isMarked_toBlowupSequenceData
 
 private theorem getElemOpt_map_append.{v, w} {α : Type v} {β : Type w} (f : α → β) (T : List β) :
     ∀ (L : List α) (i : ℕ), i < L.length → (List.map f L ++ T)[i]? = Option.map f (L[i]?) := by

@@ -1,6 +1,43 @@
 module
 
 public import Formalism.SharpRestriction.GrowthBounds.LogarithmicSums.DfcHigh
+public import Formalism.SharpRestriction.GrowthBounds.LogarithmicSums.PrimeRpowNegLevelLe
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -50,8 +87,7 @@ theorem second_constant_nonneg (L : SizeData₂ D) (C : ℝ) (hC : 0 ≤ C) : 0 
   have ha := sc_one_lt_a L.sc
   have hlx := logx_nonneg L.sc
   have hb' := sc_b'_nonneg L.sc
-  have h1 : 0 ≤ C * (rG L.sc : ℝ) * L.sc.b' * Real.log L.sc.x :=
-    mul_nonneg (mul_nonneg (mul_nonneg hC (Nat.cast_nonneg _)) hb') hlx
+  have h1 : 0 ≤ C * (rG L.sc : ℝ) * L.sc.b' * Real.log L.sc.x := by positivity
   have h2 : 0 ≤ C * Real.log L.sc.x * (L.sc.a * ((((D.R.k : ℝ) * L.sc.x ^ Scale.A) ^ 4)⁻¹)) :=
     mul_nonneg (mul_nonneg hC hlx) (mul_nonneg (by linarith) (by positivity))
   linarith
@@ -96,7 +132,7 @@ def E1 (X : Inst D L) (K : Consts) (C bo : ℝ) (a b : HH D → ℤ) (A3 A4 PS :
   (if p ∈ A3 then Real.log p / p else 0) * (3 * ((D.R.m : ℝ) * (D.host.TT.card : ℝ)) * L.sc.a) +
   (if p ∈ A4 then Real.log p / p else 0) * (3 * ((D.R.m : ℝ) * (D.host.TT.card : ℝ)) * L.sc.a) +
   (if p ∈ PS then Real.log p / p * badf p else 0) * (3 * (D.R.m : ℝ) * L.sc.a) +
-  (if p ∈ candF D L K then Real.log p / p * (2 * dropI X K a b p + 4 * Sig X K a b p) else 0) *
+  (if p ∈ _root_.Formalism.MainNotions.AuxBlock8.cands D L K then Real.log p / p * (2 * dropI X K a b p + 4 * Sig X K a b p) else 0) *
       (4 * ((D.R.m : ℝ) * (D.host.TT.card : ℝ)) * L.sc.a)
 
 theorem low_le (X : Inst D L) (K : Consts) (hK : K.Nonneg) (P : ParameterChoice' D L) (C bo : ℝ) (hC : 0 ≤ C) (hbo : 0 ≤ bo)
@@ -117,7 +153,7 @@ theorem low_le (X : Inst D L) (K : Consts) (hK : K.Nonneg) (P : ParameterChoice'
   have m1 : p ∈ prB (L.sc.X'' D.R.n + 1) := mem_prB.2 ⟨hp, by linarith⟩
   have hsd0 : 0 ≤ Real.log p / p * ((D.host.TT \ TTP X K a b p).card : ℝ) :=
     mul_nonneg (lp_nonneg p) (Nat.cast_nonneg _)
-  have hiob : 0 ≤ (if p ∈ candF D L K then Real.log p / p * (2 * dropI X K a b p + 4 * Sig X K a b p) else 0) *
+  have hiob : 0 ≤ (if p ∈ _root_.Formalism.MainNotions.AuxBlock8.cands D L K then Real.log p / p * (2 * dropI X K a b p + 4 * Sig X K a b p) else 0) *
         (((D.R.m : ℝ) * (D.host.TT.card : ℝ)) * L.sc.a) := by
     split_ifs with hc
     · have := hSig p (cand_of_mem hc)

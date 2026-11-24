@@ -1,9 +1,48 @@
 module
 
-public import Mathlib
 public import Formalism.LocalToGlobal.Columns.RowForms
-public import Formalism.LocalToGlobal.Divisibility.TuplesLemmas
 public import Formalism.LocalToGlobal.Divisibility.DivisibilityProofs.TuplesP
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -31,7 +70,6 @@ theorem units_map_injective : Function.Injective (Units.map ι.toMonoidHom) := b
   intro a b h
   first
   | exact Units.ext (ι.injective (congrArg Units.val h))
-  | (apply Units.ext; apply ι.injective; have h' := congrArg Units.val h; simpa using h')
 
 theorem chrMap_ker (ξ : Chr F E K) : (chrMap ι ξ).ker = ξ.ker := by
   ext x
@@ -72,7 +110,6 @@ theorem tup_tame {S : Set ℕ} (μ : Tup F E K S) : ∀ v : HeightOneSpectrum (�
   have mk' : ∀ (H : Subgroup (AfE F E)ˣ) (ζ : Chr F E K), ζ ∈ kills Kˣ H ↔ H ≤ ζ.ker := fun _ _ => Iff.rfl
   first
   | exact (Subgroup.mem_iInf.mp (Subgroup.mem_inf.mp (Subgroup.mem_inf.mp μ.2).1).2) v
-  | (have h := μ.2; simp only [tupGrp, Subgroup.mem_inf, Subgroup.mem_iInf, mk'] at h; exact h.1.2 v)
 
 end TupMap
 
@@ -87,13 +124,10 @@ theorem coefMap_comp_inv {G : Type} [Group G] (f : G →* Kˣ) :
   refine MonoidHom.ext fun x => ?_
   first
   | simp only [MonoidHom.inv_apply, MonoidHom.comp_apply, map_inv]
-  | simp
 
 theorem Lev.coefMap_inv {κ : Type} [CommRing κ] {n : ℕ} (l : Lev κ K n) : (l.coefMap ι).inv = l.inv.coefMap ι := by
   first
   | exact congrArg (Lev.mk l.H) (coefMap_comp_inv ι l.lam)
-  | (show Lev.mk l.H ((Units.map ι.toMonoidHom).comp l.lam)⁻¹ = Lev.mk l.H ((Units.map ι.toMonoidHom).comp l.lam⁻¹)
-     exact congrArg (Lev.mk l.H) (coefMap_comp_inv ι l.lam))
 
 variable {E : Type} [Field E] [NumberField E] {n : ℕ}
 
@@ -129,8 +163,6 @@ theorem LevFam.coefMap_chr {SG : Finset (HeightOneSpectrum (𝓞 E))} (Λ : LevF
     simp [map_prod]
   first
   | exact key x
-  | (simp only [LevFam.chr, piChar, LevFam.coefMap, Lev.coefMap]
-     exact key x)
 
 end LevMap
 
@@ -142,7 +174,6 @@ theorem detChar_coefMap (χ : ℕ → κˣ →* Kˣ) (a : ℕ) (bl : List ℕ) :
     detChar (fun s => (Units.map ι.toMonoidHom).comp (χ s)) n a bl = (Units.map ι.toMonoidHom).comp (detChar χ n a bl) := by
   refine MonoidHom.ext fun x => ?_
   first
-  | simp only [detChar, MonoidHom.finset_prod_apply, MonoidHom.comp_apply, map_prod]
   | simp [detChar, map_prod]
 
 theorem lamK_coefMap (χ : ℕ → κˣ →* Kˣ) (r : ℕ) (bl : List ℕ) :
@@ -193,18 +224,12 @@ theorem rowTyQ_coefMap {S : Set ℕ} (μ : Tup X.F X.E X.K S) (Q : Finset (Heigh
   first
   | exact congrArg (Lev.mk _) ((congrArg (fun f => f⁻¹) (lambdaAtPrime_characterMap ι _ (tup_tame μ) P.1 _ _ _)).trans
       (coefMap_comp_inv ι _))
-  | (show Lev.mk _ (lamQP (chrMap ι (μ : Chr X.F X.E X.K)) P.1 _ _ _)⁻¹ =
-        Lev.mk _ ((Units.map ι.toMonoidHom).comp (lamQP (μ : Chr X.F X.E X.K) P.1 _ _ _)⁻¹)
-     rw [lambdaAtPrime_characterMap ι _ (tup_tame μ), coefMap_comp_inv])
 
 variable (R) in
 theorem mtTyQ_coefMap {S : Set ℕ} (μ : Tup X.F X.E X.K S) (Q : Finset (HeightOneSpectrum (𝓞 X.E))) (P : Q) :
     mtTyQ (X := X.coefExt L ι) R (chrMap ι (μ : Chr X.F X.E X.K)) Q P = (mtTyQ R (μ : Chr X.F X.E X.K) Q P).coefMap ι := by
   first
   | exact congrArg (Lev.mk _) (lambdaAtPrime_characterMap ι _ (tup_tame μ) P.1 _ _ _)
-  | (show Lev.mk _ (lamQP (chrMap ι (μ : Chr X.F X.E X.K)) P.1 _ _ _) =
-        Lev.mk _ ((Units.map ι.toMonoidHom).comp (lamQP (μ : Chr X.F X.E X.K) P.1 _ _ _))
-     rw [lambdaAtPrime_characterMap ι _ (tup_tame μ)])
 
 variable (sel : HeightOneSpectrum (𝓞 X.F) → HeightOneSpectrum (𝓞 X.E)) {S : Set ℕ}
 

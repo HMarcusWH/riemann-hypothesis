@@ -1,6 +1,54 @@
 module
 
-public import Mathlib
+public import Mathlib.LinearAlgebra.Determinant
+public import Mathlib.RingTheory.DiscreteValuationRing.Basic
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+public import Mathlib.RingTheory.OrderOfVanishing.Noetherian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.LinearAlgebra.FreeModule.Finite.Quotient
 
 @[expose] public section
 
@@ -38,11 +86,9 @@ theorem goal1 :
   have hab : ∀ i, (ab i : ι → O) = a i • b' i := Submodule.smithNormalFormBotBasis_def b h
   have hL : Module.length O ((ι → O) ⧸ N) = ∑ i, IsDiscreteValuationRing.addVal O (a i) := by
     rw [(N.quotientEquivPiSpan b h).length_eq, Module.length_pi_of_fintype]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    exact Ring.ord_eq_addVal (a i)
+    exact Finset.sum_congr rfl fun i _ => Ring.ord_eq_addVal (a i)
   let u : (ι → O) ≃ₗ[O] N := b'.equiv ab (Equiv.refl ι)
-  have hgj : ∀ j, (N.subtype ∘ₗ u.toLinearMap) (b' j) = a j • b' j := by
-    intro j
+  have hgj : ∀ j, (N.subtype ∘ₗ u.toLinearMap) (b' j) = a j • b' j := fun j => by
     rw [← hab j]
     simp [u]
   have hg : LinearMap.toMatrix b' b' (N.subtype ∘ₗ u.toLinearMap) = Matrix.diagonal a := by

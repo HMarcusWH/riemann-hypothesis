@@ -1,7 +1,57 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.TailIntegrals.FixedUnitaryApplyFixedIndexRight
+public import Formalism.HermitianCurvature.WeylElementCommutesLevelOne
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.TailIntegrals.IntegrableUnitIndicator
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.TailIntegrals.HalfLeNormOneSub
+import Std.Tactic.BVDecide.Normalize.Prop
 
 @[expose] public section
 
@@ -18,7 +68,6 @@ lemma enn_nnnorm (z : ℂ) : (‖z‖₊ : ℝ≥0∞) = ENNReal.ofReal ‖z‖ 
   first
   | exact (ofReal_norm_eq_enorm z).symm
   | (rw [ENNReal.ofReal, Real.toNNReal_of_nonneg (norm_nonneg _)]; rfl)
-  | simp
 
 lemma ofReal_rpow_neg_anti {a b s : ℝ} (hs : 0 ≤ s) (hab : a ≤ b) :
     ENNReal.ofReal b ^ (-s) ≤ ENNReal.ofReal a ^ (-s) := by
@@ -37,7 +86,6 @@ lemma measurable_PsiF {ι : Type*} [Fintype ι] [DecidableEq ι] (p q : ι) (s :
     first
     | exact measurable_const.sub (((continuous_star.comp (continuous_apply p)).measurable).div
         (Complex.continuous_ofReal.comp (continuous_tW q)).measurable)
-    | fun_prop
   show Measurable fun x : ι → ℂ => (‖(1 : ℂ) - star (x p) / ((tW q x : ℝ) : ℂ)‖₊ : ℝ≥0∞) ^ (-s)
   exact (measurable_coe_nnreal_ennreal.comp (measurable_nnnorm.comp h1)).pow_const _
 
@@ -54,8 +102,6 @@ private lemma mulVec_bvec_eq_fun_apply {n : ℕ} (M : Matrix (Fin n) (Fin n) ℂ
   funext i
   first
   | simp [Matrix.mulVec, bvec, Pi.single_apply]
-  | simp [Matrix.mulVec, dotProduct, bvec, Pi.single_apply]
-  | simp [Matrix.mulVec, Matrix.dotProduct, bvec, Pi.single_apply]
 
 private lemma star_bvec_dotProduct_eq_apply {n : ℕ} (j : Fin n) (w : Fin n → ℂ) : star (bvec j) ⬝ᵥ w = w j := by
   first
@@ -67,7 +113,6 @@ private lemma star_bvec_dotProduct_eq_apply {n : ℕ} (j : Fin n) (w : Fin n →
      · simp [bvec]
      · intro b _ hb; simp [bvec, Pi.single_apply, hb]
      · simp)
-  | simp [bvec]
 
 lemma Tz_iK (k : ℕ) : 0 < Tz k 0 (bvec (iK k)) := by
   have hKK : Hpk k 0 (iK k) (iK k) = -1 := by
@@ -83,7 +128,6 @@ lemma Tz_iK (k : ℕ) : 0 < Tz k 0 (bvec (iK k)) := by
 lemma ae_mem_fixedUnitary {ν : Measure (Mt k 0)} (hν : IsHaarOn (U0 k) ν) : ∀ᵐ x ∂ν, (Matrix.of x : Mat k 0) ∈ U0 k := by
   first
   | exact ae_iff.2 hν.conc
-  | (rw [ae_iff]; convert hν.conc using 1)
 
 lemma haar_univ_lt_top (hCW : CompactW) {ν : Measure (Mt k 0)} (hν : IsHaarOn (U0 k) ν) : ν Set.univ < ∞ := by
   obtain ⟨U, hU⟩ : ∃ U : Set (Mt k 0), U = U0 k := ⟨_, rfl⟩
@@ -142,7 +186,6 @@ lemma rot (hk : 1 ≤ k) {ν : Measure (Mt k 0)} (hν : IsHaarOn (U0 k) ν) {φ 
   have hu1 : star u ⬝ᵥ u = 1 := by
     first
     | simp only [dotProduct, Pi.star_apply, hterm]
-    | simp only [Matrix.dotProduct, Pi.star_apply, hterm]
     rw [← Complex.ofReal_sum, ← Finset.sum_div, hS, div_self hc2, Complex.ofReal_one]
   obtain ⟨R, hR, hRe⟩ := exists_fixedUnitary_sending_basis hk u hu0 hu1
   have hRv : Rᴴ *ᵥ v = star c • bvec (iW k) + v (iK k) • bvec (iK k) := by
@@ -219,8 +262,6 @@ private lemma norm_one_sub_le_two_mul_norm_one_sub_real_mul {w : ℂ} {ρ : ℝ}
     rw [norm_mul]
     first
     | rw [Complex.norm_real, Real.norm_of_nonneg h0]
-    | rw [Complex.norm_of_nonneg h0]
-    | simp [abs_of_nonneg h0]
   have e : (1 : ℂ) - w = (1 - (ρ : ℂ) * w) + ((ρ : ℂ) - 1) * w := by ring
   have hA1 : ‖(1 : ℂ) - w‖ ≤ ‖1 - (ρ : ℂ) * w‖ + ‖((ρ : ℂ) - 1) * w‖ := by
     rw [e]; exact norm_add_le _ _
@@ -274,7 +315,6 @@ lemma bnd (hk : 1 ≤ k) {ν : Measure (Mt k 0)} (hν : IsHaarOn (U0 k) ν) {s :
           have hz : ((Matrix.of x)ᴴ *ᵥ v) (iW k) = 0 := by
             first
             | simp only [Matrix.mulVec, dotProduct, Matrix.conjTranspose_apply, Matrix.of_apply]
-            | simp only [Matrix.mulVec, Matrix.dotProduct, Matrix.conjTranspose_apply, Matrix.of_apply]
             refine Finset.sum_eq_zero fun i _ => ?_
             by_cases hi : i = iK k
             · rw [hi, hx0, star_zero, zero_mul]

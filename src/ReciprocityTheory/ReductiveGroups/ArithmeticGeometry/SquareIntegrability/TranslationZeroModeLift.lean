@@ -1,6 +1,47 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SquareIntegrability.QuotientTorusMinimumBound
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PiTensorProduct
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -44,8 +85,8 @@ theorem Uh_add (X : PT E) (q : ℕ) {a b : Vsp X.dim} (ha : a ∈ X.L) (hb : b �
     simp only [Hf, PiLp.add_apply, map_add (f := _), mul_add, add_mul, Finset.sum_add_distrib]
     ring
   have h4 : Hf b a = (starRingEnd ℂ) (Hf a b) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [Hf, map_sum, map_mul, Complex.conj_conj]
+
+    simp only [Hf, map_sum, map_mul, Complex.conj_conj]
     exact Finset.sum_congr rfl fun i _ => mul_comm _ _
   have h5 : Hf b a - Hf a b = -(2 * (k : ℂ) * Complex.I) := by
     rw [h4]
@@ -100,12 +141,10 @@ theorem zeroModeLift_add_lattice {x : Vsp X.dim} (hx : x ∈ Ip X I) (v : Vsp X.
     exact wmap_mem_GB hx
   have h1 := hsec _ hγ (wmap (IR I) v)
   rw [show (YB hI hP q).ka = kaB X I q from rfl, kaB_wmap hI _ hx] at h1
-  push_cast at h1
   have hz : ∀ k, z (IR I) k (v + x) = z (IR I) k v + z (IR I) k x := by
     intro k
     first
     | (simp only [z]; rw [Hf_add_l])
-    | simp [z, Hf_add_l]
   have hzr : ∀ k, (starRingEnd ℂ) (z (IR I) k x) = z (IR I) k x := fun k =>
     Complex.conj_eq_iff_im.mpr (z_im_Ip hx k)
   have hd1 := Hf_decomp (K := IR I) (hK_of hI) v x
@@ -179,8 +218,6 @@ theorem Tc_mk (γ : X.L) : Tc X I q β (Submodule.Quotient.mk γ) = Tm X I q β 
   rw [← Submodule.Quotient.eq]
   first
   | exact Quotient.out_eq _
-  | exact Quotient.out_eq' _
-  | simp
 
 theorem Tc_shift (c : Qc X I) (γ0 : X.L) (v : Vsp X.dim) :
     Tc X I q β c (v + (γ0 : Vsp X.dim)) = (X.eps (γ0 : Vsp X.dim) : ℂ) ^ q *

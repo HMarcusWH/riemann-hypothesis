@@ -1,9 +1,61 @@
 module
 
-public import Mathlib
-public import Formalism.CoboundaryTransfers.Statement
-public import Formalism.WeaklyAdmissibleFiltrations.Statement
 public import Formalism.WeaklyAdmissibleFiltrations.StatementPC
+public import Mathlib.Analysis.Normed.Field.Instances
+public import Mathlib.FieldTheory.KrullTopology
+public import Mathlib.NumberTheory.Padics.Complex
+public import Mathlib.RingTheory.Perfection
+public import Mathlib.RingTheory.PowerSeries.Derivative
+public import Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots
+public import Mathlib.RingTheory.WittVector.Compare
+public import Mathlib.RingTheory.WittVector.Frobenius
+public import Mathlib.RingTheory.WittVector.Teichmuller
+import Mathlib.Algebra.GroupWithZero.Submonoid.CancelMulZero
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.PicardGroup
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.SimpleRing.Principal
+public import Mathlib.RingTheory.WittVector.DiscreteValuationRing
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
+public import Mathlib.RingTheory.Polynomial.Cyclotomic.Basic
+public import Mathlib.RingTheory.Polynomial.Cyclotomic.Eval
 
 @[expose] public section
 
@@ -164,7 +216,7 @@ def herrZ1Δ {O D ι : Type} [CommRing O] [AddCommGroup D] [Module O D] (γ φ :
   herrCocycles γ φ ⊓ ⨅ d ∈ S, LinearMap.ker (LinearMap.prodMap (δ d) (δ d) - LinearMap.id)
 
 
-set_option maxHeartbeats 1000000 in
+
 structure LocWach (PD : PeriodData G Qp K₀ K B BdR) (LL O : Type) [Field LL] [Algebra Qp LL]
     [CommRing O] [Algebra O LL] [TopologicalSpace LL] (v : AddValuation LL (WithTop ℚ)) (n : ℕ) where
 
@@ -967,11 +1019,11 @@ theorem isUnit_inclW_ξ : IsUnit (inclW l AI.ξ) := by
   rw [inclW, WittVector.map_coeff]
   have h0 : AI.ξ.coeff 0 = ∑ i ∈ Finset.range l, AI.ε1 ^ i := by
     have := congrArg (fun x => WittVector.constantCoeff x) (show AI.ξ = AI.ξ from rfl)
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [ξ, map_sum, map_pow] at this ⊢
+
+    simp only [ξ, map_sum, map_pow] at this ⊢
     change WittVector.constantCoeff (∑ i ∈ Finset.range l, (WittVector.teichmuller l AI.ε1) ^ i) = _
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp [map_sum, map_pow, WittVector.teichmuller_coeff_zero]
+
+    simp [map_sum, map_pow, WittVector.teichmuller_coeff_zero]
   rw [h0]
   intro hz
   have hz' : ∑ i ∈ Finset.range l, AI.ε1 ^ i = 0 :=
@@ -1223,5 +1275,88 @@ def LocHW.IsPt {P : LocPrime l} (H : LocHW l P) {K : FinExt l} {s : ℕ} {LL : F
     (τ : ↥(Ks K s) →ₐ[ℚ_[l]] ↥LL.1) : Prop :=
   (∀ (x : ↥(K0 K)) (y : ↥(Ks K s)), (y : Om l) = (x : Om l) → τ y = (H.W K s LL h).emb i x) ∧
     ∀ y : ↥(Ks K s), (y : Om l) = P.ζQ s → τ y = ζ
+
+namespace Loc
+
+variable {l : ℕ} [Fact l.Prime]
+
+instance (priority := high) OL.instModuleSubmodule (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [Module ↥(OL LL) M] (S : Submodule ↥(OL LL) M) : Module ↥(OL LL) ↥S :=
+  Submodule.module S
+
+instance (priority := high) OL.instSMulSubmodule (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [Module ↥(OL LL) M] (S : Submodule ↥(OL LL) M) : SMul ↥(OL LL) ↥S :=
+  (Submodule.module S).toSMul
+
+instance (priority := high) FinExt.instModuleSubmodule (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [Module ↥LL.1 M] (S : Submodule ↥LL.1 M) : Module ↥LL.1 ↥S :=
+  Submodule.module S
+
+instance (priority := high) FinExt.instSMulSubmodule (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [Module ↥LL.1 M] (S : Submodule ↥LL.1 M) : SMul ↥LL.1 ↥S :=
+  (Submodule.module S).toSMul
+
+instance (priority := high) OL.instModuleSubmoduleField (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [mL : Module ↥LL.1 M] [mO : Module ↥(OL LL) M]
+    [h : @IsScalarTower ↥(OL LL) ↥LL.1 M _ mL.toSMul mO.toSMul]
+    (S : Submodule ↥LL.1 M) : Module ↥(OL LL) ↥S :=
+  @Submodule.module' ↥(OL LL) ↥LL.1 M _ _ mL S _ _ mO h
+
+instance (priority := high) OL.instSMulSubmoduleField (LL : FinExt l) {M : Type*} [AddCommMonoid M]
+    [mL : Module ↥LL.1 M] [mO : Module ↥(OL LL) M]
+    [h : @IsScalarTower ↥(OL LL) ↥LL.1 M _ mL.toSMul mO.toSMul]
+    (S : Submodule ↥LL.1 M) : SMul ↥(OL LL) ↥S :=
+  (@Submodule.module' ↥(OL LL) ↥LL.1 M _ _ mL S _ _ mO h).toSMul
+
+instance (priority := high) OL.instModulePi (LL : FinExt l) {ι : Type*} {M : ι → Type*}
+    [∀ i, AddCommMonoid (M i)] [∀ i, Module ↥(OL LL) (M i)] : Module ↥(OL LL) (∀ i, M i) :=
+  Pi.module _ _ _
+
+instance (priority := high) OL.instSMulPi (LL : FinExt l) {ι : Type*} {M : ι → Type*}
+    [∀ i, SMul ↥(OL LL) (M i)] : SMul ↥(OL LL) (∀ i, M i) :=
+  Pi.instSMul
+
+instance (priority := high) FinExt.instModulePi (LL : FinExt l) {ι : Type*} {M : ι → Type*}
+    [∀ i, AddCommMonoid (M i)] [∀ i, Module ↥LL.1 (M i)] : Module ↥LL.1 (∀ i, M i) :=
+  Pi.module _ _ _
+
+instance (priority := high) FinExt.instSMulPi (LL : FinExt l) {ι : Type*} {M : ι → Type*}
+    [∀ i, SMul ↥LL.1 (M i)] : SMul ↥LL.1 (∀ i, M i) :=
+  Pi.instSMul
+
+instance (priority := high) OL.instAlgebraPi (LL : FinExt l) {ι : Type*} {B : ι → Type*}
+    [∀ i, Semiring (B i)] [∀ i, Algebra ↥(OL LL) (B i)] : Algebra ↥(OL LL) (∀ i, B i) :=
+  Pi.algebra _ _
+
+instance (priority := high) OL.instAlgebraPowerSeries (LL : FinExt l) :
+    Algebra ↥(OL LL) (PowerSeries ↥(OL LL)) :=
+  MvPowerSeries.instAlgebra
+
+instance (priority := high) OL.instAlgebraTensorProductLeft (LL : FinExt l) {B : Type*}
+    [CommSemiring B] [Algebra ℤ_[l] B] : Algebra ↥(OL LL) (↥(OL LL) ⊗[ℤ_[l]] B) :=
+  Algebra.TensorProduct.leftAlgebra
+
+instance (priority := high) OL.instModuleTensorProductLeft (LL : FinExt l) {M : Type*}
+    [AddCommMonoid M] [Module ℤ_[l] M] : Module ↥(OL LL) (↥(OL LL) ⊗[ℤ_[l]] M) :=
+  TensorProduct.leftModule
+
+instance (priority := high) RW.instAddCommGroupTensorProduct (LL : FinExt l) {M : Type*}
+    [AddCommGroup M] [Module ↥(OL LL) M] : AddCommGroup (RW LL ⊗[↥(OL LL)] M) :=
+  TensorProduct.addCommGroup
+
+instance (priority := high) RW.instModuleTensorProduct (LL : FinExt l) {M : Type*}
+    [AddCommMonoid M] [Module ↥(OL LL) M] : Module (RW LL) (RW LL ⊗[↥(OL LL)] M) :=
+  TensorProduct.leftModule
+
+instance (priority := high) RW.instSMulTensorProduct (LL : FinExt l) {M : Type*}
+    [AddCommMonoid M] [Module ↥(OL LL) M] : SMul (RW LL) (RW LL ⊗[↥(OL LL)] M) :=
+  TensorProduct.leftModule.toSMul
+
+instance (priority := high) RW.instHSMulTensorProduct (LL : FinExt l) {M : Type*}
+    [AddCommMonoid M] [Module ↥(OL LL) M] :
+    HSMul (RW LL) (RW LL ⊗[↥(OL LL)] M) (RW LL ⊗[↥(OL LL)] M) :=
+  @instHSMul _ _ TensorProduct.leftModule.toSMul
+
+end Loc
 
 end Formalism.BasicNotions

@@ -1,9 +1,51 @@
 module
 
-public import Mathlib
 public import Development.WeilBound.ThetaLifts.Reductions.WeilPairs.Mfac
-public import Development.WeilBound.ThetaLifts.Reductions.WeilPairs.CAFInvol
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ReindexDblIncM
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsHalfAbstract
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ThetaFunctionHeisenbergInvariant
+public import Development.WeilBound.ThetaLifts.Reductions.WeilPairs.CAFInvol
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -75,7 +117,7 @@ theorem L_col (c : R →+* R) {r : R} (hr : 2 * r = 1) (J a b : Matrix ι ι R) 
     rw [Matrix.smul_mul, Pm, Matrix.fromBlocks_mul_fromRows]
     ext i j
     rcases i with i | i <;> by_cases h : i = j <;>
-      (try simp [Matrix.one_apply, h]) <;> linear_combination hr
+      (try simp [h]) <;> linear_combination hr
   simp only [L]
   rw [Matrix.mul_assoc, Matrix.mul_assoc, q1, Matrix.fromBlocks_mul_fromRows, Pm, Matrix.fromBlocks_mul_fromRows,
     Matrix.fromRows_mul]
@@ -164,10 +206,10 @@ def leviGL (c : R →+* R) {r : R} (hr : 2 * r = 1) {J : Matrix (Fin n) (Fin n) 
     by rw [Matrix.submatrix_mul_equiv, L_mul c hr hJu, t.inv_mul, L_one c hr hJu, Matrix.submatrix_one_equiv]⟩
   map_one' := by
     ext1
-    simp only [Units.val_one, inv_one, Units.val_mk, L_one c hr hJu, Matrix.submatrix_one_equiv]
+    simp only [Units.val_one, inv_one, L_one c hr hJu, Matrix.submatrix_one_equiv]
   map_mul' s t := by
     ext1
-    simp only [Units.val_mul, mul_inv_rev, Units.val_mk]
+    simp only [Units.val_mul, mul_inv_rev]
     rw [Matrix.submatrix_mul_equiv, L_mul c hr hJu]
 
 theorem leviGL_val (c : R →+* R) {r : R} (hr : 2 * r = 1) {J : Matrix (Fin n) (Fin n) R} (hJu : IsUnit J.det)
@@ -207,7 +249,7 @@ theorem leviGL_map {R' : Type} [CommRing R'] (φ : R →+* R') (c : R →+* R) (
 end PositivityTheory.ThKW.LeviParabolicGL
 
 
-set_option maxHeartbeats 800000 in
+
 open PositivityTheory.ThKW.LeviParabolicGL in
 theorem PositivityTheory.ThKW.PhaseFourierInjectivity.levi : ∀ (F E : Type) [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E] (σ : E →ₐ[F] E) (B : Base F E),
     B.IsGood σ → ∀ (nT : ℕ) (JT : Matrix (Fin nT) (Fin nT) E), IsHermND σ JT →

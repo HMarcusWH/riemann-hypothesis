@@ -1,10 +1,49 @@
 module
 
-public import Mathlib
 public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.IdeleLimits.Levels
-public import GroundTheory.ProfiniteCohomology.FilteredHomology
 public import GroundTheory.ProfiniteCohomology.Factor
+import GroundTheory.ProfiniteCohomology.FilteredHomology
 public import GroundTheory.ProfiniteCohomology.InflationRestriction.DegreeOne
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.FieldTheory.Galois.Profinite
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -48,7 +87,7 @@ theorem levelCochains_injective (p : GLevel K) (m : ℕ) :
   have hσ : (fun i => restrictHom (E := p.1) (σ i)) = τ :=
     funext fun i => Function.surjInv_eq (restrictHom_surjective (F := K) (E := p.1)) (τ i)
   have h1 := congrFun (congrArg (fun c => ((cochainsComplexι (limitRep K)).f m).hom c) h) σ
-  simp only [cochainsComplexι_cochainsMapAlong_apply] at h1
+  simp only at h1
   change Additive.ofMul (of p.1 (((cochainsComplexι _).f m).hom y
       (fun i => restrictHom (E := p.1) (σ i))).toMul) =
     Additive.ofMul (of p.1 (((cochainsComplexι _).f m).hom y'
@@ -122,7 +161,7 @@ theorem exists_levelInfl_eq (n : ℕ) (x : cohomology (limitRep K) n) :
   rw [iCycles_cyclesMap_apply, hw, hy₀]
 
 
-set_option maxHeartbeats 1600000 in
+
 theorem exists_levelTransition_eq_zero (n : ℕ) (p : GLevel K) (y : cohomology (ideleRep K.1 p.1.1) n)
     (hy : (levelInfl K p.1 n).hom y = 0) :
     ∃ (q : GLevel K) (h : p ≤ q),

@@ -1,9 +1,54 @@
 module
 
-public import Mathlib
+public import GroundTheory.GlobalFields.CompletionAtPlace.Integers
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.IdeleRestriction
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.ResLocal
+import GroundTheory.GlobalFields.IdeleGroups.IdeleNorms.InfiniteAdeleRingMapInfiniteAdeleRingMap
 public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.IdeleRestriction.Components
 public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.IdeleRestriction.IsDiscreteRepResGlobalDecompLimitRep
+import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalLimits.InfLiesOver
+import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalLimits.LiesOver
+public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.LocalResKill
 public import GroundTheory.ProfiniteCohomology.GlobalClassFormation.Splitting
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
@@ -89,7 +134,7 @@ section Finite
 variable {v : HeightOneSpectrum (𝓞 K.1)}
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem idelesProj_eq_of_algebraMap (w : PlacesOver E.1 v) (ι : ℚ̄ →ₐ[K.1] AlgebraicClosure (v.adicCompletion K.1))
     (ιE : ℚ̄ →ₐ[E.1] AlgebraicClosure (w.1.adicCompletion E.1))
     (e : AlgebraicClosure (w.1.adicCompletion E.1) ≃+* AlgebraicClosure (v.adicCompletion K.1))
@@ -128,7 +173,7 @@ section Infinite
 variable {v : InfinitePlace K.1}
 
 
-set_option maxHeartbeats 2000000 in
+
 theorem infIdelesProj_eq_of_algebraMap (w : v.placesOver E.1) (ι : ℚ̄ →ₐ[K.1] AlgebraicClosure v.Completion)
     (ιE : ℚ̄ →ₐ[E.1] AlgebraicClosure (w : InfinitePlace E.1).Completion)
     (e : AlgebraicClosure (w : InfinitePlace E.1).Completion ≃+* AlgebraicClosure v.Completion)
@@ -172,7 +217,7 @@ end Infinite
 section Places
 
 
-set_option maxHeartbeats 4000000 in
+
 variable (v) in
 theorem exists_idelesLocalRes_idelesResField_eq_zero_of_placeOfEmbedding (v : HeightOneSpectrum (𝓞 K.1))
     (ι : ℚ̄ →ₐ[K.1] AlgebraicClosure (v.adicCompletion K.1)) (y : cohomology (limitRep K) 2)
@@ -238,7 +283,7 @@ theorem exists_idelesLocalRes_idelesResField_eq_zero_of_placeOfEmbedding (v : He
   rw [h0, map_zero]
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem exists_infIdelesLocalRes_idelesResField_eq_zero_of_infPlaceOfEmbedding {v : InfinitePlace K.1}
     (ι : ℚ̄ →ₐ[K.1] AlgebraicClosure v.Completion) (y : cohomology (limitRep K) 2)
     (hy : (infIdelesLocalRes ι 2).hom y = 0) :
@@ -295,7 +340,7 @@ end Places
 section Main
 
 
-set_option maxHeartbeats 4000000 in
+
 theorem idelesResField_eq_zero (ι : LocalEmbeddings K) (y : cohomology (limitRep K) 2)
     (hinf : ∀ v : InfinitePlace K.1, idelesLimitCohomologyEquiv ι (by norm_num) y (.inl v) = 0)
     (hfin : ∀ (v : HeightOneSpectrum (𝓞 K.1)) (w : PlacesOver E.1 v),

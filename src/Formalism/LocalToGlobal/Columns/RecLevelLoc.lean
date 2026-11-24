@@ -1,7 +1,50 @@
 module
 
 public import Formalism.LocalToGlobal.Columns.RecLevel
-public import Formalism.SatakeDualWeyl.KpqSubgroupCompact
+public import Formalism.LocalToGlobal.Columns.AdelicLemmas
+import Formalism.SatakeDualWeyl.AdelicIwasawaHecke.LevelSubgroupFiniteAdelicStandard
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -408,12 +451,12 @@ theorem mirabolicLevel_maps_baseLattice {k : GL (Fin n) (E ⊗[F] Formalism.L2.H
     rw [AddSubmonoidClass.coe_finsetSum]
     refine Finset.sum_congr rfl fun j _ => ?_
     rw [← hu j]; rfl
-  set_option synthInstance.maxHeartbeats 100000 in
-    · rw [map_sum, Finset.sum_eq_single (lastIdx n)]
-      · rw [map_mul, huP P hP, mul_zero]
-      · intro j _ hj
-        rw [map_mul, ← hr P, hm P hP j, if_neg hj, zero_mul]
-      · intro h; exact absurd (Finset.mem_univ _) h
+
+  · rw [map_sum, Finset.sum_eq_single (lastIdx n)]
+    · rw [map_mul, huP P hP, mul_zero]
+    · intro j _ hj
+      rw [map_mul, ← hr P, hm P hP j, if_neg hj, zero_mul]
+    · intro h; exact absurd (Finset.mem_univ _) h
 
 theorem mirabolicLevel_le_stabilizer_base : J0 hc n ST ≤ stabGL (Formalism.L2.Herm.hatL (F := F) (baseLb E n ST)) := fun k hk =>
   rll_stab_of_maps _ k (mirabolicLevel_maps_baseLattice hc n ST hk) (mirabolicLevel_maps_baseLattice hc n ST (Subgroup.inv_mem _ hk))

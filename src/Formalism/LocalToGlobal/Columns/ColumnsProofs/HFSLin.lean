@@ -1,8 +1,56 @@
 module
 
-public import Mathlib
-public import Formalism.LocalToGlobal.Columns.HeckeInert
+public import Formalism.LocalToGlobal.Columns.RhoEqOfSmulEq
+public import Mathlib.LinearAlgebra.Eigenspace.Basic
 public import Development.AutomorphicArithmetic.IntegralCasts.CapelliIdentities.HfsAevalRestrict
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+public import Mathlib.LinearAlgebra.Eigenspace.Minpoly
+public import Mathlib.LinearAlgebra.Eigenspace.Pi
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Topology.Sheaves.Presheaf
 
 @[expose] public section
 
@@ -19,10 +67,6 @@ section HfsSplit
 open Polynomial Module.End
 
 variable {L W : Type} [Field L] [AddCommGroup W] [Module L W]
-
-theorem hfs_aeval_restrict (f : Module.End L W) {p : Submodule L W} (h : ∀ x ∈ p, f x ∈ p) (q : L[X]) (x : p) :
-    ((aeval (f.restrict h) q x : p) : W) = aeval f q x := by
-  first | exact UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict .. | (apply UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict <;> assumption) | (intros; apply UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict <;> assumption) | (apply @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict <;> assumption) | (intros; apply @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict <;> assumption) | (apply @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict <;> first | assumption | infer_instance) | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› f p h q x | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› f p h q | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› f p h | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› f p | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› f | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› ‹_› | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› ‹_› | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W ‹_› | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L W | exact @UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict L
 
 theorem hfs_iSup_maxGen_of_splits [FiniteDimensional L W] (f : Module.End L W) (hs : (minpoly L f).Splits) :
     ⨆ μ, f.maxGenEigenspace μ = ⊤ := by
@@ -51,7 +95,7 @@ theorem hfs_iSup_maxGen_of_splits [FiniteDimensional L W] (f : Module.End L W) (
     have hs' : (minpoly L f').Splits := by
       refine hs.of_dvd (minpoly.ne_zero hint) (minpoly.dvd L f' ?_)
       ext x
-      rw [hfs_aeval_restrict f h_f_ER, minpoly.aeval]
+      rw [_root_.UpperTheory.Reformulated.B.Qh20.hfs_aeval_restrict f h_f_ER, minpoly.aeval]
       rfl
     have h_dim_ES_pos : 0 < finrank L ES := by
       dsimp +instances only [ES]
@@ -202,8 +246,8 @@ variable {ι} {S : GSD K} {S' : GSD L} (b : GSDBC ι S S')
 
 theorem j_sum {α : Type} (s : Finset α) (a : α → K) (v : α → S.V) :
     b.j (∑ x ∈ s, a x • v x) = ∑ x ∈ s, ι (a x) • b.j (v x) := by
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum]
+
+  rw [map_sum]
   exact Finset.sum_congr rfl fun x _ => b.j_smul _ _
 
 def bas : Basis S.ιV L S'.V := Basis.mk b.li b.sp
@@ -269,22 +313,22 @@ theorem sum_coord (x : S'.V) : ∑ k, F.e k • b.j (b.coord F k x) = x := by
 theorem repr_rho (g : S'.G) (x : S'.V) (l : S.ιV) :
     b.bas.repr (S'.ρ g x) l = ∑ i, b.bas.repr x i * ι (S.bV.repr (S.ρ (b.eG g) (S.bV i)) l) := by
   conv_lhs => rw [← b.bas.sum_repr x]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [map_sum, map_sum, Finsupp.finsetSum_apply]
+
+  rw [map_sum, map_sum, Finsupp.finsetSum_apply]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [map_smul, b.bas_apply, b.rho, map_smul, Finsupp.smul_apply, b.repr_j, smul_eq_mul]
 
 theorem coord_rho (k : Fin F.r) (g : S'.G) (x : S'.V) :
     b.coord F k (S'.ρ g x) = S.ρ (b.eG g) (b.coord F k x) := by
   refine S.bV.ext_elem fun l => ?_
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [repr_coord, repr_rho, map_sum]
+
+  rw [repr_coord, repr_rho, map_sum]
   have h2 : S.ρ (b.eG g) (b.coord F k x) = ∑ i, (F.c (b.bas.repr x i) k) • S.ρ (b.eG g) (S.bV i) := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [coord, map_sum]
+
+    rw [coord, map_sum]
     exact Finset.sum_congr rfl fun i _ => map_smul _ _ _
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [h2, map_sum, Finsupp.finsetSum_apply]
+
+  rw [h2, map_sum, Finsupp.finsetSum_apply]
   simp only [Finset.sum_apply, map_smul, Finsupp.smul_apply, smul_eq_mul]
   refine Finset.sum_congr rfl fun i _ => ?_
   rw [mul_comm, F.smul, Pi.smul_apply, smul_eq_mul, mul_comm]

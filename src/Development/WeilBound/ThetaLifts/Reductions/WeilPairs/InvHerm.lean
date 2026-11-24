@@ -1,12 +1,57 @@
 module
 
-public import Mathlib
 public import Development.WeilBound.ThetaLifts.Reductions.WeilPairs.Mfac
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsRationalDarbouxHermitianTensorAdeles
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsWeilTransportAdelicSchwartzCmExtension
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ContinuousTransportWeilDatumCmExtensionStatement
-public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsAdmittedEqDiagonalLagrangianThetaIntegralStatement
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.LagrInt
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ReindexDblIncM
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.IsTransportF
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ContinuousTransportWeilDatumCmExtension
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsAdmittedEqDiagonalLagrangianThetaIntegral
 public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsHalfAbstract
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsRationalDarbouxHermitianTensorAdeles
+public import Development.AbelianVarietyTheory.Proofs.DivisorProofs.StandardTraceAddCharIsStandardCharOfAdmissibleCM
+public import Development.AbelianVarietyTheory.Definitions.GlobalTwisting.DecayZero
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.TwoMulInvOf
+import Development.AbelianVarietyTheory.BlockTheory.DivisorBase.WeilTensorModels
+import Formalism.LocalToGlobal.IndefiniteReal.DatumF
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsThetaTransformEqOrientedThetaFunctionCM
+import Development.AbelianVarietyTheory.Proofs.DivisorProofs.ExistsWeilTransportAdelicSchwartzCmExtension
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -76,7 +121,7 @@ theorem exists_coord {B : Base F E} (hB : B.IsGood σ) {nS nT : ℕ} {JS : Matri
       GlobalTheory.TransportF.numCoordF (σ := σ) co τ (ratWF x) = (GlobalTheory.SWQ.rat y, GlobalTheory.SWQ.rat z) := fun x => by
     obtain ⟨y, z, h⟩ := hrat x
     exact ⟨y ∘ τ.symm, z ∘ τ.symm, by rw [GlobalTheory.TransportF.numCoordF_apply]; erw [h]; rfl⟩
-  obtain ⟨Φ, hΦ, h⟩ := GlobalTheory.T.exists_thetaTransform_eq_orientedThetaFunction_CM F E σ B hB nS nT JS JT hS hT ξ₀ hξ hσ
+  obtain ⟨Φ, hΦ, h⟩ := _root_.GlobalTheory.ThetaOntoF.exists_thV_eqF F E σ B hB nS nT JS JT hS hT ξ₀ hξ hσ
     (GlobalTheory.StdCharWeilDatum.isStdCharF_of_isGood F E σ B hB) _ (GlobalTheory.TransportF.numCoordF (σ := σ) co τ) he hr f hf
   refine ⟨_, GlobalTheory.TransportF.comp_mem_schA τ.symm hΦ, ?_⟩
   rw [GlobalTheory.TransportF.thetaTr_eqF (σ := σ) co τ, ← h]
@@ -106,9 +151,9 @@ theorem cont : ∀ (F E : Type) [Field F] [NumberField F] [Field E] [NumberField
   obtain ⟨Φ, hΦ, rfl⟩ := hon f hf
   obtain ⟨om, hom⟩ := GlobalTheory.TransportF.exists_isTransportF F E σ B hB _ _ JS _ hS hT' ξ₀ hξ hσ χS 1 hω.hecS hω.hecT hω.resS
     hω.resT ωd hω _ _ _ rfl eB _ co hrat
-  have hc := GlobalTheory.T.continuous_transport_weil_datum_cm_extension F E σ B hB _ _ JS _ hS hT' ξ₀ hξ hσ χS 1 hω.hecS hω.hecT hω.resS
+  have hc := _root_.GlobalTheory.WeilContF.continuous_transportF F E σ B hB _ _ JS _ hS hT' ξ₀ hξ hσ χS 1 hω.hecS hω.hecT hω.resS
     hω.resT ωd hω _ _ _ rfl eB _ co hrat om hom
-  obtain ⟨l, hl, hl'⟩ := GlobalTheory.T.exists_admitted_eq_diagonalLagrangian_thetaIntegral F E σ B hB nS nT JT _ _ _ co hrat ν 𝓕 hν h𝓕
+  obtain ⟨l, hl, hl'⟩ := _root_.GlobalTheory.LagrThetaAdm.exists_admitted_eq_diagonalLagrangian_thetaIntegral_alt F E σ B hB nS nT JT _ _ _ co hrat ν 𝓕 hν h𝓕
   let a : GAF σ (GlobalTheory.WeilSchrodinger.DblTargetF.dblG JT) →
       UG (cA σ) (incM F (GlobalTheory.WeilSchrodinger.DblTargetF.dblG JT)ᵀ) := fun h => ⟨matHomF σ _ h, mem_UG h⟩
   have ha : Continuous a := Continuous.subtype_mk continuous_subtype_val _

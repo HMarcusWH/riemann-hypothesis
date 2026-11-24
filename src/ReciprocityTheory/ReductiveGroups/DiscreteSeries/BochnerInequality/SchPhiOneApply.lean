@@ -1,7 +1,57 @@
 module
 
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.CasValK
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.Permute
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.BigRep
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.InnerCrossOpEigEqZero
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.KUnitB
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.LayerBasic
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.NcVOneDecomp
+import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.Numerics
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.PhiPerm
+public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.BochnerInequality.PositionPrependMemNoncompactPositionSubmodule
 public import ReciprocityTheory.ReductiveGroups.DiscreteSeries.CasimirAlgebra.KhwLowKSubRootEqZero
 
 @[expose] public section
@@ -48,7 +98,7 @@ theorem phi_one_Wm (hE : IsGlRep E) (hU : IsInfUnitary ε E) (hV : IsKIrrHW ε E
     rw [map_zero] at hfx
     exact hy0 hfx.symm
   obtain ⟨a, b, hab, hε, hμ⟩ := Wm_khw hE hU hV hmono hh hbig hx1 hx10 hkhw
-  have hlay : phi E 1 x₀ ∈ layer ε E V 1 := phi_mem_layer (Wm_le_ncV hx₀)
+  have hlay : phi E 1 x₀ ∈ layer ε E V 1 := _root_.ReciprocityTheory.ChartRestriction.DS.wordContraction_mem_noncompactLayer' (Wm_le_ncV hx₀)
   have hcas : casimir E (phi E 1 x₀) = (casVal lam : ℂ) • phi E 1 x₀ :=
     casimir_genSub hE hc _ (layer_le_genSub (ε := ε) 1 hlay)
   rw [hμ] at hyμ
@@ -59,9 +109,6 @@ theorem sch_coord_apply {k : ℕ} (κ : Fin k → Fin n × Fin n) (F : Big n k M
 
 theorem sch_slice_apply {k : ℕ} (i : Fin k) (κ : Fin k → Fin n × Fin n) (F : Big n k M)
     (ι : Fin 1 → Fin n × Fin n) : slice i κ F ι = F (Function.update κ i (ι 0)) := rfl
-
-theorem sch_permute_apply {k : ℕ} (σ : Equiv.Perm (Fin k)) (F : Big n k M)
-    (κ : Fin k → Fin n × Fin n) : permute σ F κ = F (κ ∘ σ) := rfl
 
 theorem sch_word_snoc {k : ℕ} (init : Fin k → Fin n × Fin n) (p : Fin n × Fin n) :
     word E (Fin.snoc init p : Fin (k + 1) → Fin n × Fin n) = word E init * E p.1 p.2 := by
@@ -96,8 +143,8 @@ theorem phi_Wm_last (hE : IsGlRep E) (hU : IsInfUnitary ε E) (hV : IsKIrrHW ε 
   rw [Fintype.sum_prod_type]
   refine Finset.sum_eq_zero fun init _ => ?_
   simp only [sch_word_snoc, Module.End.mul_apply]
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← map_sum]
+
+  rw [← map_sum]
   rcases isEmpty_or_nonempty (Fin n × Fin n) with hX | ⟨⟨p0⟩⟩
   · simp
   · have h := phi_one_Wm hE hU hV hc hmono hh hbig (hF (Fin.snoc init p0))
@@ -115,7 +162,7 @@ theorem phi_Wm_position (hE : IsGlRep E) (hU : IsInfUnitary ε E) (hV : IsKIrrHW
     have heq : slice (Fin.last k) κ (permute (Equiv.swap i (Fin.last k)) F) =
         slice i (κ ∘ Equiv.swap i (Fin.last k)) F := by
       refine PiLp.ext fun ι => ?_
-      rw [sch_slice_apply, sch_permute_apply, sch_slice_apply, Function.update_comp_equiv,
+      rw [sch_slice_apply, _root_.ReciprocityTheory.ChartRestriction.DS.permute_apply, sch_slice_apply, Function.update_comp_equiv,
         Equiv.symm_swap, Equiv.swap_apply_right]
     rw [heq]
     exact hF _

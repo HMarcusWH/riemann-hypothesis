@@ -1,7 +1,59 @@
 module
 
-public import Mathlib
 public import GroundTheory.GlobalFields.SemilocalAlgebras.ContinuousCompletionMap
+public import Mathlib.RingTheory.RamificationInertia.Inertia
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Finiteness.Quotient
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
+import Std.Tactic.BVDecide.Normalize.Prop
+public import Mathlib.Topology.Algebra.Valued.NormedValued
 
 @[expose] public section
 
@@ -123,8 +175,8 @@ theorem valued_sum_eq_one (ω : ι → 𝓞 L)
         ∑ j, algebraMap (v.adicCompletion K) (w.adicCompletion L)
           (d j - algebraMap (𝓞 K) (v.adicCompletion K) (r j)) *
           algebraMap (𝓞 L) (w.adicCompletion L) (ω j) := by
-      set_option synthInstance.maxHeartbeats 100000 in
-        rw [← Finset.sum_sub_distrib, map_sum]
+
+      rw [← Finset.sum_sub_distrib, map_sum]
       refine Finset.sum_congr rfl fun j _ ↦ ?_
       rw [map_mul, map_sub, algebraMap_completion_algebraMap_int]
       ring
@@ -137,8 +189,8 @@ theorem valued_sum_eq_one (ω : ι → 𝓞 L)
           w.asIdeal.ramificationIdx (𝓞 K) * 1 :=
           mul_le_mul' le_rfl (valued_algebraMap_int_le_one w (ω j))
       _ < 1 := by rw [mul_one]; exact pow_lt_one' (hr j) he0
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [valued_algebraMap_int_lt_one_iff, ← Ideal.Quotient.eq_zero_iff_mem, map_sum] at h1
+
+  rw [valued_algebraMap_int_lt_one_iff, ← Ideal.Quotient.eq_zero_iff_mem, map_sum] at h1
   have hsum : ∑ j, Ideal.Quotient.mk v.asIdeal (r j) • Ideal.Quotient.mk w.asIdeal (ω j) = 0 := by
     rw [← h1]
     refine Finset.sum_congr rfl fun j _ ↦ ?_

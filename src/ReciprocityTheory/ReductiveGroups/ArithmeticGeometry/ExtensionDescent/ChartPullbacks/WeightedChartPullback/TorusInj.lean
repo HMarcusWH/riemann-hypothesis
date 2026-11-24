@@ -1,6 +1,50 @@
 module
 
 public import ReciprocityTheory.ReductiveGroups.ArithmeticGeometry.SemiabelianSchemes.AbelianSchemeQuotients.QSurjective
+public import Mathlib.Tactic.ENatToNat
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.AlgebraicGeometry.Modules.Sheaf
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Lemma
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
 
 @[expose] public section
 
@@ -50,12 +94,10 @@ def pt : Spec (GA (X := X) (V := V)) ⟶ (splitTorus S X ⊗ Y).left :=
 lemma pt_snd : pt hV ≫ (snd (splitTorus S X) Y).left = ptY hV := by
   first
   | exact pullback.lift_snd _ _ _
-  | simp [pt]
 
 lemma pt_fst : pt hV ≫ (fst (splitTorus S X) Y).left = ptT hV := by
   first
   | exact pullback.lift_fst _ _ _
-  | simp [pt]
 
 lemma ptY_preimage : ptY (X := X) hV ⁻¹ᵁ V = ⊤ := by
   apply eq_top_iff.mpr
@@ -91,10 +133,6 @@ lemma specMap_appLE_top {R R' : CommRingCat.{0}} (f : R ⟶ R') (e) :
   have h1 : (Spec.map f).appLE ⊤ ⊤ e = (Spec.map f).appTop := by
     first
     | (rw [Scheme.Hom.appTop, Scheme.Hom.app_eq_appLE]; rfl)
-    | (simp only [Scheme.Hom.appLE]
-       erw [show (homOfLE e).op = 𝟙 (Opposite.op (⊤ : (Spec R').Opens)) from Subsingleton.elim _ _,
-         CategoryTheory.Functor.map_id, Category.comp_id]
-       rfl)
   rw [h1, Scheme.ΓSpecIso_naturality, ← Category.assoc, Iso.inv_hom_id, Category.id_comp]
 
 lemma specMap_fromSpec_appLE {R : CommRingCat.{0}} (f : Γ(Y.left, V) ⟶ R) (e) :
@@ -125,7 +163,7 @@ lemma charUnit_val (χ : X) :
     (charUnit S X χ).val = ((tFst (S := S) X).appLE ⊤ ⊤
       (tle _)).hom
       ((Scheme.ΓSpecIso (torusRing ZU X)).inv.hom (AddMonoidAlgebra.single χ 1)) := by
-  simp [charUnit, res, pullU, Scheme.Hom.appLE, AddMonoidAlgebra.of_apply]
+  simp [charUnit, res, pullU, Scheme.Hom.appLE]
   rfl
 
 lemma ev_chi (χ : X) :
@@ -159,9 +197,7 @@ lemma coeff_sum_single {A : Type} [CommRing A] (s : Finset X) (g : X → A) (χ�
     (∑ c ∈ s, AddMonoidAlgebra.single c (g c)).coeff χ₀ = g χ₀ := by
   classical
   first
-  | simp [AddMonoidAlgebra.coeff, Finsupp.finsetSum_apply, Finsupp.single_apply, h]
   | simp [Finsupp.finsetSum_apply, Finsupp.single_apply, h]
-  | simp [AddMonoidAlgebra.coeff_sum, AddMonoidAlgebra.coeff_single, h]
 
 theorem eq_zero_of_sum {V : Y.left.Opens} (s : Finset X) (h : X → Γ(Y.left, V))
     (hs : ∑ χ ∈ s, ((splitTorus S X ⊗ Y).left.presheaf.map (homOfLE le_top).op).hom (chiP X Y χ) *
@@ -185,12 +221,12 @@ theorem eq_zero_of_sum {V : Y.left.Opens} (s : Finset X) (h : X → Γ(Y.left, V
     rw [← CommRingCat.comp_apply, ← CommRingCat.comp_apply, Scheme.Hom.app_eq_appLE,
       Scheme.Hom.app_eq_appLE, Scheme.Hom.appLE_map, Scheme.Hom.map_appLE]
   have hres := congrArg ((splitTorus S X ⊗ Y).left.presheaf.map (homOfLE hle).op).hom hs
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, map_mul, map_zero, e1, e2] at hres
+
+  simp only [map_sum, map_mul, map_zero, e1, e2] at hres
   have hev := congrArg (ev hW) hres
-  set_option synthInstance.maxHeartbeats 100000 in
-    simp only [map_sum, map_mul, map_zero, ev_chi, ev_snd, AddMonoidAlgebra.single_mul_single,
-    add_zero, one_mul] at hev
+
+  simp only [map_sum, map_mul, map_zero, ev_chi, ev_snd, AddMonoidAlgebra.single_mul_single,
+  add_zero, one_mul] at hev
   have hc := congrArg (fun f => f.coeff χ₀) hev
   rw [coeff_sum_single X s _ χ₀ hχ₀, AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply] at hc
   have hg := TopCat.Presheaf.germ_res_apply Y.left.presheaf (homOfLE hWV) x hxW (h χ₀)

@@ -1,9 +1,64 @@
 module
 
-public import Mathlib
+public import Mathlib.Analysis.Normed.Field.Instances
+public import Mathlib.FieldTheory.AlgebraicClosure
+public import Mathlib.NumberTheory.Padics.Complex
+public import Mathlib.RingTheory.Henselian
+public import Mathlib.RingTheory.RegularLocalRing.Defs
+public import Mathlib.RingTheory.SimpleRing.Principal
+public import Mathlib.RingTheory.WittVector.Compare
+public import Mathlib.RingTheory.WittVector.Domain
+public import Mathlib.RingTheory.WittVector.Teichmuller
+public import Mathlib.Tactic.Linter.HaveILetI
 public import Formalism.LocalToGlobal.GroupLattices.PerfectRings.IsLocalRingOfComplete
 public import Lemmata.FirstBlockLemmaF.Imports
-public import Lemmata.GeneralBFactThird.Imports
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Real
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.LocalProperties.Reduced
+import Mathlib.RingTheory.Radical.NatInt
+public import Mathlib.RingTheory.WittVector.DiscreteValuationRing
+public import Mathlib.RingTheory.WittVector.TeichmullerSeries
+import Mathlib.Tactic.Basify
+import Mathlib.Tactic.ENatToNat
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Algebra.Nonarchimedean.Completion
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -229,8 +284,8 @@ theorem exists_approx (x : WW p) (N : ℕ) : ∃ z, Approx p N x z := by
   set S := ∑ i ∈ Finset.Iic N, (WittVector.teichmuller p
         (((_root_.frobeniusEquiv (kb p) p).symm ^ i) (x.coeff i)) * (p : WW p) ^ i) with hS
   have hmem : algebraMap (WW p) (K0 p) S ∈ Kalg p := by
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [hS, map_sum]
+
+    rw [hS, map_sum]
     refine sum_mem fun i _ => ?_
     rw [map_mul, map_pow, map_natCast]
     exact mul_mem (teich_mem p _) (pow_mem (natCast_mem _ p) i)
@@ -239,8 +294,7 @@ theorem exists_approx (x : WW p) (N : ℕ) : ∃ z, Approx p N x z := by
 theorem nadd {a b : ℂ_[p]} {c : ℝ} (ha : ‖a‖ ≤ c) (hb : ‖b‖ ≤ c) : ‖a + b‖ ≤ c :=
   (PadicComplex.isNonarchimedean p a b).trans (max_le ha hb)
 
-theorem nsub {a b : ℂ_[p]} {c : ℝ} (ha : ‖a‖ ≤ c) (hb : ‖b‖ ≤ c) : ‖a - b‖ ≤ c := by
-  first | exact Bl.FirstBlockLemmaF.goal1 .. | (apply Bl.FirstBlockLemmaF.goal1 <;> assumption) | (intros; apply Bl.FirstBlockLemmaF.goal1 <;> assumption) | (apply @Bl.FirstBlockLemmaF.goal1 <;> assumption) | (intros; apply @Bl.FirstBlockLemmaF.goal1 <;> assumption) | (apply @Bl.FirstBlockLemmaF.goal1 <;> first | assumption | infer_instance) | exact @Bl.FirstBlockLemmaF.goal1 p hp a b c ha hb | exact @Bl.FirstBlockLemmaF.goal1 p hp a b c ha | exact @Bl.FirstBlockLemmaF.goal1 p hp a b c | exact @Bl.FirstBlockLemmaF.goal1 p hp a b | exact @Bl.FirstBlockLemmaF.goal1 p hp a | exact @Bl.FirstBlockLemmaF.goal1 p hp | exact @Bl.FirstBlockLemmaF.goal1 p
+alias nsub := _root_.Bl.FirstBlockLemmaF.goal1
 
 theorem approx_close {N M : ℕ} (hNM : N ≤ M) {x : WW p} {z z' : Kalg p} (h : Approx p N x z)
     (h' : Approx p M x z') : ‖phi p z - phi p z'‖ ≤ ((p : ℝ)⁻¹) ^ N := by

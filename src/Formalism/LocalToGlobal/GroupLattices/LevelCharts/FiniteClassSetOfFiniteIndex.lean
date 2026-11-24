@@ -1,7 +1,51 @@
 module
 
-public import Formalism.LocalToGlobal.GroupLattices.LevelCharts.LevelWithoutExtraPlaces
-public import Formalism.SatakeDualWeyl.KpqSubgroupCompact
+public import Formalism.LocalRingCardinality.DataSpaces
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Data.Nat.Choose.Multinomial
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Henselian
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.RingTheory.RegularLocalRing.Defs
+import Mathlib.RingTheory.SimpleRing.Principal
+import Mathlib.RingTheory.WittVector.IsPoly
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.Linter.HaveILetI
+import Mathlib.Tactic.Linter.Style
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -22,7 +66,6 @@ theorem gram_herm (hc : CMData F E) (S : HSpace E) : IsHerm (hc.sig : E →+* E)
   have h := S.herm
   first
     | exact h.eq (S.frame j) (S.frame i)
-    | exact h (S.frame j) (S.frame i)
 
 theorem gram_det_unit (hc : CMData F E) (S : HSpace E) : IsUnit S.gram.det := by
   classical
@@ -34,8 +77,8 @@ theorem gram_det_unit (hc : CMData F E) (S : HSpace E) : IsUnit S.gram.det := by
     have h1 : ∑ j, S.gram i j * v j = 0 := by
       have := congrFun hv i
       simpa [Matrix.mulVec, dotProduct] using this
-    set_option synthInstance.maxHeartbeats 100000 in
-      rw [map_sum]
+
+    rw [map_sum]
     refine (Finset.sum_congr rfl (fun j _ => ?_)).trans h1
     rw [map_smul, smul_eq_mul]
     exact mul_comm _ _
@@ -70,8 +113,7 @@ private theorem star_dotProduct_Jpq_mulVec_eq_sub (p q : ℕ) (Z : Fin p ⊕ Fin
     ∑ a, star (Z (Sum.inl a)) * Z (Sum.inl a) - ∑ b, star (Z (Sum.inr b)) * Z (Sum.inr b) := by
   rw [Jpq, Matrix.fromBlocks_mulVec]
   simp only [dotProduct, Fintype.sum_sum_type, Sum.elim_inl, Sum.elim_inr, Matrix.one_mulVec,
-    Matrix.zero_mulVec, add_zero, zero_add, Matrix.neg_mulVec, Pi.neg_apply, Pi.add_apply,
-    Pi.star_apply, Function.comp_apply, mul_neg, Finset.sum_neg_distrib, sub_eq_add_neg]
+    Matrix.zero_mulVec, add_zero, zero_add, Matrix.neg_mulVec, Pi.neg_apply, Pi.star_apply, Function.comp_apply, mul_neg, Finset.sum_neg_distrib, sub_eq_add_neg]
 
 theorem gram_totDef (hc : CMData F E) (S : HSpace E) (hs : S.SigOK) (hd : S.IsDefinite) : IsTotDef hc.sig S.gram := by
   classical
@@ -93,9 +135,9 @@ theorem gram_totDef (hc : CMData F E) (S : HSpace E) (hs : S.SigOK) (hd : S.IsDe
   have hτform : ∀ x : Fin S.rank → E, τ (hform (hc.sig : E →+* E) S.gram x x) =
       star (fun i => τ (x i)) ⬝ᵥ ((S.gram.map τ) *ᵥ (fun i => τ (x i))) := by
     intro x
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [hform, map_sum, map_mul, hσ, dotProduct, Matrix.mulVec, Matrix.map_apply, Pi.star_apply,
-      Finset.mul_sum]
+
+    simp only [hform, map_sum, map_mul, hσ, dotProduct, Matrix.mulVec, Matrix.map_apply, Pi.star_apply,
+    Finset.mul_sum]
     exact Finset.sum_congr rfl (fun i _ => Finset.sum_congr rfl (fun j _ => mul_assoc _ _ _))
   have hre : ∀ (p q : ℕ) (e : Fin S.rank ≃ Fin p ⊕ Fin q) (y : Fin S.rank → ℂ),
       star y ⬝ᵥ ((S.gram.map τ) *ᵥ y) =
@@ -152,7 +194,6 @@ theorem gram_totDef (hc : CMData F E) (S : HSpace E) (hs : S.SigOK) (hd : S.IsDe
     rw [h2]
     first
       | rfl
-      | simp
   have hyne : ∀ x : Fin S.rank → E, x ≠ 0 → (fun i => τ (x i)) ≠ 0 := by
     intro x hx hy
     apply hx

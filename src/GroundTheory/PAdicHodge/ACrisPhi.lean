@@ -1,8 +1,49 @@
 module
 
-public import Mathlib
 public import GroundTheory.PAdicHodge.ACrisLog
 public import GroundTheory.PAdicHodge.LogPowSeries
+import Mathlib.Algebra.Order.Floor.Extended
+import Mathlib.Algebra.Order.Floor.Semifield
+import Mathlib.Algebra.Order.Interval.Basic
+import Mathlib.Algebra.Order.Star.Int
+import Mathlib.Analysis.Complex.UpperHalfPlane.Basic
+import Mathlib.Analysis.Normed.Algebra.GelfandRadius
+import Mathlib.Analysis.SpecialFunctions.Bernstein
+import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
+import Mathlib.Combinatorics.Enumerative.DyckWord
+import Mathlib.Combinatorics.SimpleGraph.Triangle.Removal
+import Mathlib.Data.NNRat.Floor
+import Mathlib.Geometry.Euclidean.Volume.Basic
+import Mathlib.NumberTheory.Chebyshev
+import Mathlib.NumberTheory.Height.NumberField
+import Mathlib.NumberTheory.Height.Projectivization
+import Mathlib.NumberTheory.LucasLehmer
+import Mathlib.NumberTheory.SelbergSieve
+import Mathlib.RingTheory.Radical.NatInt
+import Mathlib.Tactic.Echelon.Zsqrtd
+import Mathlib.Tactic.Inclusion.Extension.Core.Core
+import Mathlib.Tactic.Inclusion.Extension.Interval.BinarySplit
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Exp
+import Mathlib.Tactic.Inclusion.Extension.IntervalDyadicReal.Hypotheses
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Basic
+import Mathlib.Tactic.Inclusion.Extension.IntervalInt.Hypotheses
+import Mathlib.Tactic.NormNum.Irrational
+import Mathlib.Tactic.NormNum.IsCoprime
+import Mathlib.Tactic.NormNum.IsSquare
+import Mathlib.Tactic.NormNum.LegendreSymbol
+import Mathlib.Tactic.NormNum.ModEq
+import Mathlib.Tactic.NormNum.NatFib
+import Mathlib.Tactic.NormNum.NatLog
+import Mathlib.Tactic.NormNum.NatSqrt
+import Mathlib.Tactic.NormNum.Ordinal
+import Mathlib.Tactic.NormNum.Parity
+import Mathlib.Tactic.NormNum.Prime
+import Mathlib.Tactic.NormNum.RealSqrt
+import Mathlib.Tactic.Polynomial.Basic
+import Mathlib.Tactic.ReduceModChar
+import Mathlib.Tactic.TypeStar
+import Mathlib.Topology.Sheaves.Init
 
 @[expose] public section
 
@@ -110,11 +151,11 @@ theorem factorial_mul_dpow_eq_sum (x : AInf K p) (n L : ℕ) (hL : p * (n + 1) �
         (((j + 1).factorial / (n + 1) : ℕ) : ℤ) : ℤ) : 𝔸) * dpow (j + 1) x := by
   have h1 := isUnit_natCast (K := K) (p := p) (Nat.succ_ne_zero n)
   apply h1.mul_left_cancel
-  set_option synthInstance.maxHeartbeats 100000 in
-    rw [← mul_assoc, ← Nat.cast_mul, ← Nat.factorial_succ, factorial_mul_dpow, ← map_pow,
-    one_add_pow_sub_one_pow_eq_sum x (n + 1) L hL, map_sum, Finset.sum_range_succ', Finset.mul_sum]
+
+  rw [← mul_assoc, ← Nat.cast_mul, ← Nat.factorial_succ, factorial_mul_dpow, ← map_pow,
+  one_add_pow_sub_one_pow_eq_sum x (n + 1) L hL, map_sum, Finset.sum_range_succ', Finset.mul_sum]
   simp only [map_mul, map_intCast, map_pow, pow_zero, mul_one, powCoeff_of_lt p n.succ_pos,
-    Int.cast_zero, zero_mul, map_zero, add_zero]
+    Int.cast_zero, map_zero, add_zero]
   refine Finset.sum_congr rfl fun j _ => ?_
   by_cases h : n ≤ j
   · have hdvd : n + 1 ∣ (j + 1).factorial := Nat.dvd_factorial n.succ_pos (Nat.succ_le_succ h)
@@ -214,9 +255,9 @@ theorem log_one_add_pow (hx : x ∈ RingHom.ker θ) :
   have h2 : ∑ n ∈ Finset.range M, algebraMap (ACrisZero (K := K) (p := p)) (ACris (K := K) (p := p)) (p : ACrisZero (K := K) (p := p)) *
       logTerm hx n - ∑ n ∈ Finset.range M, logTerm (one_add_pow_sub_one_mem hx) n ∈ 𝔭 ^ k := by
     have h := algebraMap_mem_pow (sum_p_mul_logTermZero_sub_mem hx (le_of_max_le_right hM))
-    set_option synthInstance.maxHeartbeats 100000 in
-      simp only [RingHom.map_sub, @map_sum _ _ _ _ _ _ _
-      (RingHomClass.toAddMonoidHomClass (self := RingHom.instRingHomClass))] at h
+
+    simp only [RingHom.map_sub, @map_sum _ _ _ _ _ _ _
+    (RingHomClass.toAddMonoidHomClass (self := RingHom.instRingHomClass))] at h
     simpa only [map_mul, logTerm] using h
   have := add_mem h1 h2
   simp only at this
