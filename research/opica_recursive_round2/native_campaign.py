@@ -11,7 +11,7 @@ C1="Zeta23.OPICARound4.ArithmeticFrontier."
 MAIN_GOALS=[(C1+"CofinalMomentSliceVanishingErrorBounds","Zeta23.OPICARound4.ArithmeticFrontier.MomentSlices"),
 (NS+"PositiveRawSubpower",NS+"SourceEnergies"),(NS+"NegativeRawSubpower",NS+"SourceEnergies"),(NS+"OnePolarityRawSubpower",NS+"SourceEnergies"),
 (DEF+"LargePrimeDeficitSubpower",DEF+"Source"),(DEF+"MissingPrimeDeficitToLiteralGBridge",DEF+"Source")]
-NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply","AdaptiveOnePolarityOpposedSupply","AdaptiveBipolarSupply","BipolarRawSubpower"]
+NAMED=["C1Named","PositiveNamed","NegativeNamed","OnePolarityNamed","DeficitNamed","DeficitBridgeNamed","UniformRemainder","SamePolicyOpposedSupply","JointCofinalOpposedSupply","AdaptiveOnePolarityOpposedSupply","AdaptiveBipolarSupply","BipolarRawSubpower","MinPolarityRawSubpower","AdaptiveMinOpposedSupply"]
 BASE_MODULES=[NS+"BipolarTransfer",DEF+"Source","Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","Zeta23.RHRC.OpicaComposition.Audit","Zeta23.RHRC.OpicaRound3AtlasExport"]
 class Campaign:
     def __init__(self,repo,epoch,harvest,out):
@@ -47,6 +47,10 @@ class Campaign:
             if not self.compile(p):
                 self.failures.append({"stage":"R1_ADAPTER_RECOMPILE","module":p.stem});break
             self.adapter_modules.append(p.stem)
+        if "OPICAExtractionEnergy" in self.adapter_modules:
+            p=self.work/"OPICAR2EnergyDetector.lean";shutil.copyfile(HERE/"EnergyDetector.lean",p)
+            if self.compile(p):self.adapter_modules.append(p.stem)
+            else:self.failures.append({"stage":"ENERGY_DETECTOR_COMPARISON_COMPILE","module":p.stem})
     def inventory(self):
         from research.RHRC.integration.opica_composition.qualification import frozen_atlas
         atlas=frozen_atlas(self.repo)
@@ -55,6 +59,11 @@ class Campaign:
         for n in policy["roots"]:requests[n]={"module":NS+"BipolarTransfer","cohort":"BIPOLAR_16"}
         for n,m in [(NS+"rawPositiveEnergy_le_full_components",NS+"SourceEnergies"),(NS+"rawPositiveEnergy_le_of_component_budgets",NS+"SourceEnergies"),(DEF+"positiveDeficitEnergy_nonneg",DEF+"Source"),("OPICAR2.onePolarity_of_samePolicyOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_jointCofinalOpposedSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_jointCofinal","OPICAR2Targets"),("OPICAR2.bipolarRaw_of_adaptiveSupply","OPICAR2Targets"),("OPICAR2.onePolarity_of_bipolarRaw","OPICAR2Targets"),("OPICAR2.cofinalSubpower_of_adaptiveOpposedSupply","OPICAR2Targets"),("OPICAR2.adaptiveOpposedSupply_of_fixed","OPICAR2Targets")]:
             requests.setdefault(n,{"module":m,"cohort":"ARITHMETIC_SUPPORT"})
+        for n in ("cofinalSubpower_min_iff","minPolarityRawSubpower_iff","onePolarity_of_adaptiveMinOpposedSupply"):
+            requests["OPICAR2."+n]={"module":"OPICAR2Targets","cohort":"COFINAL_POLARITY_REDUCTION"}
+        if "OPICAR2EnergyDetector" in self.adapter_modules:
+            for n in ("directEnergyToC1_of_power_comparison","directEnergyToC1_of_power_supply"):
+                requests["OPICAR2."+n]={"module":"OPICAR2EnergyDetector","cohort":"CONDITIONAL_DETECTOR_COMPARISON"}
         for n in ("even","odd","tendsto"):
             requests.setdefault(C1+"cofinal_moment_slice_bounds_of_"+n,{"module":"Zeta23.OPICARound4.ArithmeticFrontier.CofinalMomentClosure","cohort":"C1_CONSUMER_SUPPORT"})
         if "OPICAExtractionNative" in self.adapter_modules:
@@ -138,6 +147,8 @@ class Campaign:
         if "OPICAExtractionEnergy" in self.adapter_modules:
             for n in ("NativeEnergySubpower","DirectEnergyToC1"):
                 roots.append(self.goal(n,"OPICAExtractionR1."+n,"OPICAExtractionEnergy"))
+        if "OPICAR2EnergyDetector" in self.adapter_modules:
+            roots.append(self.goal("PowerDetectorSupply","OPICAR2.PowerDetectorSupply","OPICAR2EnergyDetector"))
         ext,rejected=load_external(self.harvest)
         roots.extend(principal_goals(ext))
         # Original membership bytes remain in the authenticated harvest.

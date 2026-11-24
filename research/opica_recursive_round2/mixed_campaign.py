@@ -25,7 +25,7 @@ def run(original,native,manifest,out):
     for p in manifest_packages:need(git(original/".lake/packages"/p["name"],"rev-parse","HEAD")==p["rev"],"Original package checkout differs: "+p["name"])
     check_pin(native,manifest["native"])
     work=out/"work";work.mkdir()
-    adapters={"OPICAExtractionCommon":R1/"Common.lean","OPICAExtractionNative":R1/"Native.lean","OPICAExtractionEnergy":R1/"Energy.lean","OPICAExtractionPrincipal":R1/"Principal.lean","OPICAExtractionCombinedTargets":R1/"CombinedTargets.lean","OPICAExtractionEnergyTargets":R1/"EnergyTargets.lean","OPICAR2Targets":HERE/"NativeTargets.lean","OPICAR2Export":HERE/"Export.lean","OPICAR2PrincipalTargets":HERE/"PrincipalTargets.lean"}
+    adapters={"OPICAExtractionCommon":R1/"Common.lean","OPICAExtractionNative":R1/"Native.lean","OPICAExtractionEnergy":R1/"Energy.lean","OPICAExtractionPrincipal":R1/"Principal.lean","OPICAExtractionCombinedTargets":R1/"CombinedTargets.lean","OPICAExtractionEnergyTargets":R1/"EnergyTargets.lean","OPICAR2Targets":HERE/"NativeTargets.lean","OPICAR2EnergyDetector":HERE/"EnergyDetector.lean","OPICAR2Export":HERE/"Export.lean","OPICAR2PrincipalTargets":HERE/"PrincipalTargets.lean"}
     port.PIN={**R1_PIN,"native":manifest["native"]}
     for cand in manifest["selected"]:
         t=cand["target"];origin=t.get("origin")

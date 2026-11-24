@@ -139,4 +139,72 @@ theorem onePolarity_of_bipolarRaw (h : BipolarRawSubpower) : OnePolarityRawSubpo
     exact Finset.sum_nonneg fun j _ => mul_nonneg (weight_nonneg j) (sq_nonneg _)
   linarith
 
+/-- A finite choice of two signs can be fixed across all exponents by
+    the cofinal quantifiers. No bound on either energy is assumed. -/
+private theorem failure_threshold (f : ℕ → ℝ) (h : ¬ CofinalSubpower f) :
+    ∃ ε : ℝ, 0 < ε ∧ ∀ C : ℝ, 0 ≤ C → ∃ X₀ : ℕ, ∀ X : ℕ,
+      max X₀ 64 ≤ X → C * (X : ℝ)^ε < f X := by
+  unfold CofinalSubpower at h
+  push_neg at h
+  exact h
+
+theorem cofinalSubpower_min_iff (f g : ℕ → ℝ) :
+    CofinalSubpower (fun X => min (f X) (g X)) ↔
+      CofinalSubpower f ∨ CofinalSubpower g := by
+  classical
+  constructor
+  · intro h
+    by_cases hf : CofinalSubpower f
+    · exact Or.inl hf
+    by_cases hg : CofinalSubpower g
+    · exact Or.inr hg
+    exfalso
+    obtain ⟨ε,hε,hf'⟩ := failure_threshold f hf
+    obtain ⟨δ,hδ,hg'⟩ := failure_threshold g hg
+    obtain ⟨C,hC,hw⟩ := h (min ε δ) (lt_min hε hδ)
+    obtain ⟨A,hA⟩ := hf' C hC
+    obtain ⟨B,hB⟩ := hg' C hC
+    obtain ⟨X,hX,hmin⟩ := hw (max A B)
+    have h64 : 64 ≤ X := (le_max_right (max A B) 64).trans hX
+    have hab : max A B ≤ X := (le_max_left (max A B) 64).trans hX
+    have hXA : max A 64 ≤ X := max_le ((le_max_left A B).trans hab) h64
+    have hXB : max B 64 ≤ X := max_le ((le_max_right A B).trans hab) h64
+    have hX1 : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast (show 1 ≤ X by omega)
+    have hpf := mul_le_mul_of_nonneg_left
+      (Real.rpow_le_rpow_of_exponent_le hX1 (min_le_left ε δ)) hC
+    have hpg := mul_le_mul_of_nonneg_left
+      (Real.rpow_le_rpow_of_exponent_le hX1 (min_le_right ε δ)) hC
+    exact (not_lt_of_ge hmin) (lt_min (hpf.trans_lt (hA X hXA)) (hpg.trans_lt (hB X hXB)))
+  · intro h
+    rcases h with hf | hg
+    · exact cofinalSubpower_of_pointwise_le _ _ (fun X => min_le_left (f X) (g X)) hf
+    · exact cofinalSubpower_of_pointwise_le _ _ (fun X => min_le_right (f X) (g X)) hg
+
+def MinPolarityRawSubpower : Prop :=
+  CofinalSubpower (fun X => min (rawPositiveEnergy X) (rawNegativeEnergy X))
+
+theorem minPolarityRawSubpower_iff :
+    MinPolarityRawSubpower ↔ OnePolarityRawSubpower := by
+  change CofinalSubpower (fun X => min (rawPositiveEnergy X) (rawNegativeEnergy X)) ↔
+    CofinalSubpower rawPositiveEnergy ∨ CofinalSubpower rawNegativeEnergy
+  exact cofinalSubpower_min_iff _ _
+
+/-- The sign and removal may both vary at the selected cutoff. The finite
+    bracket and min theorem recover one fixed polarity after the fact. -/
+def AdaptiveMinOpposedSupply : Prop :=
+  AdaptiveOpposedSupply (fun X r => min (opposedSurvivorEnergy X r)
+    (reverseOpposedSurvivorEnergy X r))
+
+theorem onePolarity_of_adaptiveMinOpposedSupply (h : AdaptiveMinOpposedSupply) :
+    OnePolarityRawSubpower := by
+  apply minPolarityRawSubpower_iff.mp
+  change CofinalSubpower (fun X => min (rawPositiveEnergy X) (rawNegativeEnergy X))
+  apply cofinalSubpower_of_adaptiveOpposedSupply _ _ _ h
+  intro X r
+  rcases le_total (opposedSurvivorEnergy X r) (reverseOpposedSurvivorEnergy X r) with hp | hn
+  · rw [min_eq_left hp]
+    exact (min_le_left _ _).trans (rawPositiveEnergy_bracket X r).2
+  · rw [min_eq_right hn]
+    exact (min_le_right _ _).trans (rawNegativeEnergy_bracket X r).2
+
 end OPICAR2
