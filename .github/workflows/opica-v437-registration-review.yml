@@ -1,0 +1,33 @@
+name: OPICA v4.37 dispatch registration review
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  registration-source:
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'research/opica-v437-dispatch-registration-20261124'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          sparse-checkout: |
+            /.github/
+          sparse-checkout-cone-mode: false
+      - name: Require exactly the non-executing registration delta
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git fetch --no-tags --depth=1 origin 668e62327f5e2b65b20a8d7a98dcd901e29f6cd8
+          test "$(git rev-parse 668e62327f5e2b65b20a8d7a98dcd901e29f6cd8^{tree})" = bc7e5eafda153227ebddff3a1523fcadd848b402
+          test "$(git rev-parse HEAD:.github/workflows/opica-v437-qualification.yml)" = 54aea9c45d213e22fc9c7b39331efc9c6bf6e87a
+          printf 'A\t.github/workflows/opica-v437-qualification.yml\nA\t.github/workflows/opica-v437-registration-review.yml\n' > "$RUNNER_TEMP/expected-delta"
+          git diff --name-status --no-renames 668e62327f5e2b65b20a8d7a98dcd901e29f6cd8 HEAD > "$RUNNER_TEMP/actual-delta"
+          cmp "$RUNNER_TEMP/expected-delta" "$RUNNER_TEMP/actual-delta"
+          test -z "$(git diff --name-only HEAD)"
+          echo 'PASS_REGISTRATION_ONLY; PROOF_ACCEPTANCE_FALSE; FULL_PROOF_NOT_RUN'
