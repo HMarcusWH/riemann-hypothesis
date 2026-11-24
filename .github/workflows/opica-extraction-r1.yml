@@ -78,16 +78,25 @@ jobs:
             /research/opica_extract_round1/
           sparse-checkout-cone-mode: false
       - name: Stream original verified proof — elaborated dependencies, no compilation
+        timeout-minutes: 310
         run: |
           set -euo pipefail
           command -v zstd
-          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300
+          python3 -B research/opica_extract_round1/export_graph.py --mode solution --output "$RUNNER_TEMP/original-dependencies.json" --scratch "$RUNNER_TEMP/original-index" --root-seconds 300 --index-gib 20 --keep-index
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: extraction-original-proof-graph-${{ github.sha }}
           path: ${{ runner.temp }}/original-dependencies.json
-          if-no-files-found: error
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: extraction-completed-root-checkpoints-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/original-index/INDEX_READY.json
+            ${{ runner.temp }}/original-index/root-checkpoints/
+          if-no-files-found: warn
   native-typed-search:
     needs: source-cuts
     runs-on: ubuntu-24.04
@@ -388,7 +397,7 @@ jobs:
           lean="$(lake env which lean)"
           lp="$(lake env printenv LEAN_PATH)"
           export LEAN_PATH="$work:$lp"
-          mapfile -t adapters < <(python3 -c 'import json,sys;print("\\n".join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
+          mapfile -t adapters < <(python3 -c 'import json,sys;print(chr(10).join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
           for pair in "${adapters[@]}"; do
             module="${pair%%:*}"; file="${pair#*:}"
             cp "$controller/$file" "$work/$module.lean"
@@ -507,7 +516,7 @@ jobs:
           lean="$(lake env which lean)"
           lp="$(lake env printenv LEAN_PATH)"
           export LEAN_PATH="$work:$lp"
-          mapfile -t adapters < <(python3 -c 'import json,sys;print("\\n".join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
+          mapfile -t adapters < <(python3 -c 'import json,sys;print(chr(10).join(x["module"]+":"+x["file"] for x in json.load(open(sys.argv[1]))["adapter_order"]))' "$work/port.json")
           for pair in "${adapters[@]}"; do
             module="${pair%%:*}"; file="${pair#*:}"
             cp "$controller/$file" "$work/$module.lean"
