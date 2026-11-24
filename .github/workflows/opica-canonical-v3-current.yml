@@ -1,0 +1,120 @@
+name: OPICA native canonical V3 current-main regeneration for review
+run-name: Canonical V3 candidate at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-native-canonical-v3-current-20261123]
+    paths:
+      - diagnostics/opica-canonical-v3/**
+      - .github/workflows/opica-canonical-v3-current.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: opica-canonical-v3-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  source-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify only additive review code and no supplier source changes
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor e388dc7db892b2a4ae2e628bdc0113b1019ca7dd HEAD
+          git diff --check e388dc7db892b2a4ae2e628bdc0113b1019ca7dd HEAD
+          test "$(git rev-parse HEAD:src)" = "69b331ce0e429c7632dac6aa642e5875a50b1218"
+          (cd diagnostics/opica-canonical-v3 && python3 -B -m unittest -v test_reconcile)
+          (cd diagnostics/opica-canonical-v3 && python3 -O -B -m unittest -v test_reconcile)
+  candidate:
+    needs: source-review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          path: controller
+          ref: ${{ github.sha }}
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: HMarcusWH/zeta-23-lean
+          ref: bb7c8184a135b2823c6296917c5ac893bebf2a71
+          path: host
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: 3.13.5
+      - name: Download EXACT historical V2 evidence from the completed run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: native-canonical-preparation-v2-45051273111-1
+          run-id: 45051273111
+          repository: HMarcusWH/riemann-hypothesis
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/opica-v2-evidence
+      - name: Seal minimal V2 comparison archive as read-only input
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os,zipfile,hashlib
+          from pathlib import Path
+          root=Path(os.environ["RUNNER_TEMP"])
+          src=root/"opica-v2-evidence"
+          members=[
+            "native-canonical-preparation-v2/generated-state.patch",
+            "native-canonical-preparation-v2/canonical-operation.json",
+            "native-canonical-preparation-v2/after-check-products.json",
+            "native-canonical-preparation-v2/historical-storage-before.json"]
+          with zipfile.ZipFile(root/"v2-canonical-selected.zip","w",zipfile.ZIP_DEFLATED) as target:
+            for name in members:
+              path=src/name
+              assert path.is_file() and not path.is_symlink(),name
+              target.write(path,arcname=name)
+          print("V2_ARCHIVE_CUSTODY_ONLY",members)
+          PY
+      - uses: ./host/.github/actions/opica4-runtime
+        id: prep
+        with:
+          native: 'true'
+          provider: 'false'
+      - name: Regenerate CURRENT native 77 active outputs; protect four frozen files
+        id: canonical
+        run: |
+          set -euo pipefail
+          python3 -B controller/diagnostics/opica-canonical-v3/reconcile.py \
+            --controller "$GITHUB_WORKSPACE/controller" \
+            --native "$GITHUB_WORKSPACE/host" \
+            --v2-archive "$RUNNER_TEMP/v2-canonical-selected.zip" \
+            --output "$RUNNER_TEMP/opica-canonical-v3"
+          python3 - <<'PY'
+          import os,json
+          from pathlib import Path
+          d=json.loads((Path(os.environ["RUNNER_TEMP"])/"opica-canonical-v3/V3_CONTROLLER_RECEIPT.json").read_text())
+          assert d["status"]=="V3_CURRENT_NATIVE_CANDIDATE_PREPARED_FOR_REVIEW"
+          assert d["authorized_generated_product_count"]==77
+          assert d["protected_historical_product_count"]==4
+          assert d["historical_before"]==d["historical_after"]
+          assert d["successor_human_review"]=="PENDING"
+          assert d["proof_acceptance"] is False
+          assert d["full_11_lanes"]=="NOT_RUN"
+          print("V3_REVIEW_CANDIDATE_ONLY",len(d["changed_paths"]))
+          PY
+      - name: Preserve V3 generated patch and complete phase evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-v3-review-candidate-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/opica-canonical-v3/
+            ${{ runner.temp }}/opica4-native/bootstrap/result.json
+            ${{ runner.temp }}/opica4-source-before.json
+          compression-level: 0
+          if-no-files-found: warn
+          retention-days: 90
