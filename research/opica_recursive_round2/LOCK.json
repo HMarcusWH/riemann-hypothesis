@@ -1,0 +1,94 @@
+{
+  "schema": "OPICA_RECURSIVE_R2_LOCK_V1",
+  "controller": {
+    "repository": "HMarcusWH/riemann-hypothesis",
+    "parent": "574f6e070e401a0f0b096df4fa5bdba7954ce640",
+    "tree": "d8250ccf6c4178f921c8c760fbc21707ca1066c8"
+  },
+  "native": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "1eab1eb59e47d503ade1615a2c465f967fa65c6e",
+    "tree": "d3dfbc79c927426511bdf140603f8987761000d5",
+    "toolchain": "leanprover/lean4:v4.33.0-rc2",
+    "mathlib": "51e6992efd06126df61a496bebf8f49482a4e129"
+  },
+  "historical": {
+    "repository": "HMarcusWH/zeta-23-lean",
+    "head": "983b6e78eccf9156ee7e2ec55f6772bd64cedccd",
+    "tree": "23b527570280afd56f51376cf843e243e32b1b03"
+  },
+  "checker": {
+    "repository": "HMarcusWH/riemann-hypothesis",
+    "head": "5601d19ff185d58376e109d82dd4512488295372"
+  },
+  "runs": [
+    {
+      "key": "external",
+      "repository": "HMarcusWH/riemann-hypothesis",
+      "pr": 13,
+      "head": "574f6e070e401a0f0b096df4fa5bdba7954ce640",
+      "run": 45411269329,
+      "workflow": ".github/workflows/opica-extraction-r1.yml"
+    },
+    {
+      "key": "parent",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 311,
+      "head": "4f81c784d3b330395507f6dcd1c8b0010b3835cc",
+      "run": 45250786114,
+      "workflow": ".github/workflows/opica-next-source-epoch.yml"
+    },
+    {
+      "key": "canonical",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 312,
+      "head": "ff0c8185f55b7cf172570e702cb3e8d4d62bbca0",
+      "run": 45415104185,
+      "workflow": ".github/workflows/opica-next-acceptance.yml"
+    },
+    {
+      "key": "historical",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 313,
+      "head": "983b6e78eccf9156ee7e2ec55f6772bd64cedccd",
+      "run": 45409686092,
+      "workflow": ".github/workflows/opica-historical-support-port.yml"
+    },
+    {
+      "key": "registration",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 314,
+      "head": "1bf6242c0ba8033b076d3506189b90f1d382b5c9",
+      "run": 45415223581,
+      "workflow": ".github/workflows/opica-dispatch-registration-review.yml"
+    },
+    {
+      "key": "bipolar",
+      "repository": "HMarcusWH/zeta-23-lean",
+      "pr": 315,
+      "head": "1eab1eb59e47d503ade1615a2c465f967fa65c6e",
+      "run": 45409447656,
+      "workflow": ".github/workflows/opica-bipolar-transfer.yml"
+    }
+  ],
+  "budget": {
+    "atlas_batch": 16,
+    "atlas_roots": 700,
+    "goals": 64,
+    "frontier_depth": 4,
+    "frontier_alternatives": 4,
+    "menu_roots": 64,
+    "candidates_per_goal": 6,
+    "attempts_native": 8,
+    "attempts_mixed": 4,
+    "search_states": 16384,
+    "term_depth": 32,
+    "search_seconds": 30
+  },
+  "claim_boundary": {
+    "RH": "OPEN",
+    "C1": "OPEN",
+    "Step4": "OPEN",
+    "proof_acceptance": false
+  }
+}

@@ -1,0 +1,335 @@
+name: OPICA recursive closure R2 (research only)
+on:
+  push:
+    branches: [research/opica-recursive-closure-r2-20261124]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: opica-r2-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  LEAN_NUM_THREADS: "2"
+jobs:
+  source-controls:
+    if: github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-recursive-closure-r2-20261124'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - run: |
+          cd controller
+          python -B -c 'import sys;sys.path.insert(0,"research/opica_recursive_round2");from r2_common import *;print(controller_scope(Path.cwd()))'
+          cd research/opica_recursive_round2
+          python -B -m unittest -v test_r2
+          python -B -O -m unittest -v test_r2
+  harvest:
+    needs: source-controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - name: Exact run and artifact harvest
+        env:
+          GH_TOKEN: ${{ secrets.OPICA_READ_TOKEN || github.token }}
+        run: python -B controller/research/opica_recursive_round2/harvest.py --out "$RUNNER_TEMP/harvest"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-harvest
+          path: ${{ runner.temp }}/harvest
+          if-no-files-found: warn
+          retention-days: 30
+
+  canonical-review:
+    needs: harvest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: opica-r2-harvest
+          path: harvest
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: ff0c8185f55b7cf172570e702cb3e8d4d62bbca0
+          path: native
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check candidate patches without committing
+        run: |
+          mkdir -p "$RUNNER_TEMP/canonical"
+          for key in canonical registration; do
+            if test -f "harvest/inputs/$key/receipt.json"; then
+              python -B controller/research/opica_recursive_round2/review_canonical.py --repo native --candidate "harvest/inputs/$key" --output "$RUNNER_TEMP/canonical/$key.json"
+            fi
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-canonical
+          path: ${{ runner.temp }}/canonical
+          if-no-files-found: warn
+          retention-days: 30
+
+  native-search:
+    needs: harvest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: opica-r2-harvest
+          path: harvest
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 1eab1eb59e47d503ade1615a2c465f967fa65c6e
+          path: native
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 983b6e78eccf9156ee7e2ec55f6772bd64cedccd
+          path: historical
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/riemann-hypothesis
+          ref: 5601d19ff185d58376e109d82dd4512488295372
+          path: checker-code
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: native
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - name: Exact local research epoch
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          python -B controller/research/opica_recursive_round2/native_epoch.py --native native --historical historical --harvest harvest --output "$RUNNER_TEMP/native/epoch.json"
+      - name: Actual compiler inventory and recursive typed search
+        run: python -B controller/research/opica_recursive_round2/native_campaign.py --repo native --epoch "$RUNNER_TEMP/native/epoch.json" --harvest harvest --out "$RUNNER_TEMP/native/search"
+      - name: Compile and independently replay shortlisted native proof plans
+        run: python -B controller/research/opica_recursive_round2/verify_candidates.py --repo native --engine native --work "$RUNNER_TEMP/native/search/work" --manifest "$RUNNER_TEMP/native/search/native-candidates.json" --out "$RUNNER_TEMP/native/validation" --mode native
+      - name: Reuse verified closed frontier plans and recompile compositions
+        run: |
+          python -B controller/research/opica_recursive_round2/repeat.py --repo native --inventory "$RUNNER_TEMP/native/search/inventory.json" --graph "$RUNNER_TEMP/native/search/graph.json" --manifest "$RUNNER_TEMP/native/search/native-candidates.json" --review "$RUNNER_TEMP/native/validation/review.json" --out "$RUNNER_TEMP/native/feedback-candidates.json"
+          python -B controller/research/opica_recursive_round2/verify_candidates.py --repo native --engine native --work "$RUNNER_TEMP/native/search/work" --manifest "$RUNNER_TEMP/native/feedback-candidates.json" --out "$RUNNER_TEMP/native/feedback-validation" --mode native
+      - name: Alternate-kernel shortlist and terminal candidate gate
+        if: always() && hashFiles('native/lean-toolchain') != ''
+        run: |
+          python -m pip install zstandard==0.25.0
+          for pair in validation:alternate feedback-validation:feedback-alternate; do
+            a="${pair%%:*}"; b="${pair##*:}"
+            if test -f "$RUNNER_TEMP/native/$a/review.json"; then
+              python -B controller/research/opica_recursive_round2/independent.py --repo native --work "$RUNNER_TEMP/native/search/work" --validation "$RUNNER_TEMP/native/$a" --historical historical --checker-code checker-code --out "$RUNNER_TEMP/native/$b"
+            fi
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-native
+          path: |
+            ${{ runner.temp }}/native/epoch.json
+            ${{ runner.temp }}/native/search/*.json
+            ${{ runner.temp }}/native/search/work/*.lean
+            ${{ runner.temp }}/native/search/work/*.log
+            ${{ runner.temp }}/native/validation/**/receipt.json
+            ${{ runner.temp }}/native/validation/review.json
+            ${{ runner.temp }}/native/validation/**/*.lean
+            ${{ runner.temp }}/native/validation/**/*.log
+            ${{ runner.temp }}/native/feedback-candidates.json
+            ${{ runner.temp }}/native/feedback-validation/**/receipt.json
+            ${{ runner.temp }}/native/feedback-validation/review.json
+            ${{ runner.temp }}/native/feedback-validation/**/*.lean
+            ${{ runner.temp }}/native/feedback-validation/**/*.log
+            ${{ runner.temp }}/native/alternate/review.json
+            ${{ runner.temp }}/native/feedback-alternate/review.json
+            ${{ runner.temp }}/native/alternate/terminal-*/R2Terminal.lean
+            ${{ runner.temp }}/native/feedback-alternate/terminal-*/R2Terminal.lean
+          if-no-files-found: warn
+          retention-days: 30
+  mixed-validation:
+    needs: [harvest, native-search]
+    if: always() && needs.harvest.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: opica-r2-harvest
+          path: harvest
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: opica-r2-native
+          path: native-results
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 1eab1eb59e47d503ade1615a2c465f967fa65c6e
+          path: native
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/zeta-23-lean
+          ref: 983b6e78eccf9156ee7e2ec55f6772bd64cedccd
+          path: historical
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/riemann-hypothesis
+          ref: 5601d19ff185d58376e109d82dd4512488295372
+          path: checker-code
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: HMarcusWH/riemann-hypothesis
+          ref: 40e56bab026552e089d7afcfeff08d2defb9c005
+          path: original
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          lake-package-directory: original
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+      - name: Reconstruct the same local native epoch
+        run: |
+          python -B controller/research/opica_recursive_round2/native_epoch.py --native native --historical historical --harvest harvest --output "$RUNNER_TEMP/mixed-epoch.json"
+          test -f native-results/search/mixed-candidates.json
+      - name: Port source only and validate mixed plans
+        run: python -B controller/research/opica_recursive_round2/mixed_campaign.py --original original --native native --manifest native-results/search/mixed-candidates.json --out "$RUNNER_TEMP/mixed"
+      - name: Alternate independent checker for mixed candidates
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/mixed/validation/review.json"; then
+            python -m pip install zstandard==0.25.0
+            python -B controller/research/opica_recursive_round2/independent.py --repo original --work "$RUNNER_TEMP/mixed/work" --validation "$RUNNER_TEMP/mixed/validation" --historical historical --checker-code checker-code --out "$RUNNER_TEMP/mixed/alternate"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: opica-r2-mixed
+          path: |
+            ${{ runner.temp }}/mixed/*.json
+            ${{ runner.temp }}/mixed/*.log
+            ${{ runner.temp }}/mixed/adapter-sources/*.lean
+            ${{ runner.temp }}/mixed/validation/**/receipt.json
+            ${{ runner.temp }}/mixed/validation/review.json
+            ${{ runner.temp }}/mixed/validation/**/*.lean
+            ${{ runner.temp }}/mixed/validation/**/*.log
+            ${{ runner.temp }}/mixed/alternate/review.json
+          if-no-files-found: warn
+          retention-days: 30
+  packet:
+    if: always() && github.repository == 'HMarcusWH/riemann-hypothesis' && github.ref == 'refs/heads/research/opica-recursive-closure-r2-20261124'
+    needs: [source-controls, harvest, canonical-review, native-search, mixed-validation]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: controller
+          fetch-depth: 0
+          persist-credentials: false
+          sparse-checkout: |
+            /research/opica_extract_round1/
+            /research/opica_recursive_round2/
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-harvest
+          path: inputs/harvest
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-canonical
+          path: inputs/canonical
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-native
+          path: inputs/native
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        continue-on-error: true
+        with:
+          name: opica-r2-mixed
+          path: inputs/mixed
+      - name: Produce the ten-file packet, including explicit incompleteness
+        env:
+          R2_WORKFLOW_RESULTS: ${{ toJSON(needs) }}
+        run: python -B controller/research/opica_recursive_round2/packet.py --repo controller --inputs inputs --out "$RUNNER_TEMP/packet"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: OPICA-R2-RESULT-PACKET
+          path: ${{ runner.temp }}/packet
+          if-no-files-found: warn
+          retention-days: 30
+
