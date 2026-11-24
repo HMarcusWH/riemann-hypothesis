@@ -1,0 +1,26 @@
+{
+  "schema": "OPICA_LONGRUN_WORKFLOW_HARVEST_V1",
+  "execution_run_id": null,
+  "execution_head": null,
+  "execution_tree": null,
+  "status": "NOT_RUN",
+  "formal_validity_gates": [],
+  "regression_gates": [],
+  "research_producing_checks": [],
+  "updated_after_execution": false,
+  "source_pins_frozen": true,
+  "longrun_workflow": "opica-longrun-verify.yml",
+  "old_full_run": {
+    "run_id": 45029482502,
+    "head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+    "modular": "19_PASS_1_INCOMPLETE_10_NOT_RUN",
+    "independent": "NOT_RUN"
+  },
+  "diagnostic": {
+    "run_id": 45043676060,
+    "head": "3ce05c7f351ecd811eea1a15ae35d826c13dad89",
+    "status": "INCOMPLETE"
+  },
+  "proof_claim": "RH_OPEN",
+  "claim_promotion": false
+}

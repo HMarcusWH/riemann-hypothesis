@@ -1,0 +1,286 @@
+{
+  "schema": "OPICA_ROUND25_DIAGNOSTIC_COMPARISON_BASELINE_V1",
+  "head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "tree": "412fec33b3869f438d1c71928cce32be72b636d0",
+  "run_id": 45029482502,
+  "run_attempt": 1,
+  "job_id": 137229674387,
+  "raw_modular_receipt_sha256": "8f1fe4f2503af4cb904f9847c6d200fd7aa06f12a83ef5580bee86fcfcfae3da",
+  "raw_resource_initial_sha256": "d49a20a9d86ea3cab74f4d2f8efe37c35205cb04f16df263479775dac2daa94b",
+  "work_path": "/home/runner/work/_temp/opica-step4-round24",
+  "identity_projection": {
+    "source": {
+      "external_src_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
+      "external_source_inventory_sha256_without_challenge": "16f09dc78678562246fd2d80dd2244a20d9d590576467a290f7f8ccbfb4426bc",
+      "external_source_inventory_entries_without_challenge": 175187,
+      "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+      "native_tree": "9248b76d7aff60aab3bb775c4be9750dc6006003",
+      "pins": {
+        "external": {
+          "toolchain": "leanprover/lean4:v4.33.1",
+          "toolchain_sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
+          "manifest_sha256": "fee57ee9ed399d0a638ca955e5ad40a37a36eeb9b6dfd9f5964114fa7bbe4774"
+        },
+        "integration": {
+          "toolchain": "leanprover/lean4:v4.33.1",
+          "toolchain_sha256": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
+          "manifest_sha256": "391f2a0f7147306be70a47338cb31829e652981b9db028af02e475b73368c5f4"
+        },
+        "native": {
+          "toolchain": "leanprover/lean4:v4.33.0-rc2",
+          "toolchain_sha256": "0d3c76ccd8772d8bcbe207241421a760312b71a6aa82f84194391fdf5cb026d6",
+          "manifest_sha256": "1847b362e15efd927e75aa8b5442e491f998e4a3f730f9dcaca9841f2957c448"
+        }
+      }
+    },
+    "canonical_environment": {
+      "compiler": "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/bin/lean",
+      "compiler_version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+      "compiler_sha256": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+      "kernel_checker": "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/bin/leanchecker",
+      "kernel_checker_sha256": "84bc3e7cd6efa5bfecd1e7c37571fed9428fb2b3e16da0ddf62f2163573486d0",
+      "mathlib_commit": "0df444a360eaa60ab8c11dca51a86af692955474",
+      "import_roots": [
+        "/home/runner/work/_temp/opica-step4-round24/verification/canonical-lib",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/Cli/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/batteries/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/Qq/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/aesop/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/proofwidgets/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/importGraph/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/LeanSearchClient/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/plausible/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/mathlib/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/native/integration/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/lib/lean"
+      ],
+      "scope": "Native-only canonical environment before external module loading",
+      "jobs": 2
+    },
+    "environment": {
+      "compiler": "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/bin/lean",
+      "compiler_version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+      "compiler_sha256": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+      "kernel_checker": "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/bin/leanchecker",
+      "kernel_checker_sha256": "84bc3e7cd6efa5bfecd1e7c37571fed9428fb2b3e16da0ddf62f2163573486d0",
+      "mathlib_commit": "0df444a360eaa60ab8c11dca51a86af692955474",
+      "import_roots": [
+        "/home/runner/work/_temp/opica-step4-round24/verification/lib",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/Cli/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/batteries/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/Qq/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/aesop/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/proofwidgets/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/importGraph/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/LeanSearchClient/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/plausible/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/trusted-packages/mathlib/.lake/build/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/proof-store",
+        "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux/lib/lean",
+        "/home/runner/work/_temp/opica-step4-round24/native/integration/.lake/build/lib/lean"
+      ],
+      "jobs": 2
+    },
+    "stock_runtime_files": {
+      "/home/runner/work/_temp/opica-step4-round24/native/lean-4.33.1-linux": {
+        "bin/cadical": "8e92f427cfb72072fc605ec6d5f641443c35921b29c39ab2f027776cd533afce",
+        "bin/clang": "9fcd5fc4baeea9c449bcc9ca4b9db7714465107669498b0056a853f22f5f4def",
+        "bin/lake": "60330ab6f07dce20f3fa9ebb08e8b984ea9549eac172afeb15d9d2227060e2b3",
+        "bin/ld.lld": "d32d5121d96810b624306e48faacc75e41f7302ad0e4865be63c3bbf8f4cd810",
+        "bin/lean": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+        "bin/leanc": "cc293b2c81b7bc16d750959c7c82d61f4b95f50c2942d1131d57c078b8245ac1",
+        "bin/leanchecker": "84bc3e7cd6efa5bfecd1e7c37571fed9428fb2b3e16da0ddf62f2163573486d0",
+        "bin/leanir": "9c2f8ffa93085e545a6ae723e56f4c12d263e0937ffd37be92973cd397a407c3",
+        "bin/leanmake": "07c96082b95fce057ed9656cc80da50477d596250973cfdd414f74e7631eb56d",
+        "bin/leantar": "06d613dffd2a6fd996b095bfd835c2bb720886f9eb7e13ed2adddd7df4507bf3",
+        "bin/llvm-ar": "697c4da3ff7080716bf591ddf38d02fb093f3173e12188ddd4243304228004ad",
+        "lib/libLLVM.so.22.1": "5145af96bc961289f6dff7efc0dc7f75cbc4b91634aa3b5d517749dce5f3f300",
+        "lib/libatomic.so.1.2.0": "b2d3f7d9ebf9a0d5dc9caedcb33a43f6ac1b33221ada1f029147d8a66db43c09",
+        "lib/libc++.so": "9a82146864488c9d491a6e60be5af3ca986a9af57f6057763c5c0a8dda85a66e",
+        "lib/libc++.so.1.0": "0ec88ab403524f6c3bc3d9029772b97d9af08837267a2973bf6b24fa79119704",
+        "lib/libc++abi.so.1.0": "3cb42a1a34f48dd20da4aa7559e634ca2eaeab6b019869fd060f90128ae3cb8b",
+        "lib/libclang-cpp.so.22.1": "e11640dbbd29d2abebcdb62f8e90e8a965d7276df914e3cdcfd5263f427208eb",
+        "lib/libgcc_s.so": "69a56a9993b7729b29b274e65016031c81f2397f176ed5ad44d59bd50425e0bd",
+        "lib/libgcc_s.so.1": "3f499bb3b14f33c5c321f52015d385c145c7bd4551a66c5fcff4262c833f2d2a",
+        "lib/libunwind.so.1.0": "c54929622b0991b21088050bf3f23d6756d3d2e082acd293b0e788ddc901da72",
+        "lib/libz.so.1.2.11": "d0aeafffcfe309a107a857dfa1f9afd0db90796d32c2b735a3959eccb317f5b4",
+        "lib/lean/libInit_shared.so": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5",
+        "lib/lean/libLake_shared.so": "b1d164bf248f35b9e9664e696f4cd05a79a7066065510fb9b459139c78beb354",
+        "lib/lean/libleanshared.so": "23d636cac1cadcba37beac30eff9b9b20d66cee726cf5defb4ae39f1284a3e5a",
+        "lib/lean/libleanshared_1.so": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5",
+        "lib/lean/libleanshared_2.so": "2f96493ac9046f64ec7bcb78102a4c1e7cd9a7042487f246af45eda8a96667f5"
+      }
+    },
+    "tools": {
+      "exporter": "805ab4cc6a88dcef109644d201c3142261f524aecaf58b04913a9f029e21e9b5",
+      "statement_comparison_helper": "4701dd68d9f78187f990c0f98b2eb42ee866afca3f877b23ba4431e6b3c1dd8d",
+      "raw_object_inspector_source": "9d54c1c2fd25ade5d1aaa558c9c5d5fdbd156973a20f246b5caf661872fd262c",
+      "lake": "60330ab6f07dce20f3fa9ebb08e8b984ea9549eac172afeb15d9d2227060e2b3",
+      "kernel_producer": "e7425a48eba7fa944131fe744c4c9dc733fa11a0e23c9d4674ec7ee305c8106a"
+    },
+    "native_validated_inputs_sha256": "0e7f49bf1e297125fc0aaa45e77810ad8069fb54aa351249a14d99985da83f46",
+    "canonical_type_and_axiom_audit_sha256": "d2725fb1211613f2782ac773c5afa315e03e829758bc29148441f340c2390462",
+    "complete_snapshot": {
+      "inventory_sha256": "8f7576057fa8d66b2e364c18767197ec644db47a076d3ecae280b4be474274de",
+      "root_count": 12,
+      "object_count": 220470
+    },
+    "promoted_canonical_artifacts": [
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/ReceiverAudit.olean",
+        "sha256": "a8d58f99a73a4dbddad42d4d92b2be978b143cc37bd3bc71eaf5d7616d71b4c4"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/ReceiverAudit.ilean",
+        "sha256": "1e2e9800c9d514a32905f2d812907edc66c8f37c69e1c7099a9eb75470d0344b"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/ClaimFingerprint.olean",
+        "sha256": "a9d5350b6d7745321beba7ec5d224291e246333c92b38dbc31ccf0fe2276dac6"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/ClaimFingerprint.ilean",
+        "sha256": "a17c578f3f1497131d26e3fcee4eb6b4f63c93a052654c435e926a83524ce389"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/BoundaryFlatCharacterization.olean",
+        "sha256": "8ce812f279c80945ba2727e0dea9a9a0a15627e0d8b1b272e44f5fa7e2d045ca"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/BoundaryFlatCharacterization.ilean",
+        "sha256": "4336779a9e1f1a8caeace3d2091311401c842e2aef1f5fc50c2630835494673e"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/NativeValidated.olean",
+        "sha256": "155327653a0033e12f456ed602d69f89c1277f678a5904a09db25a53bd248fa3"
+      },
+      {
+        "path": "/home/runner/work/_temp/opica-step4-round24/verification/lib/OPICAStep4/NativeValidated.ilean",
+        "sha256": "0786327a45d628189eb405e6a86d8015427237364e1dfd38a148b0db1698045c"
+      }
+    ],
+    "exports": {
+      "canonical_fingerprint_export": {
+        "status": "PASS",
+        "module": "OPICAStep4.ClaimFingerprint",
+        "stdout_bytes": 348795861,
+        "stdout_sha256": "78c2e23d4f653450981028b5900c06d75a0bec726f63814cb1a23492c1a3fc49",
+        "explicit_export_targets": [
+          "Quot",
+          "Quot.mk",
+          "Quot.lift",
+          "Quot.ind",
+          "propext",
+          "Quot.sound",
+          "Classical.choice",
+          "Nat.add",
+          "Nat.sub",
+          "Nat.mul",
+          "Nat.pow",
+          "Nat.gcd",
+          "Nat.div",
+          "Nat.mod",
+          "Nat.beq",
+          "Nat.ble",
+          "Nat.land",
+          "Nat.lor",
+          "Nat.xor",
+          "Nat.shiftLeft",
+          "Nat.shiftRight",
+          "String.ofList",
+          "Char.ofNat",
+          "List",
+          "eagerReduce",
+          "Nat",
+          "String",
+          "String.mk",
+          "Char",
+          "optParam",
+          "autoParam",
+          "semiOutParam",
+          "outParam",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_reflexive",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_is_native",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredRH_reflexive"
+        ],
+        "exporter_sha256": "805ab4cc6a88dcef109644d201c3142261f524aecaf58b04913a9f029e21e9b5"
+      },
+      "canonical_native_proof_export": {
+        "status": "PASS",
+        "module": "OPICAStep4.NativeValidated",
+        "stdout_bytes": 520729558,
+        "stdout_sha256": "155dae759fca71ec5e44294586dcef3e5809e3bca64371635a0b095aa69e4c32",
+        "explicit_export_targets": [
+          "Quot",
+          "Quot.mk",
+          "Quot.lift",
+          "Quot.ind",
+          "propext",
+          "Quot.sound",
+          "Classical.choice",
+          "Nat.add",
+          "Nat.sub",
+          "Nat.mul",
+          "Nat.pow",
+          "Nat.gcd",
+          "Nat.div",
+          "Nat.mod",
+          "Nat.beq",
+          "Nat.ble",
+          "Nat.land",
+          "Nat.lor",
+          "Nat.xor",
+          "Nat.shiftLeft",
+          "Nat.shiftRight",
+          "String.ofList",
+          "Char.ofNat",
+          "List",
+          "eagerReduce",
+          "Nat",
+          "String",
+          "String.mk",
+          "Char",
+          "optParam",
+          "autoParam",
+          "semiOutParam",
+          "outParam",
+          "Zeta23.OPICARound19.ReceiverAudit.exactReceiver",
+          "Zeta23.OPICARound19.ReceiverAudit.exactZeroErrorReceiver",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_reflexive",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredC1_is_native",
+          "Zeta23.OPICARound19.ClaimFingerprint.requiredRH_reflexive",
+          "Zeta23.OPICARound20.even_zero_bound_of_all_boundary_flat_nonnegative",
+          "Zeta23.OPICARound20.c1_iff_all_boundary_flat_nonnegative",
+          "Zeta23.OPICARound20.riemannHypothesis_iff_all_boundary_flat_nonnegative",
+          "Zeta23.OPICARound20.finite_negative_boundary_flat_witness_refutes_c1"
+        ],
+        "exporter_sha256": "805ab4cc6a88dcef109644d201c3142261f524aecaf58b04913a9f029e21e9b5"
+      }
+    }
+  },
+  "resource": {
+    "loop": {
+      "dio": 1,
+      "ro": 1,
+      "offset": 0,
+      "sizelimit": 0,
+      "logical_sector": 512,
+      "capacity_sectors_512": 60055648
+    },
+    "image_bytes": 30748491776,
+    "image_sha256": "49f7e6d407ee8bb17d55cbd5d479c0a01a0f29f40768d9f6214e8a7b3f6ea475",
+    "mounted_manifest_sha256": "4b2a2b978e16e54c663fd5c19f4cab3cd8d5a6d5a0141468efefdc6f07d1e411"
+  },
+  "observed_original_outcome": {
+    "prefix_stages": 19,
+    "stage20": "INCOMPLETE_WALL_TIME_EXCEEDED",
+    "stage20_process_seconds": 1800.263197,
+    "independent": "NOT_RUN"
+  },
+  "limits": [
+    "No equal-host, cache-residency, progress or timing-control claim",
+    "Fresh observer compilation is extra preparation before the exact prefix",
+    "Snapshot covers the original enumerated object suffixes, not arbitrary files",
+    "No proof acceptance or proof rejection follows from input comparison"
+  ]
+}

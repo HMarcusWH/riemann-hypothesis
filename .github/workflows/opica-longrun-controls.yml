@@ -1,0 +1,56 @@
+name: OPICA longrun controller source and negative controls
+on:
+  push:
+    branches: [research/opica-longrun-verification-v1-20261122]
+    paths:
+      - .github/workflows/opica-longrun-controls.yml
+      - .github/workflows/opica-longrun-verify.yml
+      - opica-step4/longrun/**
+      - diagnostics/opica-matched-phase/reparse_saved_log.py
+      - diagnostics/opica-matched-phase/test_reparse_saved_log.py
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-scope:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify historical proof source and fixed runner bytes
+        run: |
+          set -euo pipefail
+          expected=51a2aab2566ed9736f6c4fcddbcfeea74d90e09d
+          git merge-base --is-ancestor "$expected" HEAD
+          for f in opica-step4/modular/verify_modular.py opica-step4/modular/monitored_process.py opica-step4/modular/kernel_producer/KernelBridge.lean opica-step4/independent/verify_independent.py opica-step4/portable_gate/verify_combined.py opica-step4/SOURCE_MANIFEST.json; do
+            test "$(git rev-parse "HEAD:$f")" = "$(git rev-parse "$expected:$f")"
+          done
+          git diff --check "$expected" HEAD
+      - name: Verify Python longrun controls
+        run: |
+          set -euo pipefail
+          python3 --version
+          python3 -m compileall -q opica-step4/longrun diagnostics/opica-matched-phase/reparse_saved_log.py
+          python3 -m unittest discover -v -s opica-step4/longrun -p 'test_*.py'
+          python3 -O -m unittest discover -v -s opica-step4/longrun -p 'test_*.py'
+          python3 -m unittest discover -v -s diagnostics/opica-matched-phase -p test_reparse_saved_log.py
+      - name: Verify manual-only self-hosted workflow and full contract
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          x=Path('.github/workflows/opica-longrun-verify.yml').read_text()
+          assert 'on:\n  workflow_dispatch:' in x
+          assert '  push:' not in x and 'pull_request_target:' not in x
+          assert 'runs-on: [self-hosted, Linux, X64, opica-longrun]' in x
+          assert 'cancel-in-progress: false' in x
+          assert 'python supplier/opica-step4/longrun/verify_modular_longrun.py' in x
+          assert 'python supplier/opica-step4/independent/verify_independent.py' in x
+          assert 'python supplier/opica-step4/transport/verified_squashfs_store.py' in x
+          assert 'sha256sum --quiet --check' in x
+          assert 'timeout-minutes: 1200' in x
+          print('LONGRUN_CONTROLLED_SOURCE_CHECK: PASS (no proof acceptance)')
+          PY

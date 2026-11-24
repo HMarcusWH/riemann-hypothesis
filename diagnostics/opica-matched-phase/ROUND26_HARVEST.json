@@ -1,0 +1,50 @@
+{
+  "schema": "OPICA_ROUND26_HISTORICAL_HARVEST_V1",
+  "claim_cap": "DIAGNOSTIC_ONLY",
+  "terminal_claim": "RH_OPEN",
+  "repo": "HMarcusWH/riemann-hypothesis",
+  "head": "3ce05c7f351ecd811eea1a15ae35d826c13dad89",
+  "original_run_id": 45043676060,
+  "original_job_id": 137273438606,
+  "outcome": "COMPLETED_WORKFLOW_FAILURE",
+  "diagnostic_receipt_status": "DIAGNOSTIC_FAILED_OR_INCOMPLETE",
+  "input_comparison": "MATCHED_RECORDED_INPUT_IDENTITIES",
+  "mismatched_fields": [],
+  "raw_log": {
+    "name": "verification/matched_stock_import_split.log",
+    "bytes": 517,
+    "sha256": "0ee6413ccb845c6532fe8efac97fff8cf7138df7e93a0bedec9109de8385f190"
+  },
+  "markers": [
+    {
+      "mono_ms": 5830318,
+      "message": "CORE_BEGIN"
+    },
+    {
+      "mono_ms": 6630460,
+      "message": "CORE_END"
+    },
+    {
+      "mono_ms": 6630460,
+      "message": "FINALIZE_BEGIN leakEnv=true loadExts=false level=private trustLevel=0"
+    }
+  ],
+  "core_seconds": 800.142,
+  "finalize_total_seconds": null,
+  "process_seconds": 1800.261451,
+  "outcome_reason": "TIMEOUT with secondary historical parser mismatch; no kernel rejection",
+  "process_major_faults_observed": 1609988,
+  "process_read_bytes_observed": 83942926336,
+  "process_max_sampled_rss_plus_swap_bytes": 11082997760,
+  "parser_problem": "Phase marker order/settings/import-array mismatch; fixed separately on 4fbabb316f9b2858e48059f1961b9266a14d7d9f",
+  "original_artifact": {
+    "id": 14766573175,
+    "upload_sha256": "68efa88b50acf5a5f53f58345d2218f7a7fcd014ab27beed01526e9ef177791b"
+  },
+  "resource_artifact": {
+    "id": 14767337569
+  },
+  "production_stage20": "NOT_RUN_BY_DIAGNOSTIC",
+  "independent_checker": "NOT_RUN_BY_DIAGNOSTIC",
+  "proof_acceptance": false
+}

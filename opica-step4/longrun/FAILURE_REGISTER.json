@@ -1,0 +1,31 @@
+{
+  "schema": "OPICA_LONGRUN_FAILURE_REGISTER_V1",
+  "status": "HISTORICAL_BASELINE_AND_PENDING_EXECUTION",
+  "failures": [
+    {
+      "id": "ROUND24_STAGE20_WATCHDOG",
+      "run": 45029482502,
+      "stage": "guarded_kernel_import",
+      "disposition": "INCOMPLETE_TIMEOUT_1800s",
+      "semantic_rejection": false
+    },
+    {
+      "id": "ROUND26_MATCHED_DIAGNOSTIC",
+      "run": 45043676060,
+      "stage": "nonaccepting_import_probe",
+      "disposition": "TIMEOUT_AND_OLD_MARKER_PARSER_REFUSAL",
+      "semantic_rejection": false,
+      "raw_core_seconds": 800.142,
+      "finalization_total_seconds": null
+    },
+    {
+      "id": "NATIVE_CANONICAL_INDEX_V1",
+      "run": 45030269389,
+      "stage": "canonical_writer",
+      "disposition": "SOURCE_SCOPE_GENERATED_INDEX_CONFLICT",
+      "semantic_rejection": false
+    }
+  ],
+  "successor_longrun": "NOT_EXECUTED",
+  "terminal_claim": "RH_OPEN"
+}

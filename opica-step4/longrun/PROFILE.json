@@ -1,0 +1,60 @@
+{
+  "schema": "OPICA_LONGRUN_EXECUTION_PROFILE_V1",
+  "id": "OPICA_LONGRUN_20H_DIO64K_V1",
+  "status": "IMPLEMENTED_NOT_EXECUTED",
+  "selected_by": "explicit workflow_dispatch, exact checked revision",
+  "source_base_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "supplier_src_tree": "24df20b62d9976ccd20da819bc20b16f808f0fdd",
+  "native_head": "7597acdba0c7d0a81b8c3a5f229598e3f9b74ac9",
+  "lean": "4.33.1",
+  "mathlib": "0df444a360eaa60ab8c11dca51a86af692955474",
+  "proof_contract": {
+    "modular_stages": 30,
+    "independent_stages": 7,
+    "selected_roots": 50,
+    "supplier_roots": 38,
+    "native_roots": 9,
+    "closed_roots": 3,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "original_round19_gate": "NOT_RUN_BY_THIS_PROFILE",
+    "proof_30_plus_7": "MANDATORY_FOR_FULL_ACCEPTANCE"
+  },
+  "host": {
+    "runner_environment": "self-hosted",
+    "runner_os": "Linux",
+    "runner_name_prefix": "opica-longrun-",
+    "required_label": "opica-longrun",
+    "min_cpus": 8,
+    "min_memtotal_mib": 120000,
+    "min_free_disk_gib": 250,
+    "allowed_work_filesystems": [
+      "ext4",
+      "xfs"
+    ],
+    "marker": "/etc/opica/ephemeral-runner.json",
+    "min_free_inodes": 400000
+  },
+  "limits_seconds": {
+    "canonical_compile": 1800,
+    "guarded_kernel_import": 14400,
+    "fresh_closed_kernel_construction": 14400,
+    "fresh_replay": 7200,
+    "export": 7200,
+    "replay": 3600,
+    "comparison": 7200,
+    "independent": 9000,
+    "checker_bootstrap": 2400
+  },
+  "max_sampled_rss_plus_swap_mib": 50000,
+  "job_timeout_minutes": 1200,
+  "original_supplier_image_sha256": "49f7e6d407ee8bb17d55cbd5d479c0a01a0f29f40768d9f6214e8a7b3f6ea475",
+  "original_supplier_image_bytes": 30748491776,
+  "supplier_file_sha256_checks": 350374,
+  "old_gate": "OPICA23_KERNEL_OBJECT_COMPOSITION_V1",
+  "new_execution_scope": "Same mathematical check, separately versioned run policy",
+  "proof_acceptance_from_profile": false
+}

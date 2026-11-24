@@ -1,0 +1,46 @@
+{
+  "schema": "OPICA_MATCHED_PHASE_SOURCE_MANIFEST_V1",
+  "base_head": "51a2aab2566ed9736f6c4fcddbcfeea74d90e09d",
+  "base_tree": "412fec33b3869f438d1c71928cce32be72b636d0",
+  "original_source_manifest_sha256": "09b5ab945355ffd891b8786978fff43fc64b85eb586f03dfc75bb129cb825aee",
+  "original_full_workflow_sha256": "4a3e8684185cc7949e067712692afe015e122a24ddd1128acfcb467202d8e8c1",
+  "files": [
+    {
+      "path": ".github/workflows/opica-matched-phase-diagnostic.yml",
+      "bytes": 13728,
+      "sha256": "ccbdce92aac9df2d5b08ce818c4c451e4f67d94f09167d0be6593e7b17c6a45d"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/ImportPhaseProbe.lean",
+      "bytes": 3431,
+      "sha256": "4e760679e151cd67287a5f3d8a97818aeeda4da9ae77295bfa8d1bc0bcc87526"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/PROFILE.json",
+      "bytes": 2510,
+      "sha256": "af4332a1fb0616b8764d1e85f511ca229e6c065f9945146108b4c1ef90cef2c4"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/ROUND25_BASELINE.json",
+      "bytes": 15083,
+      "sha256": "15973f8ebfa4aa2ad9406273d8d0d41ffebcb61139ebb4fee94e61843e88013d"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/observations.py",
+      "bytes": 10057,
+      "sha256": "8e9b8cf5ebe78dad3d9c9fd59ef6a230269378c7620b1b2e193d0f58c1864dd9"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/runner.py",
+      "bytes": 32084,
+      "sha256": "36944968edc9dad49ee7cd8c199d4cb76dd0674c685ece01e215b9bb3cb33985"
+    },
+    {
+      "path": "diagnostics/opica-matched-phase/test_runner.py",
+      "bytes": 17881,
+      "sha256": "af54185345715e737d3c74c47672970acc9443a108ed25ce6fd358e4567aa96c"
+    }
+  ],
+  "scope": "Additive unpublished diagnostic only; all original source, proof contracts and budgets unchanged",
+  "proof_acceptance": false
+}

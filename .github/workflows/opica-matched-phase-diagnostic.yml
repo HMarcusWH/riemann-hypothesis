@@ -1,0 +1,237 @@
+name: OPICA matched-prefix stock import phase diagnostic
+run-name: OPICA nonaccepting matched-prefix diagnostic at ${{ github.sha }}
+on:
+  push:
+    branches: [research/opica-matched-phase-diagnostic-20261122]
+    paths:
+      - .github/workflows/opica-matched-phase-diagnostic.yml
+      - diagnostics/opica-matched-phase/**
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: opica-matched-phase-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  observe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      LEAN_ABORT_ON_PANIC: '1'
+      LEAN_NUM_THREADS: '2'
+      OPICA_RESOURCE_PROFILE: 'LOOP_RO_DIO1_ORIGINAL64K_V1'
+      OPICA_DIAGNOSTIC_PROFILE: 'ROUND26_MATCHED_PREFIX_SPLIT1800_DIO1_SINGLE_V1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          path: supplier
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require an explicitly selected matched-prefix diagnostic
+        id: diagnostic_selection
+        run: |
+          set -euo pipefail
+          python3 supplier/diagnostics/opica-matched-phase/runner.py selection --selection "$OPICA_DIAGNOSTIC_PROFILE"
+          python3 -m unittest discover -v -s supplier/diagnostics/opica-matched-phase -p test_runner.py
+          python3 -O -m unittest discover -v -s supplier/diagnostics/opica-matched-phase -p test_runner.py
+      - name: Require an explicitly selected resource profile
+        id: resource_selection
+        run: |
+          set -euo pipefail
+          python3 supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py selection \
+            --selection "$OPICA_RESOURCE_PROFILE"
+          python3 -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
+          python3 -O -m unittest discover -v -s supplier/opica-step4/resource_profiles -p test_loop_ro_dio1_64k.py
+      - name: Prepare bounded standard runner
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/opica-step4-round24"
+          mkdir -p "$work"
+          printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          sudo apt-get update -qq
+          sudo apt-get install -y squashfs-tools zstd python3-venv
+          python3 -m venv "$work/venv"
+          "$work/venv/bin/python" -m pip install --disable-pip-version-check -r supplier/opica-step4/transport/requirements.txt
+          printf '%s\n' "$work/venv/bin" >> "$GITHUB_PATH"
+          python3 supplier/opica-step4/prepare_runner.py --work "$work"
+      - name: Check transport and verification controls
+        run: |
+          set -euo pipefail
+          cd supplier/opica-step4/transport
+          python -m unittest -v test_verified_squashfs_store test_export_stream_store
+          cd ../modular
+          python -m unittest -v test_verify_modular test_monitored_process
+          cd ../independent
+          python -m unittest -v test_independent
+      - name: Fresh common-pin native source build
+        run: |
+          set -euo pipefail
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
+          python supplier/opica-step4/native_bootstrap/bootstrap_native.py \
+            --work-dir "$OPICA_WORK/native" \
+            --trusted-packages "$OPICA_WORK/trusted-packages" \
+            --external-project "$GITHUB_WORKSPACE/supplier" \
+            --jobs 2 --aggregate-rss-mb 10000 --min-free-gb 46 \
+            --cache-parallel 8 --timeout 9000
+          printf '%s\n' "$OPICA_WORK/native/lean-4.33.1-linux/bin" >> "$GITHUB_PATH"
+      - name: Preserve and verify complete original supplier objects
+        run: |
+          set -euo pipefail
+          python supplier/opica-step4/transport/verified_squashfs_store.py \
+            --output "$OPICA_WORK/proof-store.sqfs" \
+            --max-image-gib 40 --min-free-gib 45 --processors 2 --memory-mb 512
+          mkdir "$OPICA_WORK/proof-store"
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" setup \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
+          cd "$OPICA_WORK/proof-store"
+          sha256sum --quiet --check "$OPICA_WORK/proof-store.sqfs.files.sha256"
+          python - <<'PY'
+          import os,pathlib,json,hashlib
+          w=pathlib.Path(os.environ['OPICA_WORK'])
+          p=w/'proof-store.sqfs.files.sha256'
+          (w/'mounted-store-verified.json').write_text(json.dumps({'status':'PASS','scope':'Every mounted original file matched published SHA256; no theorem acceptance by this check','files':350374,'manifest_sha256':hashlib.sha256(p.read_bytes()).hexdigest()},indent=2)+'\n')
+          PY
+      - name: Bind shared trusted dependencies and verification tools
+        run: |
+          set -euo pipefail
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
+          rt="$OPICA_WORK/native/lean-4.33.1-linux/bin"
+          mkdir -p supplier/.lake/build/lib
+          test ! -e supplier/.lake/packages
+          test ! -e supplier/.lake/build/lib/lean
+          ln -s "$OPICA_WORK/trusted-packages" supplier/.lake/packages
+          ln -s "$OPICA_WORK/proof-store" supplier/.lake/build/lib/lean
+          git init "$OPICA_WORK/exporter"
+          git -C "$OPICA_WORK/exporter" remote add origin https://github.com/leanprover/lean4export.git
+          git -C "$OPICA_WORK/exporter" fetch --depth=1 origin 15f6055e299ad5b89345e533cc2192f4cc00f659
+          git -C "$OPICA_WORK/exporter" checkout --detach 15f6055e299ad5b89345e533cc2192f4cc00f659
+          (cd "$OPICA_WORK/exporter" && "$rt/lake" build lean4export)
+          (cd supplier/opica-step4/portable_gate/comparison_control && "$rt/lake" build compare_exports)
+      - name: Build the pinned independent checker
+        run: |
+          set -euo pipefail
+          python supplier/opica-step4/independent/bootstrap_checker.py \
+            --work "$OPICA_WORK/independent-checker" \
+            --timeout 2400 --memory-mib 10000 --min-free-gib 6
+      - name: Compile the separate stock phase observer before the prefix
+        id: phase_observer_preparation
+        run: |
+          set -euo pipefail
+          python supplier/diagnostics/opica-matched-phase/runner.py prepare \
+            --selection "$OPICA_DIAGNOSTIC_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
+      - name: Bind the selected loop resource identity before proof
+        id: resource_binding
+        run: |
+          set -euo pipefail
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" bind \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
+      - name: Execute unchanged first19 and nonaccepting1800-second split observer
+        id: prefix_phase
+        run: |
+          set -euo pipefail
+          ulimit -S -n "$(ulimit -H -n)"
+          printf 'Open-file soft/hard limits: %s / %s\n' "$(ulimit -S -n)" "$(ulimit -H -n)"
+          python supplier/diagnostics/opica-matched-phase/runner.py run \
+            --selection "$OPICA_DIAGNOSTIC_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$OPICA_WORK"
+      - name: Observe final loop identity independently of diagnostic outcome
+        id: resource_final_observation
+        if: always()
+        run: |
+          set -euo pipefail
+          work="${OPICA_WORK:-$RUNNER_TEMP/opica-step4-round24}"
+          mkdir -p "$work"
+          printf 'OPICA_WORK=%s\nOPICA_RESOURCE_WORK=%s\n' "$work" "$work" >> "$GITHUB_ENV"
+          sudo /usr/bin/python3 "$GITHUB_WORKSPACE/supplier/opica-step4/resource_profiles/loop_ro_dio1_64k.py" final \
+            --selection "$OPICA_RESOURCE_PROFILE" --supplier "$GITHUB_WORKSPACE/supplier" \
+            --head "${{ github.sha }}" --work "$work" \
+            --modular-outcome "not_run_by_diagnostic" --independent-outcome "not_run_by_diagnostic"
+      - name: Preserve literal diagnostic and resource dispositions
+        id: diagnostic_disposition
+        if: always()
+        env:
+          EXACT_DIAGNOSTIC_HEAD: ${{ github.sha }}
+          RAW_PREFIX_PHASE_OUTCOME: ${{ steps.prefix_phase.outcome }}
+          RAW_OBSERVER_PREPARATION_OUTCOME: ${{ steps.phase_observer_preparation.outcome }}
+          RAW_RESOURCE_FINAL_OUTCOME: ${{ steps.resource_final_observation.outcome }}
+        run: |
+          set -euo pipefail
+          work="${OPICA_WORK:-$RUNNER_TEMP/opica-step4-round24}"
+          export OPICA_WORK="$work"
+          printf 'OPICA_WORK=%s\n' "$work" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import hashlib,importlib.util,json,os,pathlib,shutil,sys
+          from datetime import datetime,timezone
+          work=pathlib.Path(os.environ['OPICA_WORK'])
+          out=work/'verification'
+          out.mkdir(parents=True,exist_ok=True)
+          if out.resolve()!=out.absolute(): raise RuntimeError('Symlink diagnostic output rejected')
+          def read(path):
+              try:
+                  if path.is_symlink() or path.resolve()!=path.absolute(): raise ValueError('Symlink receipt')
+                  raw=path.read_bytes();data=json.loads(raw)
+                  if not isinstance(data,dict): raise ValueError('Non-object receipt')
+                  return {'path':str(path),'sha256':hashlib.sha256(raw).hexdigest(),'status':data.get('status','UNKNOWN')}
+              except FileNotFoundError: return {'path':str(path),'status':'NOT_PRESENT'}
+              except (OSError,ValueError) as exc: return {'path':str(path),'status':'UNREADABLE_OR_INVALID','error_type':type(exc).__name__}
+          result={'schema':'OPICA_DIAGNOSTIC_WORKFLOW_DISPOSITION_V1','utc':datetime.now(timezone.utc).isoformat(),
+                  'head':os.environ['EXACT_DIAGNOSTIC_HEAD'],'proof_acceptance':False,'proof_rejection':False,
+                  'production_modular_gate':'NOT_RUN','independent_proof_gate':'NOT_RUN',
+                  'step_outcomes':{k:os.environ.get(k,'NOT_AVAILABLE') for k in
+                      ['RAW_PREFIX_PHASE_OUTCOME','RAW_OBSERVER_PREPARATION_OUTCOME','RAW_RESOURCE_FINAL_OUTCOME']},
+                  'receipts':{k:read(p) for k,p in {
+                      'diagnostic':out/'MATCHED_PHASE_RESULT.json','prelude':out/'DIAGNOSTIC_PRELUDE_STATE.json',
+                      'preparation':work/'phase-probe-build/PROBE_BUILD.json','resource_final':work/'loop-dio-resource/FINAL.json',
+                      'production_modular':out/'MODULAR_GATE_RECEIPT.json',
+                      'production_independent':work/'independent-verification/INDEPENDENT_RECEIPT.json'}.items()},
+                  'platform':{k:os.environ.get(k) for k in ['GITHUB_REPOSITORY','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_WORKFLOW_REF','GITHUB_WORKFLOW_SHA']},
+                  'scope':'Raw result/hash preservation only; upload success is not complete diagnostic coverage or proof acceptance'}
+          with (out/'DIAGNOSTIC_WORKFLOW_DISPOSITION.json').open('x') as f: json.dump(result,f,indent=2);f.write('\n')
+          build=work/'phase-probe-build'
+          module_path=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'supplier/diagnostics/opica-matched-phase/runner.py'
+          module_spec=importlib.util.spec_from_file_location('diagnostic_probe_custody',module_path)
+          module=importlib.util.module_from_spec(module_spec);module_spec.loader.exec_module(module)
+          dest=out/'probe-preparation'
+          custody=module.retain_probe_products(build,dest)
+          if build.is_dir():
+              for p in build.iterdir():
+                  if p.suffix in ['.json','.jsonl','.log'] and p.is_file() and not p.is_symlink():
+                      shutil.copyfile(p,dest/p.name)
+          sys.exit(0 if custody['status']=='COMPLETE_GENERATED_PROBE_CUSTODY_ONLY' else 2)
+          PY
+      - name: Collect original-prefix and diagnostic evidence
+        id: diagnostic_evidence_collection
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 supplier/opica-step4/collect_evidence.py --work "$OPICA_WORK" --head "${{ github.sha }}"
+      - name: Preserve separate nonaccepting diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-matched-phase-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.OPICA_WORK }}/evidence.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
+      - name: Preserve separate loop resource observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: opica-matched-phase-resource-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_STARTED.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/OWNED_LOOP.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/SETUP_RESULT.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/INITIAL.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/BIND_FAILURE.json
+            ${{ env.OPICA_RESOURCE_WORK }}/loop-dio-resource/FINAL.json
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 14
